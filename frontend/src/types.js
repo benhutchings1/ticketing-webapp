@@ -1,4 +1,6 @@
-export interface User {
-  id: string;
-  email: string;
+export const User = {
+  email: String,
+  name: String,
+  address: String,
+  phoneNumber: Number
 }

@@ -5,6 +5,9 @@ import {useNavigate} from "react-router-dom";
 const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [checkPassword, setCheckPassword] = useState("");
+  const [address, setAddress] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState(0);
 
   const navigate = useNavigate();
 
@@ -15,7 +18,7 @@ const Register = () => {
         password,
       });
 
-      navigate("/")
+      navigate("/home")
     } catch (error) {
       if (error.response.status === 401) {
         alert("Invalid credentials");
@@ -32,7 +35,10 @@ const Register = () => {
           <input
             type="text"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              //   check regex for email format
+              setEmail(e.target.value)
+            }}
             id=""
           />
         </div>
