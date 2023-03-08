@@ -28,6 +28,5 @@ yarn-error.log*
 /flask-server/.env
 /flask-server/Pipfile
 /flask-server/env_vars
-/flask-server/
 /frontend/node_modules/
 .idea
