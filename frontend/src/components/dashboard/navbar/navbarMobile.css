@@ -1,0 +1,19 @@
+@media only screen and (max-width: 1024px) {
+    .navbar {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        height: 62px;
+        position: fixed;
+        bottom: 0;
+    }
+
+    .navbarLinks {
+        width: 70%;
+    }
+
+    .navbarContainer {
+        flex-direction: row;
+        padding: 15px 0;
+    }
+}

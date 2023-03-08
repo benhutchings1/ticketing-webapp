@@ -2,7 +2,10 @@ import React, {useState} from 'react'
 import httpClient from "../../httpClient";
 import {useNavigate} from "react-router-dom";
 
-const Login = () => {
+const Login = (props) => {
+    const user = props.user;
+    const setUser = props.setUser;
+
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
