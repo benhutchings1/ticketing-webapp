@@ -23,5 +23,9 @@ yarn-debug.log*
 yarn-error.log*
 
 /flask-server/venv/
+/flask-server/*.db
+/flask-server/.env
+/flask-server/Pipfile
+/flask-server/env_vars
 /frontend/node_modules/
 .idea
