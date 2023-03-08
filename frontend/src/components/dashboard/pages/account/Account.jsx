@@ -3,7 +3,8 @@ import {useNavigate} from "react-router-dom";
 import {getUser} from "../../../../helpers/checkUser";
 
 const Account = (props) => {
-    const [user, setUser] = useState(null);
+    const user = props.user;
+    const setUser = props.setUser;
 
     const navigate = useNavigate();
 

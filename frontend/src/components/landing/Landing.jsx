@@ -3,8 +3,9 @@ import httpClient from "../../httpClient";
 import {useNavigate} from "react-router-dom";
 import {getUser} from "../../helpers/checkUser";
 
-const Landing = () => {
-    const [user, setUser] = useState(null);
+const Landing = (props) => {
+    const user = props.user;
+    const setUser = props.setUser;
 
     const navigate = useNavigate();
 
@@ -23,7 +24,7 @@ const Landing = () => {
 
     return (
         <div>
-            <h1>Welcome to e-ticketing!</h1>
+            <h1>Ticketing App - Team 4</h1>
             {user != null ? (
                 <div>
                     <h2>Logged in</h2>
