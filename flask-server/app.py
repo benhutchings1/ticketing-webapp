@@ -70,7 +70,7 @@ class SignUp(Resource):
         # user already exists in database?
         db_email_address = User.query.filter_by(email_address=email_address).first()
         if db_email_address is not None:
-            return jsonify({"message": f"The user {email_address} already exits."})
+            return jsonify({"success": False, "message": f"The user {email_address} already exits."})
 
         # add new user
         new_user = User(
@@ -85,7 +85,7 @@ class SignUp(Resource):
             role='user'
         )
         new_user.save()
-        return jsonify({"message": f"User {email_address} created successfully."})
+        return jsonify({"success": True, "message": f"User {email_address} created successfully."})
 
 
 @api.route('/login')
