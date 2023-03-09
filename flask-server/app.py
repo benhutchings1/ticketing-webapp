@@ -6,7 +6,7 @@ from exts import db
 # from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, jwt_required, set_access_cookies, \
-    unset_jwt_cookies
+    unset_jwt_cookies, set_refresh_cookies
 from datetime import datetime
 
 app = Flask(__name__)
@@ -88,7 +88,9 @@ class Login(Resource):
             # Login was successful
             response = jsonify({"status": "success", "message": "Successfully logged in"})
             access_token = create_access_token(identity=db_user.user_id)
+            refresh_token = create_refresh_token(identity=db_user.user_id)
             set_access_cookies(response, access_token)
+            set_refresh_cookies(response, refresh_token)
             return response
 
         # Login failure
