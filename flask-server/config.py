@@ -10,7 +10,6 @@ class Config:
     JWT_SECRET_KEY = config('JWT_SECRET_KEY')
     JWT_CSRF_IN_COOKIES = True
     JWT_TOKEN_LOCATION = "cookies"
-    SQLALCHEMY_TRACK_MODIFICATIONS = config('SQLALCHEMY_TRACK_MODIFICATIONS', cast=bool)
     SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(BASE_DIR, 'main.db')
 
 
