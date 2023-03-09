@@ -100,6 +100,7 @@ class Login(Resource):
 @api.route('/logout')
 class Logout(Resource):
 
+    @jwt_required()
     def post(self):
         response = jsonify({"status": "success", "message": "Successfully logged out"})
         unset_jwt_cookies(response)
