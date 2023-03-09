@@ -6,8 +6,8 @@ from exts import db
 # from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, jwt_required, set_access_cookies, \
-    unset_jwt_cookies, set_refresh_cookies
-from datetime import datetime
+    unset_jwt_cookies, set_refresh_cookies, get_jwt, get_jwt_identity
+from datetime import datetime, timedelta, timezone
 
 app = Flask(__name__)
 app.config.from_object(DevConfig)
@@ -41,6 +41,22 @@ login_model = api.model(
         "password": fields.String(max_length=16)
     }
 )
+
+
+@app.after_request
+def refresh_expiring_jwts(response):
+    try:
+        # Update JWT close to expiring
+        exp_timestamp = get_jwt()["exp"]
+        now = datetime.now(timezone.utc)
+        target_timestamp = datetime.timestamp(now + timedelta(minutes=30))
+        if target_timestamp > exp_timestamp:
+            access_token = create_access_token(identity=get_jwt_identity())
+            set_access_cookies(response, access_token)
+        return response
+    except (RuntimeError, KeyError):
+        # Invalid JWT, return unchanged response
+        return response
 
 
 @api.route('/signup')
