@@ -104,9 +104,7 @@ class Login(Resource):
             # Login was successful
             response = jsonify({"status": "success", "message": "Successfully logged in"})
             access_token = create_access_token(identity=db_user.user_id)
-            refresh_token = create_refresh_token(identity=db_user.user_id)
             set_access_cookies(response, access_token)
-            set_refresh_cookies(response, refresh_token)
             return response
 
         # Login failure
