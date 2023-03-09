@@ -1,11 +1,13 @@
 from flask import Flask, request, jsonify
 from flask_restx import Api,Resource, fields
 from config import DevConfig
-from models import UserTable
+from models import User
 from exts import db
 #from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, jwt_required
+from datetime import datetime
+
 
 app = Flask(__name__)
 app.config.from_object(DevConfig)
@@ -16,32 +18,29 @@ db.init_app(app)
 JWTManager(app)
 api = Api(app, doc='/docs')
 
-
-
-#serilizer for Sign up
+# signup expected input
 signup_model = api.model(
     "SignUp",
     {
-        "userId":fields.Integer(),
-        "firstName":fields.String(),
-        "surName":fields.String(),
-        "emailAddress":fields.String(),
-        "password":fields.String()
+        "email_address":fields.String(max_length=100), #max_length=100
+        "password":fields.String(max_length=16),
+        "firstname":fields.String(max_length=20),
+        "surname":fields.String(max_length=20),
+        "date_of_birth":fields.Date(),
+        "postcode":fields.String(max_length=7),
+        "phone_number":fields.String(max_length=14),
+        "role":fields.String(max_length=100)
     }
 )
 
-#serilizer for Login 
+# Login expected input
 login_model = api.model(
     "LogIn",
     {
-        "userId":fields.Integer(),
-        "password":fields.String()
+        "email_address":fields.String(max_length=100),
+        "password":fields.String(max_length=16)
     }
 )
-
-
-
-
 
 
 @api.route('/signup')
@@ -49,30 +48,29 @@ class SignUp(Resource):
 
     @api.expect(signup_model)
     def post(self):
+        
         data = request.get_json()
-
-        userId = data.get('userId')
-
+        email_address = data.get('email_address')
+  
         # user already exists in database?
-        db_user = UserTable.query.filter_by(userId=userId).first()
-        if db_user is not None:
-            return jsonify({"message" : f"The user {userId} already exits."})
+        db_email_address = User.query.filter_by(email_address=email_address).first()
+        if db_email_address is not None:
+            return jsonify({"message" : f"The user {email_address} already exits."})
 
-
-        new_user = UserTable(
-            userId = data.get('userId'),
-            firstName = data.get('firstName'),
-            surName = data.get('surName'),
-            emailAddress = data.get('emailAddress'),
-            # We need a random salt here to mitiage offline birthday attacks
-            password = generate_password_hash(data.get('password'))
+        # add new user
+        new_user = User(
+            email_address = data.get('email_address'),
+            # salted hash
+            passwd_hash = generate_password_hash(data.get('password'), method="sha256", salt_length=32), 
+            firstname = data.get('firstname'),
+            surname = data.get('surname'),
+            date_of_birth = datetime.strptime(data.get('date_of_birth'), "%Y-%m-%d").date(),
+            postcode = data.get('postcode'),
+            phone_number = data.get('phone_number'),
+            role = data.get('phone_number')
         )
         new_user.save()
-
-        return jsonify({"message" : f"User {userId} created successsfully."})
-
-
-
+        return jsonify({"message" : f"User {email_address} created successsfully."})
 
 
 @api.route('/login')
@@ -82,16 +80,16 @@ class Login(Resource):
     def post(self):
         data = request.get_json()
 
-        userId = data.get('userId')
+        email_address = data.get('email_address')
         password = data.get('password')
 
-        db_user = UserTable.query.filter_by(userId=userId).first()
+        db_user = User.query.filter_by(email_address=email_address).first()
         #if db_user is None:
         #    return jsonify({"message" : f"The userId {userId} does not exist"})
 
-        if db_user and check_password_hash(db_user.password, password):
-            access_token = create_access_token(identity=db_user.userId)
-            refresh_token = create_refresh_token(identity=db_user.userId)
+        if db_user and check_password_hash(db_user.passwd_hash, password):
+            access_token = create_access_token(identity=db_user.user_id) # or db_user.email_address?
+            refresh_token = create_refresh_token(identity=db_user.user_id)
 
             return jsonify(
                 {
@@ -99,19 +97,20 @@ class Login(Resource):
                 "refresh_token": refresh_token
                 }
             )
-        # return ? in case of failure
+        return jsonify({"message" : "Enter correct email & pass or sign up"})
 
 
 
-'''
+
 @app.shell_context_processor
 def make_shell_context():
     return {
         "db": db,
-        "UserTable": UserTable
+        "UserTable": User
     }
 
-'''
-
 if __name__ == '__main__':
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
     app.run()
