@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_restx import Api, Resource, fields
-from config import DevConfig
+from config import current_config
 from models import User, TokenBlocklist
 from exts import db
 # from flask_migrate import Migrate
@@ -10,7 +10,7 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required, se
 from datetime import datetime, timedelta, timezone
 
 app = Flask(__name__)
-app.config.from_object(DevConfig)
+app.config.from_object(current_config)
 db.init_app(app)
 # migrate=Migrate(app,db)
 

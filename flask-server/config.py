@@ -11,6 +11,7 @@ class Config:
     JWT_CSRF_IN_COOKIES = True
     JWT_TOKEN_LOCATION = "cookies"
     SQLALCHEMY_TRACK_MODIFICATIONS = config('SQLALCHEMY_TRACK_MODIFICATIONS', cast=bool)
+    SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(BASE_DIR, 'main.db')
 
 
 class DevConfig(Config):
@@ -20,3 +21,6 @@ class DevConfig(Config):
     JWT_TOKEN_LOCATION = "cookies"
     SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(BASE_DIR, 'dev.db')
     DEBUG = True
+
+
+current_config = DevConfig if config('DEV_MODE', cast=bool, default=False) else Config
