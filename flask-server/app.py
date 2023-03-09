@@ -5,7 +5,8 @@ from models import User
 from exts import db
 # from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, jwt_required, set_access_cookies
+from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, jwt_required, set_access_cookies, \
+    unset_jwt_cookies
 from datetime import datetime
 
 app = Flask(__name__)
@@ -92,6 +93,15 @@ class Login(Resource):
 
         # Login failure
         return jsonify({"status": "failure", "message": "Incorrect email/password"})
+
+
+@api.route('/logout')
+class Logout(Resource):
+
+    def post(self):
+        response = jsonify({"status": "success", "message": "Successfully logged out"})
+        unset_jwt_cookies(response)
+        return response
 
 
 @app.shell_context_processor
