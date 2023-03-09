@@ -1,161 +1,149 @@
 from exts import db
 
-# user table
-class UserTable(db.Model):
-    userId = db.Column(db.Integer(), primary_key=True, nullable=False)
-    firstName = db.Column(db.String(20), nullable=False)
-    surName = db.Column(db.String(20), nullable=False)
-    #dateOfBirth = db.Column(db.Date, nullable=False)
-    #postCode = db.Column(db.String(6), nullable=False)
-    #phoneNumber = db.Column(db.String(10), nullable=False)
-    emailAddress = db.Column(db.String(100), nullable=False)
-    #role = db.Column(db.Text(), nullable=False)
-    password = db.Column(db.String(100), nullable=False)
+# User model
+class User(db.Model):
+    user_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    email_address = db.Column(db.String(100), nullable=False, unique=True)
+    password = db.Column(db.String(100), nullable=False) # HASH(passowrd + random salt)
+    #firstname = db.Column(db.String(20), nullable=False)
+    #surname = db.Column(db.String(20), nullable=False)
+    #data_of_birth = db.Column(db.Date)
+    #postcode = db.Column(db.String(7))
+    #phone_number = db.Column(db.String(14), unique=True)
+    #role = db.Column(db.String(20), nullable=False)
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    #def update(self, email_address, password, postcode, phone_number):
+    #    self.email_address = email_address
+    #    self.password = password
+    #    self.postcode = postcode
+    #    self.phone_number = phone_number
+    #    db.session.commit()
+
+
+# Venue model
+class Venue(db.Model):
+    venue_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    name = db.Column(db.String(100), nullable=False)
+    location = db.Column(db.String(200), nullable=False)
+    postcode = db.Column(db.String(7), nullable=False)
+    capacity = db.Column(db.Integer())
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+        
+    def update(self, name, location, postcode, capacity):
+        self.name = name
+        self.location = location
+        self.postcode = postcode
+        self.capacity = capacity
+        db.session.commit()
+
+
+# Artist model
+class Artist(db.Model):
+    artist_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    firstname = db.Column(db.String(20), nullable=False)
+    surname = db.Column(db.String(20), nullable=False)
+
 
     #def __repr__(self):
     #    pass
     def save(self):
         db.session.add(self)
         db.session.commit()
+
     def delete(self):
         db.session.delete(self)
         db.session.commit()
-    def update(self, userId, firstName, surName, dateOfBirth, postCode, phoneNumber, emailAddress, role):
-        self.title = userId
-        self.firstName = firstName
-        self.surName = surName
-        self.dateOfBirth = dateOfBirth
-        self.postCode = postCode
-        self.phoneNumber = phoneNumber
-        self.phoneNumber = phoneNumber
-        self.role = role
+
+    def update(self, firstname, surname):
+        self.firstname = firstname
+        self.surname = surname
         db.session.commit()
 
-'''
 
-# event table
-class EventTable(db.Model):
-    eventId = db.Column(db.Integer(), primary_key=True ,nullable=False)
-    eventName = db.Column(db.String(), nullable=False)
-    venueId = db.Column(db.Integer(), nullable=False) # or venue object or type Venue?
+
+# Event model
+class Event(db.Model):
+    event_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    venue_id = db.Column(db.Integer(), db.ForeignKey('venue.venue_id'), nullable=False)
+    artist_id = db.Column(db.Integer(), db.ForeignKey('venue.venue_id'), nullable=False)
+    event_name = db.Column(db.String(100), nullable=False)
     date = db.Column(db.Date, nullable=False)
-    #time = db.Column(db.Time, nullable=False, default=time(0, 0))
-    artistId = db.Column(db.Integer(), nullable=False)
-    description = db.Column(db.Text(800), nullable=False)
+    time = db.Column(db.Time, nullable=False)
+    genre = db.Column(db.String(100))
+    description = db.Column(db.String(1000)) # db.Text() . Overflow?
 
-    #def __repr__(self):
-    #    pass
     def save(self):
         db.session.add(self)
         db.session.commit()
+
     def delete(self):
         db.session.delete(self)
         db.session.commit()
-    def update(self, eventId, eventName, venueId, date, time, artistId, description ):
-        self.eventId = eventId
-        self.eventName = eventName
-        self.venueId = venueId
+
+    def update(self, event_name, date, time, genre, description):
+        self.event_name = event_name
+        self.date = date
         self.time = time
-        self.artistId = artistId
+        self.genre = genre
         self.description = description
         db.session.commit()
 
 
 
-# tickets table
-class TicketTable(db.Model):
-    ticketTypeId = db.Column(db.Integer(), primary_key=True ,nullable=False)
-    eventId = db.Column(db.Integer(), primary_key=True ,nullable=False)
-    ticketName = db.Column(db.String(), nullable=False)
-    ticketDescription = db.Column(db.Text(800), nullable=False)
+# model for info about ticket types
+class EventTicket(db.Model):
+    ticket_type_id = db.Column(db.Integer(), primary_key=True) # autoincrement=True, not supported with joint pk
+    event_id = db.Column(db.Integer(), db.ForeignKey('event.event_id'), primary_key=True)
+    ticket_name = db.Column(db.String(40), nullable=False)
+    ticket_description = db.Column(db.String(1000), nullable=False)
 
-    #def __repr__(self):
-    #    pass
     def save(self):
         db.session.add(self)
         db.session.commit()
+
     def delete(self):
         db.session.delete(self)
         db.session.commit()
-    def update(self, ticketTypeId, eventId, ticketName, ticketDescription ):
-        self.ticketTypeId = ticketTypeId
-        self.eventId = eventId
-        self.ticketName = ticketName
-        self.ticketDescription = ticketDescription
+
+    def update(self, ticket_name, ticket_description):
+        self.ticket_name = ticket_name
+        self.ticket_description = ticket_description
         db.session.commit()
 
 
 
-# venue table
-class VenueTable(db.Model):
-    venueId = db.Column(db.Integer(), primary_key=True ,nullable=False)
-    location = db.Column(db.String(), nullable=False)
-    name = db.Column(db.String(), nullable=False)
-    postCode = db.Column(db.String(6), nullable=False)
-    capacity = db.Column(db.Integer(), nullable=True)
-    #def __repr__(self):
-    #    pass
-    def save(self):
-        db.session.add(self)
-        db.session.commit()
-    def delete(self):
-        db.session.delete(self)
-        db.session.commit()
-    def update(self, venueId, name, postCode, capacity ):
-        self.venueId = venueId
-        self.name = name
-        self.postCode = postCode
-        self.capacity = capacity
-        db.session.commit()
-
-
-
-# artist table
-class ArtistTable(db.Model):
-    artistId = db.Column(db.Integer(), primary_key=True, nullable=False)
-    artistFirstName = db.Column(db.String(), nullable=False)
-    artistSurName = db.Column(db.String(), nullable=False)
-
-
-    #def __repr__(self):
-    #    pass
-    def save(self):
-        db.session.add(self)
-        db.session.commit()
-    def delete(self):
-        db.session.delete(self)
-        db.session.commit()
-    def update(self, artistFirstName, artistSurName):
-        self.artistFirstName = artistFirstName
-        self.artistSurName = artistSurName
-        db.session.commit()
-
-
-
-# user ticket table
-class UserTicketTable(db.Model):
-    ticketId = db.Column(db.Integer(), primary_key=True ,nullable=False)
-    eventId = db.Column(db.Integer(),nullable=False)
-    userId = db.Column(db.Integer(), nullable=False)
+# model for tickets to be generated for specific user
+class UserTicket(db.Model):
+    ticket_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    event_id = db.Column(db.Integer(), db.ForeignKey('event.event_id'), nullable=False)
+    user_id =  db.Column(db.Integer(), db.ForeignKey('user.user_id'), nullable=False)
+    ticket_type_id = db.Column(db.Integer(), db.ForeignKey('event_ticket.ticket_type_id'), nullable=False)
     cipherkey = db.Column(db.String(), nullable=False)
-    ticketTypeId = db.Column(db.Integer(), nullable=False)
     valid = db.Column(db.Boolean, nullable=False)
-    db.session.commit()
 
     #def __repr__(self):
     #    pass
     def save(self):
         db.session.add(self)
         db.session.commit()
+
     def delete(self):
         db.session.delete(self)
         db.session.commit()
-    def update(self, ticketId, eventId, userId, cipherkey, ticketTypeId, valid ):
-        self.ticketId = ticketId
-        self.eventId = eventId
-        self.userId = userId
-        self.cipherkey = cipherkey
-        self.ticketTypeId = ticketTypeId
-        self.valid = valid
-        db.session.commit()
-'''
+
+
