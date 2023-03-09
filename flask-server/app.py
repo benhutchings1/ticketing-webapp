@@ -6,7 +6,7 @@ from exts import db
 # from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, set_access_cookies, \
-    unset_jwt_cookies, get_jwt, get_jwt_identity
+    unset_jwt_cookies, get_jwt, get_jwt_identity, current_user
 from datetime import datetime, timedelta, timezone
 
 app = Flask(__name__)
@@ -15,7 +15,7 @@ db.init_app(app)
 # migrate=Migrate(app,db)
 
 # initializing a JWTManager with this app
-JWTManager(app)
+jwt = JWTManager(app)
 api = Api(app, doc='/docs')
 
 # signup expected input
@@ -41,6 +41,12 @@ login_model = api.model(
         "password": fields.String(max_length=16)
     }
 )
+
+
+@jwt.user_lookup_loader
+def user_lookup_callback(_jwt_header, jwt_data):
+    identity = jwt_data["sub"]
+    return User.query.filter_by(user_id=identity).one_or_none()
 
 
 @app.after_request
@@ -119,6 +125,19 @@ class Logout(Resource):
         response = jsonify({"success": True, "message": "Successfully logged out"})
         unset_jwt_cookies(response)
         return response
+
+
+@api.route('/account')
+class Account(Resource):
+
+    @jwt_required()
+    def get(self):
+        return jsonify({"email": current_user.email_address,
+                        "firstname": current_user.firstname,
+                        "surname": current_user.surname,
+                        "date_of_birth": current_user.date_of_birth,
+                        "postcode": current_user.postcode,
+                        "phone_number": current_user.phone_number})
 
 
 @app.shell_context_processor
