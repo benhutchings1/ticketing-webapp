@@ -1,5 +1,6 @@
 from exts import db
 
+
 # User model
 class User(db.Model):
     user_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
@@ -43,7 +44,7 @@ class Venue(db.Model):
     def delete(self):
         db.session.delete(self)
         db.session.commit()
-        
+
     def update(self, name, location, postcode, capacity):
         self.name = name
         self.location = location
@@ -58,9 +59,6 @@ class Artist(db.Model):
     firstname = db.Column(db.String(20), nullable=False)
     surname = db.Column(db.String(20), nullable=False)
 
-
-    #def __repr__(self):
-    #    pass
     def save(self):
         db.session.add(self)
         db.session.commit()
@@ -75,7 +73,6 @@ class Artist(db.Model):
         db.session.commit()
 
 
-
 # Event model
 class Event(db.Model):
     event_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
@@ -85,7 +82,7 @@ class Event(db.Model):
     date = db.Column(db.Date, nullable=False)
     time = db.Column(db.Time, nullable=False)
     genre = db.Column(db.String(100))
-    description = db.Column(db.String(1000)) # db.Text() . Overflow?
+    description = db.Column(db.String(1000))  # db.Text() . Overflow?
 
     def save(self):
         db.session.add(self)
@@ -104,10 +101,9 @@ class Event(db.Model):
         db.session.commit()
 
 
-
 # model for info about ticket types
 class EventTicket(db.Model):
-    ticket_type_id = db.Column(db.Integer(), primary_key=True) # autoincrement=True, not supported with joint pk
+    ticket_type_id = db.Column(db.Integer(), primary_key=True)  # autoincrement=True, not supported with joint pk
     event_id = db.Column(db.Integer(), db.ForeignKey('event.event_id'), primary_key=True)
     ticket_name = db.Column(db.String(40), nullable=False)
     ticket_description = db.Column(db.String(1000), nullable=False)
@@ -126,18 +122,15 @@ class EventTicket(db.Model):
         db.session.commit()
 
 
-
 # model for tickets to be generated for specific user
 class UserTicket(db.Model):
     ticket_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
     event_id = db.Column(db.Integer(), db.ForeignKey('event.event_id'), nullable=False)
-    user_id =  db.Column(db.Integer(), db.ForeignKey('user.user_id'), nullable=False)
+    user_id = db.Column(db.Integer(), db.ForeignKey('user.user_id'), nullable=False)
     ticket_type_id = db.Column(db.Integer(), db.ForeignKey('event_ticket.ticket_type_id'), nullable=False)
-    cipherkey = db.Column(db.String(), nullable=False)
+    cipher_key = db.Column(db.String(), nullable=False)
     valid = db.Column(db.Boolean, nullable=False)
 
-    #def __repr__(self):
-    #    pass
     def save(self):
         db.session.add(self)
         db.session.commit()
