@@ -102,13 +102,13 @@ class Login(Resource):
 
         if db_user and check_password_hash(db_user.passwd_hash, password):
             # Login was successful
-            response = jsonify({"status": "success", "message": "Successfully logged in"})
+            response = jsonify({"success": True, "message": "Successfully logged in"})
             access_token = create_access_token(identity=db_user.user_id)
             set_access_cookies(response, access_token)
             return response
 
         # Login failure
-        return jsonify({"status": "failure", "message": "Incorrect email/password"})
+        return jsonify({"success": False, "message": "Incorrect email/password"})
 
 
 @api.route('/logout')
@@ -116,7 +116,7 @@ class Logout(Resource):
 
     @jwt_required()
     def post(self):
-        response = jsonify({"status": "success", "message": "Successfully logged out"})
+        response = jsonify({"success": True, "message": "Successfully logged out"})
         unset_jwt_cookies(response)
         return response
 
