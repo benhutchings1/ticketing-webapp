@@ -66,7 +66,7 @@ class SignUp(Resource):
             date_of_birth=datetime.strptime(data.get('date_of_birth'), "%Y-%m-%d").date(),
             postcode=data.get('postcode'),
             phone_number=data.get('phone_number'),
-            role=data.get('phone_number')
+            role='user'
         )
         new_user.save()
         return jsonify({"message": f"User {email_address} created successfully."})
