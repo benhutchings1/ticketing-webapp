@@ -9,6 +9,7 @@ class Config:
     SECRET_KEY = config('SECRET_KEY')
     JWT_SECRET_KEY = config('JWT_SECRET_KEY')
     JWT_CSRF_IN_COOKIES = True
+    JWT_TOKEN_LOCATION = "cookies"
     SQLALCHEMY_TRACK_MODIFICATIONS = config('SQLALCHEMY_TRACK_MODIFICATIONS', cast=bool)
 
 
@@ -16,5 +17,6 @@ class DevConfig(Config):
     SECRET_KEY = config('SECRET_KEY')
     JWT_SECRET_KEY = config('JWT_SECRET_KEY')
     JWT_CSRF_IN_COOKIES = True
+    JWT_TOKEN_LOCATION = "cookies"
     SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(BASE_DIR, 'dev.db')
     DEBUG = True
