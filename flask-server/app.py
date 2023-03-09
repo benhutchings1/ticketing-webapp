@@ -5,7 +5,7 @@ from models import User
 from exts import db
 # from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, jwt_required
+from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, jwt_required, set_access_cookies
 from datetime import datetime
 
 app = Flask(__name__)
@@ -82,20 +82,16 @@ class Login(Resource):
         password = data.get('password')
 
         db_user = User.query.filter_by(email_address=email_address).first()
-        # if db_user is None:
-        #    return jsonify({"message" : f"The userId {userId} does not exist"})
 
         if db_user and check_password_hash(db_user.passwd_hash, password):
-            access_token = create_access_token(identity=db_user.user_id)  # or db_user.email_address?
-            refresh_token = create_refresh_token(identity=db_user.user_id)
+            # Login was successful
+            response = jsonify({"status": "success", "message": "Successfully logged in"})
+            access_token = create_access_token(identity=db_user.user_id)
+            set_access_cookies(response, access_token)
+            return response
 
-            return jsonify(
-                {
-                    "acess_token": access_token,
-                    "refresh_token": refresh_token
-                }
-            )
-        return jsonify({"message": "Enter correct email & pass or sign up"})
+        # Login failure
+        return jsonify({"status": "failure", "message": "Incorrect email/password"})
 
 
 @app.shell_context_processor
