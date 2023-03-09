@@ -28,8 +28,7 @@ signup_model = api.model(
         "surname": fields.String(max_length=20),
         "date_of_birth": fields.Date(),
         "postcode": fields.String(max_length=7),
-        "phone_number": fields.String(max_length=14),
-        "role": fields.String(max_length=100)
+        "phone_number": fields.String(max_length=14)
     }
 )
 
