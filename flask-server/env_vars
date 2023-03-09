@@ -1,2 +1,0 @@
-$Env:FLASK_APP="app.py"
-$Env:FLASK_DEBUG=1
