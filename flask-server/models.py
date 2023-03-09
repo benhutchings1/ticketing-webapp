@@ -5,12 +5,12 @@ class User(db.Model):
     user_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
     email_address = db.Column(db.String(100), nullable=False, unique=True)
     password = db.Column(db.String(100), nullable=False) # HASH(passowrd + random salt)
-    #firstname = db.Column(db.String(20), nullable=False)
-    #surname = db.Column(db.String(20), nullable=False)
-    #data_of_birth = db.Column(db.Date)
-    #postcode = db.Column(db.String(7))
-    #phone_number = db.Column(db.String(14), unique=True)
-    #role = db.Column(db.String(20), nullable=False)
+    firstname = db.Column(db.String(20), nullable=False)
+    surname = db.Column(db.String(20), nullable=False)
+    date_of_birth = db.Column(db.Date)
+    postcode = db.Column(db.String(7))
+    phone_number = db.Column(db.String(14), unique=True)
+    role = db.Column(db.String(20), nullable=False)
 
     def save(self):
         db.session.add(self)
@@ -20,12 +20,12 @@ class User(db.Model):
         db.session.delete(self)
         db.session.commit()
 
-    #def update(self, email_address, password, postcode, phone_number):
-    #    self.email_address = email_address
-    #    self.password = password
-    #    self.postcode = postcode
-    #    self.phone_number = phone_number
-    #    db.session.commit()
+    def update(self, email_address, password, postcode, phone_number):
+        self.email_address = email_address
+        self.password = password
+        self.postcode = postcode
+        self.phone_number = phone_number
+        db.session.commit()
 
 
 # Venue model
@@ -145,5 +145,3 @@ class UserTicket(db.Model):
     def delete(self):
         db.session.delete(self)
         db.session.commit()
-
-
