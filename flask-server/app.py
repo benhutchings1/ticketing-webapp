@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_restx import Api, Resource, fields
 from config import DevConfig
-from models import User
+from models import User, TokenBlocklist
 from exts import db
 # from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -49,9 +49,21 @@ def user_lookup_callback(_jwt_header, jwt_data):
     return User.query.filter_by(user_id=identity).one_or_none()
 
 
+@jwt.token_in_blocklist_loader
+def check_if_token_blocked(jwt_header, jwt_payload: dict) -> bool:
+    # Checks if token is in blocked list
+    jti = jwt_payload["jti"]
+    token = db.session.query(TokenBlocklist.id).filter_by(jti=jti).scalar()
+    return token is not None
+
+
 @app.after_request
 def refresh_expiring_jwts(response):
     try:
+        if response.json.get('logout', False):
+            # Do nothing if logging out
+            return response
+
         # Update JWT close to expiring
         exp_timestamp = get_jwt()["exp"]
         now = datetime.now(timezone.utc)
@@ -122,8 +134,15 @@ class Logout(Resource):
 
     @jwt_required()
     def post(self):
-        response = jsonify({"success": True, "message": "Successfully logged out"})
+        # Unset cookies
+        response = jsonify({"success": True, "message": "Successfully logged out", "logout": True})
         unset_jwt_cookies(response)
+
+        # Revoke cookie
+        jti = get_jwt()["jti"]
+        db.session.add(TokenBlocklist(jti=jti, created_at=datetime.now(timezone.utc)))
+        db.session.commit()
+
         return response
 
 
