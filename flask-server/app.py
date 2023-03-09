@@ -68,7 +68,7 @@ class SignUp(Resource):
             role=data.get('phone_number')
         )
         new_user.save()
-        return jsonify({"message": f"User {email_address} created successsfully."})
+        return jsonify({"message": f"User {email_address} created successfully."})
 
 
 @api.route('/login')
