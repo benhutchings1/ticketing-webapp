@@ -63,6 +63,7 @@ class Event(db.Model):
     time = db.Column(db.String(20)) #db.Column(db.Time, nullable=False)   string is easier to marshal/jsonify
     genre = db.Column(db.String(100))
     description = db.Column(db.String(1000))  # db.Text() . Overflow?
+    venue = db.relationship(Venue)
 
     def save(self):
         db.session.add(self)
