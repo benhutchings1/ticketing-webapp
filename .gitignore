@@ -28,3 +28,4 @@ yarn-error.log*
 /flask-server/env_vars
 /frontend/node_modules/
 .idea
+./venv/
