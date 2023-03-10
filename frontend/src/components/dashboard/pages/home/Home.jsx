@@ -1,18 +1,20 @@
 import {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
-import {getUser} from "../../../../helpers/checkUser";
+import './home.css';
 
 const Home = (props) => {
-    const [user, setUser] = useState(null);
+    const user = props.user;
+    const setUser = props.setUser;
 
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (getUser() != null) {
-            setUser(getUser());
-        } else {
-            navigate("/")
-        }
+        setUser([]) // for testing purposes
+        // if (getUser() != null) {
+        //     setUser(getUser());
+        // } else {
+        //     navigate("/")
+        // }
     }, []);
 
     return (

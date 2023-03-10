@@ -3,7 +3,10 @@ import httpClient from "../../httpClient";
 import {useNavigate} from "react-router-dom";
 import "./login.css";
 
-const Login = () => {
+const Login = (props) => {
+    const user = props.user;
+    const setUser = props.setUser;
+
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loginError, setLoginError] = useState({});

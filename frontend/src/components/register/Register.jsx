@@ -3,30 +3,31 @@ import httpClient from "../../httpClient";
 import {useNavigate} from "react-router-dom";
 import "./register.css";
 
-const Register = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [address, setAddress] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState(0);
+const Register = (props) => {
+    const user = props.user;
+    const setUser = props.setUser;
 
-  const navigate = useNavigate();
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [checkPassword, setCheckPassword] = useState("");
+    const [address, setAddress] = useState("");
+    const [phoneNumber, setPhoneNumber] = useState(0);
 
-  const registerUser = async () => {
-    try {
-      const resp = await httpClient.post("//localhost:5000/register", {
-        email,
-        password,
-        address,
-        phoneNumber
-      });
-
-      navigate("/home")
-    } catch (error) {
-      if (error.response.status === 401) {
-        alert("Invalid credentials");
+    const registerUser = async () => {
+      try {
+        const resp = await httpClient.post("//localhost:5000/register", {
+          email,
+          password,
+          address,
+          phoneNumber
+        });
+      }catch (error) {
+        if (error.response.status === 401) {
+            alert("Invalid credentials");
+        }
       }
     }
-  };
+    const navigate = useNavigate();
 
   return (
     <div className='box'>
