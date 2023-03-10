@@ -60,6 +60,16 @@ event_model = api.model(
     }
 )
 
+# /addticket expected input model
+addTicketInput = api.model(
+    "AddTicket",
+    {
+        "userID": fields.Integer(required=True, min=0),
+        "eventID": fields.Integer(required=True, min=0),
+        "ticketTypeID": fields.Integer(required=True, min=0),
+        "token": fields.String(required=True, max_length=128)
+    }
+) 
 
 @jwt.user_lookup_loader
 def user_lookup_callback(_jwt_header, jwt_data):
@@ -254,6 +264,57 @@ class EventList(Resource):
     def get(self):
         return Event.query.all()
 
+@api.route('/addticket')
+class AddTicketResource(Resource):
+    def get(self):
+        retry = True
+        while retry:
+            # Generate and store new idepotency token
+            token = utils.generate_token()
+            newToken = IdempotencyTokens(token=token, valid=1)
+            db.session.add(newToken)
+            try:
+                # Throw error if idempotency token already exists
+                db.session.commit()
+                retry = False   
+            except IntegrityError:
+                # Token exists retry generation
+                retry=True
+
+        return jsonify({"key":token})
+    
+    @api.expect(addTicketInput)
+    def post(self):
+        args = request.get_json()
+        # Check if idempotency token exists in table before adding ticket   
+        existing_code = db.session.query(IdempotencyTokens).filter_by(token=args.get("token")).first()
+
+        if existing_code is None:
+            return jsonify({"msg":"Invalid request"})
+        else:
+            # Check if token is still valid
+            if existing_code.valid == 0:
+                return jsonify({"msg":"Invalid token"})
+            
+        # Set token to be invalid
+        existing_code.valid = 0
+        
+        newticket = UserTickets(
+            eventID=args.get("eventID"),
+            ticketTypeID=args.get("ticketTypeID"),
+            userID=args.get("userID"),
+            cipherkey="random", ## Update with chris code
+            valid = 1
+        )
+        db.session.add(newticket)
+
+        # Update new ticket and invalidate idepotency token
+        try:
+            db.session.commit()
+        except:
+            jsonify({"msg":"Error try again"})
+
+        return jsonify({"msg": "Ticket sucessfully added"})
 
 
 @app.shell_context_processor
