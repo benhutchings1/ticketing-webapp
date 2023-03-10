@@ -53,25 +53,6 @@ class Venue(db.Model):
         db.session.commit()
 
 
-# Artist model
-class Artist(db.Model):
-    artist_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
-    firstname = db.Column(db.String(20), nullable=False)
-    surname = db.Column(db.String(20), nullable=False)
-
-    def save(self):
-        db.session.add(self)
-        db.session.commit()
-
-    def delete(self):
-        db.session.delete(self)
-        db.session.commit()
-
-    def update(self, firstname, surname):
-        self.firstname = firstname
-        self.surname = surname
-        db.session.commit()
-
 
 # Event model
 class Event(db.Model):
