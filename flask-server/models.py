@@ -58,7 +58,6 @@ class Venue(db.Model):
 class Event(db.Model):
     event_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
     venue_id = db.Column(db.Integer(), db.ForeignKey('venue.venue_id'), nullable=False)
-    artist_id = db.Column(db.Integer(), db.ForeignKey('venue.venue_id'), nullable=False)
     event_name = db.Column(db.String(100), nullable=False)
     date = db.Column(db.Date, nullable=False)
     time = db.Column(db.String(20)) #db.Column(db.Time, nullable=False)   string is easier to marshal/jsonify
