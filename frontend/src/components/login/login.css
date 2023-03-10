@@ -1,0 +1,22 @@
+input, label {
+    display: block;
+}
+
+label {
+    text-align: left;
+}
+
+input {
+    margin-bottom: 20px;
+}
+
+
+.input-container {
+    text-align: left;
+    display: inline-block;
+}
+
+.login-form {
+    border: 1px solid black;
+    text-align: center;
+}

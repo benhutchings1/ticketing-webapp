@@ -1,11 +1,11 @@
 import React, {useState} from 'react'
 import httpClient from "../../httpClient";
 import {useNavigate} from "react-router-dom";
+import "./register.css";
 
 const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [checkPassword, setCheckPassword] = useState("");
   const [address, setAddress] = useState("");
   const [phoneNumber, setPhoneNumber] = useState(0);
 
@@ -16,6 +16,8 @@ const Register = () => {
       const resp = await httpClient.post("//localhost:5000/register", {
         email,
         password,
+        address,
+        phoneNumber
       });
 
       navigate("/home")
@@ -27,35 +29,65 @@ const Register = () => {
   };
 
   return (
-    <div>
-      <h1>Create an account</h1>
-      <form>
-        <div>
-          <label>Email: </label>
-          <input
-            type="text"
-            value={email}
-            onChange={(e) => {
-              //   check regex for email format
-              setEmail(e.target.value)
-            }}
-            id=""
-          />
-        </div>
-        <div>
-          <label>Password: </label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            id=""
-          />
-        </div>
-        <button type="button" onClick={() => registerUser()}>
-          Submit
-        </button>
+    <div className='box'>
+      <h1>Register</h1>
+      <form className="register-form" onSubmit={registerUser}>
+          <div className='input-container'>
+              <label>Email: </label>
+              <br></br>
+              <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  id="email"
+                  name="email"
+                  placeholder="youremail@gmail.com"
+                  required
+              />
+          </div>
+          <div className='input-container'>
+              <label>Password: </label>
+              <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  id="password"
+                  name="password"
+                  placeholder="********"
+                  required
+              />
+          </div>
+          <div className='input-container'>
+              <label>Address: </label>
+              <input
+                  type="text"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  id="address"
+                  name="address"
+                  placeholder="123 Example Boulevard"
+                  required
+              />
+          </div>
+          <div className='input-container'>
+              <label>Phone Number: </label>
+              <input
+                  type="tel"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  placeholder="07123 456789"
+                  required
+              />
+          </div>
+          <div className='button-container'>
+            <button type="submit">
+                Submit
+            </button>
+          </div>
       </form>
-    </div>
+  </div>
   );
 };
 

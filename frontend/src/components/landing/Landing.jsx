@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react'
 import httpClient from "../../httpClient";
 import {useNavigate} from "react-router-dom";
 import {getUser} from "../../helpers/checkUser";
+import "./landing.css";
 
 const Landing = () => {
     const [user, setUser] = useState(null);
@@ -22,8 +23,8 @@ const Landing = () => {
     }, []);
 
     return (
-        <div>
-            <h1>Welcome to e-ticketing!</h1>
+        <div className='box'>
+            <h1 className='welcome'>Welcome to e-ticketing!</h1>
             {user != null ? (
                 <div>
                     <h2>Logged in</h2>
