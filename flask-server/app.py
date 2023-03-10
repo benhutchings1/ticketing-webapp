@@ -1,12 +1,14 @@
+from functools import wraps
+
 from flask import Flask, request, jsonify
 from flask_restx import Api, Resource, fields
 from config import current_config
-from models import User, Event, Venue, Artist, TokenBlocklist
+from models import User, Event, Venue, TokenBlocklist
 from exts import db
 # from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, set_access_cookies, \
-    unset_jwt_cookies, get_jwt, get_jwt_identity, current_user
+    unset_jwt_cookies, get_jwt, get_jwt_identity, current_user, verify_jwt_in_request
 from datetime import datetime, timedelta, timezone
 
 app = Flask(__name__)
@@ -50,12 +52,11 @@ event_model = api.model(
         "time":fields.String(20), # DateTime(format='%H:%M:%S'),
         "genre":fields.String(max_length=100),
         "description":fields.String(max_length=1000),
-        "venue_name":fields.String(max_length=100),
-        "venue_location":fields.String(max_length=200),
-        "venue_postcode":fields.String(max_length=7),
-        "venue_capacity":fields.Integer(),
-        "artist_firstname":fields.String(max_length=20),
-        "artist_surname":fields.String(max_length=20)
+        "venue_id":fields.Integer(),
+        "venue.name":fields.String(max_length=100),
+        "venue.location":fields.String(max_length=200),
+        "venue.postcode":fields.String(max_length=7),
+        "venue.capacity":fields.Integer()
     }
 )
 
@@ -66,13 +67,24 @@ def user_lookup_callback(_jwt_header, jwt_data):
     return User.query.filter_by(user_id=identity).one_or_none()
 
 
+def management_required(fn):
+    @wraps(fn)
+    @jwt_required()
+    def decorator(*args, **kwargs):
+        if current_user.role == "management":
+            return fn(*args, **kwargs)
+        else:
+            return jsonify({'msg': "Role 'management' is required"})
+
+    return decorator
+
+
 @jwt.token_in_blocklist_loader
 def check_if_token_blocked(jwt_header, jwt_payload: dict) -> bool:
     # Checks if token is in blocked list
     jti = jwt_payload["jti"]
     token = db.session.query(TokenBlocklist.id).filter_by(jti=jti).scalar()
     return token is not None
-
 
 @app.after_request
 def refresh_expiring_jwts(response):
@@ -89,7 +101,7 @@ def refresh_expiring_jwts(response):
             access_token = create_access_token(identity=get_jwt_identity())
             set_access_cookies(response, access_token)
         return response
-    except (RuntimeError, KeyError):
+    except (RuntimeError, KeyError, AttributeError):
         # Invalid JWT, return unchanged response
         return response
 
@@ -184,12 +196,12 @@ To do so, it also adds a new venue & a new artist if not already in DB
 class AddEvent(Resource):
 
     @api.expect(event_model)
+    #@management_required
     def post(self):
         
         data = request.get_json()
         event_name = data.get('event_name')
         venue_name = data.get('venue_name')
-        artist_surname = data.get('artist_surname')
   
         # event already exists in database?
         db_event_name = Event.query.filter_by(event_name=event_name).first()
@@ -209,23 +221,10 @@ class AddEvent(Resource):
             )
             new_venue.save()
             venue_id = new_venue.venue_id
-
-        # add a new artist if not already in DB
-        db_artist = Artist.query.filter_by(surname=artist_surname).first()
-        if db_artist is not None: # if in DB
-            artist_id = db_artist.artist_id
-        else:
-            new_artist = Artist(
-                firstname = data.get('artist_firstname'),
-                surname = data.get('artist_surname')
-            )
-            new_artist.save()
-            artist_id = new_artist.artist_id
-        
+       
         # add a new event
         new_event = Event(
             venue_id = venue_id,
-            artist_id = artist_id,
             event_name = data.get('event_name'),
             date = datetime.strptime(data.get('date'), "%Y-%m-%d").date(),
             time = data.get('time'), #datetime.strptime(data.get('time'), '%H:%M:%S').time(),
@@ -251,11 +250,9 @@ class DeleteEvent(Resource): # HandleEvent class, retrieve/delete by name?
 #                             while they're not null in DB
 @api.route('/event_list')
 class EventList(Resource):
-    #@api.marshal_list_with(event_model)
+    @api.marshal_list_with(event_model)
     def get(self):
-        event_list = Event.query.all()
-        json_list = jsonify([event.serialize() for event in event_list])
-        return json_list
+        return Event.query.all()
 
 
 
