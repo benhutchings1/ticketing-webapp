@@ -104,3 +104,15 @@ class TokenBlocklist(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     jti = db.Column(db.String(36), nullable=False, index=True)
     created_at = db.Column(db.DateTime, nullable=False)
+
+class UserTickets(db.Model):
+    ticketID  = db.Column(db.Integer, primary_key=True)
+    eventID = db.Column(db.Integer)
+    ticketTypeID = db.Column(db.Integer)
+    userID = db.Column(db.Integer)
+    cipherkey = db.Column(db.String)
+    valid = db.Column(db.SmallInteger)
+
+class IdempotencyTokens(db.Model):
+    token = db.Column(db.String, primary_key=True)
+    valid = db.Column(db.SmallInteger)

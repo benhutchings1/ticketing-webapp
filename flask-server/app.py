@@ -1,15 +1,16 @@
 from functools import wraps
-
 from flask import Flask, request, jsonify
 from flask_restx import Api, Resource, fields
 from config import current_config
-from models import User, Event, Venue, TokenBlocklist
+from models import *
 from exts import db
 # from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, set_access_cookies, \
     unset_jwt_cookies, get_jwt, get_jwt_identity, current_user, verify_jwt_in_request
 from datetime import datetime, timedelta, timezone
+import utils
+from sqlalchemy.exc import IntegrityError
 
 app = Flask(__name__)
 app.config.from_object(current_config)
@@ -60,6 +61,34 @@ event_model = api.model(
     }
 )
 
+# /addticket expected input model
+addTicketInput = api.model(
+    "AddTicket",
+    {
+        "userID": fields.Integer(required=True, min=0),
+        "eventID": fields.Integer(required=True, min=0),
+        "ticketTypeID": fields.Integer(required=True, min=0),
+        "token": fields.String(required=True, max_length=128)
+    }
+) 
+
+# Request QR code data input model
+requestQRdataModel = api.model(
+    "RequestQRdata",
+    {
+        "ticketId": fields.Integer(min=0)
+    }
+)
+
+
+# Validate Ticket input model
+validateTicketModel = api.model(
+    "ValidateTicket",
+    {
+        "ticketID": fields.Integer(min=0),
+        "QRdata": fields.String()
+    }
+)
 
 @jwt.user_lookup_loader
 def user_lookup_callback(_jwt_header, jwt_data):
@@ -254,7 +283,71 @@ class EventList(Resource):
     def get(self):
         return Event.query.all()
 
+@api.route('/addticket')
+class AddTicketResource(Resource):
+    def get(self):
+        retry = True
+        while retry:
+            # Generate and store new idepotency token
+            token = utils.generate_token()
+            newToken = IdempotencyTokens(token=token, valid=1)
+            db.session.add(newToken)
+            try:
+                # Throw error if idempotency token already exists
+                db.session.commit()
+                retry = False   
+            except IntegrityError:
+                # Token exists retry generation
+                retry=True
 
+        return jsonify({"key":token})
+    
+    @api.expect(addTicketInput)
+    def post(self):
+        args = request.get_json()
+        # Query table for existing token
+        existing_code = db.session.query(IdempotencyTokens).filter_by(token=args.get("token")).first()
+
+        # Check if token exists
+        if existing_code is None:
+            return jsonify({"msg":"Invalid request"})
+        else:
+            # Check if token is still valid
+            if existing_code.valid == 0:
+                return jsonify({"msg":"Invalid token"})
+            
+        # Set token to be invalid
+        existing_code.valid = 0
+        
+        newticket = UserTickets(
+            eventID=args.get("eventID"),
+            ticketTypeID=args.get("ticketTypeID"),
+            userID=args.get("userID"),
+            cipherkey="random", ## Update with chris code
+            valid = 1
+        )
+        db.session.add(newticket)
+        
+        try:
+            # Update new ticket and invalidate idepotency token
+            db.session.commit()
+        except:
+            jsonify({"msg":"Error try again"})
+
+        # Return confirmation message
+        return jsonify({"msg": "Ticket sucessfully added"})
+
+@api.route('/requestQRdata')
+class requestQRdataResource(Resource):
+    @api.expect(requestQRdataModel)
+    def get():
+        pass
+
+@api.route('/validateTicket')
+class validateTicketResource(Resource):
+    @api.expect(validateTicketModel)
+    def get():
+        pass
 
 @app.shell_context_processor
 def make_shell_context():
