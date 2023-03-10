@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_restx import Api, Resource, fields
 from config import current_config
-from models import User, TokenBlocklist
+from models import User, Event, Venue, Artist, TokenBlocklist
 from exts import db
 # from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -157,7 +157,66 @@ class Account(Resource):
                         "postcode": current_user.postcode,
                         "phone_number": current_user.phone_number})
 
+''' 
+This route adds a new event
+To do so, it also adds a new venue & a new artist if not already in DB
+'''
+#@jwt_required
+@api.route('/add_event')
+class AddEvent(Resource):
 
+    #@api.expect(event_model)
+    def post(self):
+        
+        data = request.get_json()
+        event_name = data.get('event_name')
+        venue_name = data.get('venue_name')
+        artist_surname = data.get('artist_surname')
+  
+        # event already exists in database?
+        db_event_name = Event.query.filter_by(event_name=event_name).first()
+        if db_event_name is not None:
+            return jsonify({"message" : f"The event {event_name} already exits."})
+
+        # add new venue if not already in DB
+        db_venue = Venue.query.filter_by(name=venue_name).first()
+        if db_venue is not None: # if in DB
+            venue_id = db_venue.venue_id
+        else:
+            new_venue = Venue(
+                name = data.get('venue_name'),
+                location = data.get('venue_location'),
+                postcode = data.get('venue_postcode'),
+                capacity = data.get('venue_capacity'),
+            )
+            new_venue.save()
+            venue_id = new_venue.venue_id
+
+        # add new artist if not already in DB
+        db_artist = Artist.query.filter_by(surname=artist_surname).first()
+        if db_artist is not None: # if in DB
+            artist_id = db_artist.artist_id
+        else:
+            new_artist = Artist(
+                firstname = data.get('artist_firstname'),
+                surname = data.get('artist_surname')
+            )
+            new_artist.save()
+            artist_id = new_artist.artist_id
+        
+        # add new event
+        # time_obj = 
+        new_event = Event(
+            venue_id = venue_id,
+            artist_id = artist_id,
+            event_name = data.get('event_name'),
+            date = datetime.strptime(data.get('date'), "%Y-%m-%d").date(),
+            time = datetime.strptime(data.get('time'), '%H:%M:%S').time(),
+            genre = data.get('genre'),
+            description = data.get('description'),
+        )
+        new_event.save()
+        return jsonify({"message" : f"Event {event_name} created successsfully."})
 @app.shell_context_processor
 def make_shell_context():
     return {
