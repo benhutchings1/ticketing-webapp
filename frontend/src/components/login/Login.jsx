@@ -33,26 +33,12 @@ const Login = (props) => {
         console.log(email, password);
         event.preventDefault();
 
-        // var { email, password } = document.forms[0];
         try {
-            //TODO: check if email and password are viable
-            // checks if input fields are empty
-            // if ((email.trim() == "") || (password.trim() == "")) {
-            //   alert("Please fill in all input fields");
-            // } else {
-            
-            // if (email.value != database.email){
-            //   setLoginError({ name: "email", message: errors.email});
-            // } else if (password.value != database.password){
-            //   setLoginError({ name: "password", message: errors.password});
-            // } else {
               const resp = await httpClient.post("//localhost:5000/login", {
                   email,
                   password,
               });
               navigate("/home")
-            // }
-            // }
 
         } catch (error) {
             if (error.response.status === 401) {
