@@ -1,4 +1,5 @@
 import './App.css';
+import './AppMobile.css';
 import React, { useState, useEffect } from "react";
 import {BrowserRouter as Router, Navigate, Route, Routes, useNavigate} from "react-router-dom";
 import {Landing, Login, Register} from "./components";

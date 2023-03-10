@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
-import {getUser} from "../../../../helpers/checkUser";
+import './home.css';
 
 const Home = (props) => {
     const user = props.user;

@@ -2,6 +2,8 @@ import React, {useEffect, useState} from 'react'
 import httpClient from "../../httpClient";
 import {useNavigate} from "react-router-dom";
 import {getUser} from "../../helpers/checkUser";
+import './landing.css';
+import './landingMobile.css';
 
 const Landing = (props) => {
     const user = props.user;
@@ -23,8 +25,8 @@ const Landing = (props) => {
     }, []);
 
     return (
-        <div>
-            <h1>Ticketing App - Team 4</h1>
+        <div className={'landingPage'}>
+            <h1>Ticketing App</h1>
             {user != null ? (
                 <div>
                     <h2>Logged in</h2>
@@ -35,13 +37,14 @@ const Landing = (props) => {
                 </div>
             ) : (
                 <div>
-                    <p>You are not logged in</p>
-                    <div>
+                    {/*<p>You are not logged in</p>*/}
+                    <div className={'landingButtons'}>
                         <button onClick={() => {navigate('/login')}}>Login</button>
                         <button onClick={() => {navigate('/register')}}>Register</button>
                     </div>
                 </div>
             )}
+            <div className={'gradient'}></div>
         </div>
     )
 };

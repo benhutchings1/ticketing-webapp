@@ -15,7 +15,7 @@
 
     .innerPageContainer {
         display: flex;
-        height: calc(100% - 62px);
+        height: calc(100vh - 62px);
         /*top: 62px;*/
         position: absolute;
         /*overflow-y: auto;*/

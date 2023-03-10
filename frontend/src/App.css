@@ -22,3 +22,23 @@ body {
     overflow-y: auto;
     overflow-x: hidden;
 }
+
+h1 {
+    font-family: "Gill Sans MT";
+}
+
+button {
+    cursor: pointer;
+    border-radius: 5px;
+    border: none;
+    outline: none;
+    background-color: #ffffff;
+    padding: 10px;
+    filter: brightness(100%);
+    transition: 0.5s;
+}
+
+button:hover {
+    filter: brightness(80%);
+    transition: 0.5s;
+}
