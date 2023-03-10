@@ -34,12 +34,26 @@ const Login = (props) => {
         event.preventDefault();
 
         try {
-              const resp = await httpClient.post("//localhost:5000/login", {
-                  email,
-                  password,
-              });
-              navigate("/home")
+            const data = {
+                email_address: email,
+                password: password
+            }
 
+            const requestOptions = {
+                method: 'POST',
+                mode: "cors",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            };
+
+            const response = await fetch("http://localhost:5000/login", requestOptions)
+            const newData = await response.json();
+
+
+            console.log(newData);
+            if (newData.success === true) {
+              navigate("/home")
+            }
         } catch (error) {
             if (error.response.status === 401) {
                 alert("Invalid credentials");

@@ -9,22 +9,49 @@ const Register = (props) => {
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [firstName, setFirstName] = useState("");
+    const [surname, setSurname] = useState("");
+    const [dob, setDob] = useState("2023-03-10");
     const [checkPassword, setCheckPassword] = useState("");
-    const [address, setAddress] = useState("");
-    const [phoneNumber, setPhoneNumber] = useState(0);
+    const [postcode, setPostcode] = useState("");
+    const [phoneNumber, setPhoneNumber] = useState("074892403");
+
+
 
     const registerUser = async () => {
-      try {
-        const resp = await httpClient.post("//localhost:5000/register", {
-          email,
-          password,
-          address,
-          phoneNumber
-        });
-      }catch (error) {
-        if (error.response.status === 401) {
-            alert("Invalid credentials");
-        }
+        try {
+            const requestOptions = {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    "email_address": email,
+                    "password": password,
+                    "firstname": firstName,
+                    "surname": surname,
+                    "date_of_birth": dob,
+                    "postcode": postcode,
+                    "phone_number": phoneNumber
+                })
+            };
+
+            console.log(requestOptions)
+
+            const response = await fetch("http://localhost:5000/signup", requestOptions)
+            const newData = await response.json();
+
+            console.log(newData);
+            if (newData.success === true) {
+              navigate("/home")
+            }
+        } catch (error) {
+            alert(error)
+            // if (error.response.status === 401) {
+            //     alert("Invalid credentials");
+            // }
       }
     }
     const navigate = useNavigate();
@@ -32,8 +59,7 @@ const Register = (props) => {
   return (
     <div className='box'>
       <h1>Register</h1>
-      <form className="register-form" onSubmit={registerUser}>
-          <div className='input-container'>
+        <div className='input-container'>
               <label>Email: </label>
               <br></br>
               <input
@@ -59,21 +85,57 @@ const Register = (props) => {
               />
           </div>
           <div className='input-container'>
-              <label>Address: </label>
+              <label>First name: </label>
               <input
                   type="text"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  id="address"
-                  name="address"
-                  placeholder="123 Example Boulevard"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  id="firstName"
+                  name="firstName"
+                  placeholder="John"
+                  required
+              />
+          </div>
+          <div className='input-container'>
+              <label>Surname: </label>
+              <input
+                  type="text"
+                  value={surname}
+                  onChange={(e) => setSurname(e.target.value)}
+                  id="surname"
+                  name="surname"
+                  placeholder="Doe"
+                  required
+              />
+          </div>
+          <div className='input-container'>
+              <label>Date of Birth: </label>
+              <input
+                  type="text"
+                  value={dob}
+                  onChange={(e) => setDob(e.target.value)}
+                  id="dob"
+                  name="dob"
+                  placeholder="01/01/1999"
+                  required
+              />
+          </div>
+          <div className='input-container'>
+              <label>Postcode: </label>
+              <input
+                  type="text"
+                  value={postcode}
+                  onChange={(e) => setPostcode(e.target.value)}
+                  id="postcode"
+                  name="postcode"
+                  placeholder="AB12 3CD"
                   required
               />
           </div>
           <div className='input-container'>
               <label>Phone Number: </label>
               <input
-                  type="tel"
+                  type="text"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   id="phoneNumber"
@@ -83,11 +145,10 @@ const Register = (props) => {
               />
           </div>
           <div className='button-container'>
-            <button type="submit">
+            <button onClick={() => {registerUser()}}>
                 Submit
             </button>
           </div>
-      </form>
   </div>
   );
 };

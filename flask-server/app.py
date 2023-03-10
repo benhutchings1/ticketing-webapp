@@ -1,6 +1,7 @@
 from functools import wraps
 
 from flask import Flask, request, jsonify
+from flask_cors import CORS, cross_origin
 from flask_restx import Api, Resource, fields
 from config import current_config
 from models import User, Event, Venue, TokenBlocklist
@@ -12,6 +13,11 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required, se
 from datetime import datetime, timedelta, timezone
 
 app = Flask(__name__)
+cors = CORS(app, supports_credentials=True, resources={
+    r"/login": {"origins": "http://localhost:3000"},
+    r"/signup": {"origins": "http://localhost:3000"},
+    r"/account": {"origins": "http://localhost:3000"}
+})
 app.config.from_object(current_config)
 db.init_app(app)
 # migrate=Migrate(app,db)
@@ -88,6 +94,11 @@ def check_if_token_blocked(jwt_header, jwt_payload: dict) -> bool:
 
 @app.after_request
 def refresh_expiring_jwts(response):
+    response.headers["Access-Control-Allow-Origin"] = "http://localhost:3000"
+    response.headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Origin, Content-Type, Accept, Content-Type, " \
+                                                       "access-control-allow-origin, access-control-allow-credentials"
+    response.headers["Access-Control-Allow-Credentials"] = "true"
     try:
         if response.json.get('logout', False):
             # Do nothing if logging out
@@ -106,10 +117,11 @@ def refresh_expiring_jwts(response):
         return response
 
 
-@api.route('/signup')
+@api.route('/signup', methods=["POST"])
 class SignUp(Resource):
 
     @api.expect(signup_model)
+    @cross_origin(supports_credentials=True, allow_headers=['Access-Control-Allow-Credentials'])
     def post(self):
         data = request.get_json()
         email_address = data.get('email_address')
@@ -132,13 +144,17 @@ class SignUp(Resource):
             role='user'
         )
         new_user.save()
+
         return jsonify({"success": True, "message": f"User {email_address} created successfully."})
+
+
 
 
 @api.route('/login')
 class Login(Resource):
 
     @api.expect(login_model)
+    @cross_origin(allow_headers=['Access-Control-Allow-Credentials'])
     def post(self):
         data = request.get_json()
 
