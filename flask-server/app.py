@@ -18,7 +18,7 @@ db.init_app(app)
 jwt = JWTManager(app)
 api = Api(app, doc='/docs')
 
-# signup expected input
+# /signup expected input
 signup_model = api.model(
     "SignUp",
     {
@@ -32,12 +32,30 @@ signup_model = api.model(
     }
 )
 
-# Login expected input
+# /login expected input
 login_model = api.model(
     "LogIn",
     {
         "email_address": fields.String(max_length=100),
         "password": fields.String(max_length=16)
+    }
+)
+
+# /add_event expected input
+event_model = api.model(
+    "Event",
+    {
+        "event_name":fields.String(max_length=100),
+        "date":fields.Date(),
+        "time":fields.DateTime(format='%H:%M:%S'),
+        "genre":fields.String(max_length=100),
+        "description":fields.String(max_length=1000),
+        "venue_name":fields.String(max_length=100),
+        "venue_location":fields.String(max_length=200),
+        "venue_postcode":fields.String(max_length=7),
+        "venue_capacity":fields.Integer(),
+        "artist_firstname":fields.String(max_length=20),
+        "artist_surname":fields.String(max_length=20)
     }
 )
 
@@ -165,7 +183,7 @@ To do so, it also adds a new venue & a new artist if not already in DB
 @api.route('/add_event')
 class AddEvent(Resource):
 
-    #@api.expect(event_model)
+    @api.expect(event_model)
     def post(self):
         
         data = request.get_json()
@@ -178,7 +196,7 @@ class AddEvent(Resource):
         if db_event_name is not None:
             return jsonify({"message" : f"The event {event_name} already exits."})
 
-        # add new venue if not already in DB
+        # add a new venue if not already in DB
         db_venue = Venue.query.filter_by(name=venue_name).first()
         if db_venue is not None: # if in DB
             venue_id = db_venue.venue_id
@@ -192,7 +210,7 @@ class AddEvent(Resource):
             new_venue.save()
             venue_id = new_venue.venue_id
 
-        # add new artist if not already in DB
+        # add a new artist if not already in DB
         db_artist = Artist.query.filter_by(surname=artist_surname).first()
         if db_artist is not None: # if in DB
             artist_id = db_artist.artist_id
@@ -204,8 +222,7 @@ class AddEvent(Resource):
             new_artist.save()
             artist_id = new_artist.artist_id
         
-        # add new event
-        # time_obj = 
+        # add a new event
         new_event = Event(
             venue_id = venue_id,
             artist_id = artist_id,
@@ -217,6 +234,8 @@ class AddEvent(Resource):
         )
         new_event.save()
         return jsonify({"message" : f"Event {event_name} created successsfully."})
+
+
 @app.shell_context_processor
 def make_shell_context():
     return {
