@@ -236,6 +236,21 @@ class AddEvent(Resource):
         return jsonify({"message" : f"Event {event_name} created successsfully."})
 
 
+# Retrieve event by name/id.   need a route for this?
+
+
+# Delete an event by name.    id instead?
+@api.route('/delete_event/<string:name>')
+class DeleteEvent(Resource): # HandleEvent class, retrieve/delete by name?
+    def delete(self, name):
+        event_to_delete = Event.query.filter_by(event_name=name).first_or_404()
+        #data = request.get_json()
+        event_to_delete.delete()
+        return jsonify({"message" : f"Event {name} deleted successsfully."})
+
+
+
+
 @app.shell_context_processor
 def make_shell_context():
     return {
