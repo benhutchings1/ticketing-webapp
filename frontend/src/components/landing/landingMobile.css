@@ -2,4 +2,9 @@
     .innerPageContainer {
         height: 100vh;
     }
+
+    .box {
+        width: 80vw;
+        padding: 20px
+    }
 }

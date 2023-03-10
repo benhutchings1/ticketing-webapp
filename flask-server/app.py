@@ -53,16 +53,16 @@ login_model = api.model(
 event_model = api.model(
     "Event",
     {
-        "event_name":fields.String(max_length=100),
-        "date":fields.Date(),
-        "time":fields.String(20), # DateTime(format='%H:%M:%S'),
-        "genre":fields.String(max_length=100),
-        "description":fields.String(max_length=1000),
-        "venue_id":fields.Integer(),
-        "venue.name":fields.String(max_length=100),
-        "venue.location":fields.String(max_length=200),
-        "venue.postcode":fields.String(max_length=7),
-        "venue.capacity":fields.Integer()
+        "event_name": fields.String(max_length=100),
+        "date": fields.Date(),
+        "time": fields.String(20),  # DateTime(format='%H:%M:%S'),
+        "genre": fields.String(max_length=100),
+        "description": fields.String(max_length=1000),
+        "venue_id": fields.Integer(),
+        "venue.name": fields.String(max_length=100),
+        "venue.location": fields.String(max_length=200),
+        "venue.postcode": fields.String(max_length=7),
+        "venue.capacity": fields.Integer()
     }
 )
 
@@ -92,12 +92,12 @@ def check_if_token_blocked(jwt_header, jwt_payload: dict) -> bool:
     token = db.session.query(TokenBlocklist.id).filter_by(jti=jti).scalar()
     return token is not None
 
+
 @app.after_request
 def refresh_expiring_jwts(response):
-    response.headers["Access-Control-Allow-Origin"] = "http://localhost:3000"
-    response.headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "Origin, Content-Type, Accept, Content-Type, " \
-                                                       "access-control-allow-origin, access-control-allow-credentials"
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET,HEAD,OPTIONS,POST,PUT"
+    response.headers["Access-Control-Allow-Headers"] = "*"
     response.headers["Access-Control-Allow-Credentials"] = "true"
     try:
         if response.json.get('logout', False):
@@ -148,13 +148,11 @@ class SignUp(Resource):
         return jsonify({"success": True, "message": f"User {email_address} created successfully."})
 
 
-
-
 @api.route('/login')
 class Login(Resource):
 
     @api.expect(login_model)
-    @cross_origin(allow_headers=['Access-Control-Allow-Credentials'])
+    @cross_origin(supports_credentials=True, allow_headers=['Access-Control-Allow-Origin'])
     def post(self):
         data = request.get_json()
 
@@ -165,8 +163,12 @@ class Login(Resource):
 
         if db_user and check_password_hash(db_user.passwd_hash, password):
             # Login was successful
-            response = jsonify({"success": True, "message": "Successfully logged in"})
             access_token = create_access_token(identity=db_user.user_id)
+            response = jsonify({
+                "success": True,
+                "message": "Successfully logged in",
+                "token": access_token
+            })
             set_access_cookies(response, access_token)
             return response
 
@@ -195,6 +197,7 @@ class Logout(Resource):
 class Account(Resource):
 
     @jwt_required()
+    @cross_origin(supports_credentials=True, allow_headers=['Access-Control-Allow-Credentials'])
     def get(self):
         return jsonify({"email": current_user.email_address,
                         "firstname": current_user.firstname,
@@ -203,52 +206,55 @@ class Account(Resource):
                         "postcode": current_user.postcode,
                         "phone_number": current_user.phone_number})
 
+
 ''' 
 This route adds a new event
 To do so, it also adds a new venue & a new artist if not already in DB
 '''
-#@jwt_required
+
+
+# @jwt_required
 @api.route('/add_event')
 class AddEvent(Resource):
 
     @api.expect(event_model)
-    #@management_required
+    # @management_required
     def post(self):
-        
+
         data = request.get_json()
         event_name = data.get('event_name')
         venue_name = data.get('venue_name')
-  
+
         # event already exists in database?
         db_event_name = Event.query.filter_by(event_name=event_name).first()
         if db_event_name is not None:
-            return jsonify({"message" : f"The event {event_name} already exits."})
+            return jsonify({"message": f"The event {event_name} already exits."})
 
         # add a new venue if not already in DB
         db_venue = Venue.query.filter_by(name=venue_name).first()
-        if db_venue is not None: # if in DB
+        if db_venue is not None:  # if in DB
             venue_id = db_venue.venue_id
         else:
             new_venue = Venue(
-                name = data.get('venue_name'),
-                location = data.get('venue_location'),
-                postcode = data.get('venue_postcode'),
-                capacity = data.get('venue_capacity'),
+                name=data.get('venue_name'),
+                location=data.get('venue_location'),
+                postcode=data.get('venue_postcode'),
+                capacity=data.get('venue_capacity'),
             )
             new_venue.save()
             venue_id = new_venue.venue_id
-       
+
         # add a new event
         new_event = Event(
-            venue_id = venue_id,
-            event_name = data.get('event_name'),
-            date = datetime.strptime(data.get('date'), "%Y-%m-%d").date(),
-            time = data.get('time'), #datetime.strptime(data.get('time'), '%H:%M:%S').time(),
-            genre = data.get('genre'),
-            description = data.get('description'),
+            venue_id=venue_id,
+            event_name=data.get('event_name'),
+            date=datetime.strptime(data.get('date'), "%Y-%m-%d").date(),
+            time=data.get('time'),  # datetime.strptime(data.get('time'), '%H:%M:%S').time(),
+            genre=data.get('genre'),
+            description=data.get('description'),
         )
         new_event.save()
-        return jsonify({"message" : f"Event {event_name} created successsfully."})
+        return jsonify({"message": f"Event {event_name} created successsfully."})
 
 
 # Retrieve event by name/id.   need a route for this?
@@ -256,11 +262,12 @@ class AddEvent(Resource):
 
 # Delete an event by name.    id instead?
 @api.route('/delete_event/<string:name>')
-class DeleteEvent(Resource): # HandleEvent class, retrieve/delete by name?
+class DeleteEvent(Resource):  # HandleEvent class, retrieve/delete by name?
     def delete(self, name):
         event_to_delete = Event.query.filter_by(event_name=name).first_or_404()
         event_to_delete.delete()
-        return jsonify({"message" : f"Event {name} deleted successsfully."})
+        return jsonify({"message": f"Event {name} deleted successsfully."})
+
 
 # Get all events.   Need fix: some of the values are returned as null
 #                             while they're not null in DB
@@ -269,7 +276,6 @@ class EventList(Resource):
     @api.marshal_list_with(event_model)
     def get(self):
         return Event.query.all()
-
 
 
 @app.shell_context_processor

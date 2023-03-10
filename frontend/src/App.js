@@ -5,6 +5,7 @@ import {BrowserRouter as Router, Navigate, Route, Routes, useNavigate} from "rea
 import {Landing, Login, Register} from "./components";
 import {Account, Home, Shop} from "./components/dashboard/pages";
 import {Navbar} from "./components/dashboard";
+import {setAuthToken} from "./helpers/setAuthToken";
 
 function App() {
     const [user, setUser] = useState(null);
@@ -20,6 +21,14 @@ function App() {
         let vh = window.innerHeight * 0.01;
         document.documentElement.style.setProperty('--vh', `${vh}px`);
     });
+
+    useEffect(() => {
+         const token = localStorage.getItem("access_token_cookie");
+         console.log(token)
+         if (token) {
+             setAuthToken(token);
+         }
+    }, [])
 
     return (
         <div className="App">

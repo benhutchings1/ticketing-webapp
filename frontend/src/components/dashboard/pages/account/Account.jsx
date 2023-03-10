@@ -10,15 +10,20 @@ const Account = (props) => {
 
     useEffect(() => {
         if (getUser() != null) {
-            setUser(getUser());
+            getUser().then(r => {
+                setUser(r);
+            })
         } else {
             navigate("/")
         }
     }, []);
 
     return (
-        <div>
+        <div className={'contentContainer'}>
             ACCOUNT
+            <div>
+                {user.email}
+            </div>
         </div>
     )
 }

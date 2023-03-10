@@ -2,6 +2,9 @@ import React, {useState} from 'react'
 import httpClient from "../../httpClient";
 import {useNavigate} from "react-router-dom";
 import "./login.css";
+import {getUser} from "../../helpers/checkUser";
+import {setAuthToken} from "../../helpers/setAuthToken";
+import axios from "axios";
 
 const Login = (props) => {
     const user = props.user;
@@ -29,10 +32,7 @@ const Login = (props) => {
 
     const navigate = useNavigate();
 
-    const logInUser = async (event) => {
-        console.log(email, password);
-        event.preventDefault();
-
+    const logInUser = async () => {
         try {
             const data = {
                 email_address: email,
@@ -47,25 +47,28 @@ const Login = (props) => {
             };
 
             const response = await fetch("http://localhost:5000/login", requestOptions)
-            const newData = await response.json();
+            const userData = await response.json();
 
+            console.log(userData);
+            if (userData.success === true) {
+                const token = userData.token;
+                localStorage.setItem("access_token_cookie", token);
+                setAuthToken(token);
 
-            console.log(newData);
-            if (newData.success === true) {
-              navigate("/home")
+                getUser(token).then(r => {
+                    setUser(r);
+                    navigate("/home");
+                })
             }
         } catch (error) {
-            if (error.response.status === 401) {
-                alert("Invalid credentials");
-            }
+            alert(error)
         }
     };
 
     return (
         <div className='box'>
-            <h1>Login</h1>
-            <form className="login-form" onSubmit={logInUser}>
-                <div className='input-container'>
+            <h1>LOGIN</h1>
+            <div className='input-container'>
                     <label>Email: </label>
                     <input
                         type="email"
@@ -90,11 +93,8 @@ const Login = (props) => {
                     />
                 </div>
                 <div className='button-container'>
-                  <button type="submit">
-                      Submit
-                  </button>
+                  <button onClick={() => {logInUser()}}>Submit</button>
                 </div>
-            </form>
             <button className='link-button' onClick={() => {navigate('/register')}}>Don't have an account? Register here</button>
         </div>
     )

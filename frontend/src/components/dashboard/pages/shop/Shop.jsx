@@ -17,7 +17,7 @@ const Shop = (props) => {
     }, []);
 
     return (
-        <div>
+        <div className={'contentContainer'}>
             SHOP
         </div>
     )

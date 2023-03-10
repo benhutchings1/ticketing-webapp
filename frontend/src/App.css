@@ -6,6 +6,7 @@ body {
     text-align: center;
     height: 100vh; /* Use vh as a fallback for browsers that do not support Custom Properties */
     height: calc(var(--vh, 1vh) * 100);
+    font-family: "Gill Sans MT", sans-serif;
 }
 
 .pageContainer {
@@ -22,9 +23,21 @@ body {
     overflow-y: auto;
     overflow-x: hidden;
 }
+.contentContainer {
+    width: 100vw;
+    height: 100vh;
+    background-color: white;
+}
 
 h1 {
-    font-family: "Gill Sans MT";
+    font-family: "Gill Sans MT", sans-serif;
+}
+
+input {
+    margin-top: 7px;
+    padding: 0.5rem;
+    border: none;
+    border-radius: 5px;
 }
 
 button {

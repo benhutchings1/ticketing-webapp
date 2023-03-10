@@ -17,8 +17,11 @@ const Landing = (props) => {
     };
 
     useEffect(() => {
+        console.log(getUser())
         if (getUser() != null) {
-            setUser(getUser());
+            getUser().then(r => {
+                setUser(r);
+            })
         } else {
             navigate("/")
         }
@@ -26,11 +29,11 @@ const Landing = (props) => {
 
     return (
         <div className='box'>
-            <h1 className='welcome'>Welcome to e-ticketing!</h1>
+            <h1 className='welcome'>TICKETING APP</h1>
             {user != null ? (
                 <div>
                     <h2>Logged in</h2>
-                    <h3>ID: {user.id}</h3>
+                    <h3>ID: {user.firstname}</h3>
                     <h3>Email: {user.email}</h3>
 
                     <button onClick={logoutUser}>Logout</button>
@@ -39,12 +42,11 @@ const Landing = (props) => {
                 <div>
                     {/*<p>You are not logged in</p>*/}
                     <div className={'landingButtons'}>
-                        <button onClick={() => {navigate('/login')}}>Login</button>
-                        <button onClick={() => {navigate('/register')}}>Register</button>
+                        <button onClick={() => {navigate('/login')}}>LOGIN</button>
+                        <button onClick={() => {navigate('/register')}}>REGISTER</button>
                     </div>
                 </div>
             )}
-            <div className={'gradient'}></div>
         </div>
     )
 };
