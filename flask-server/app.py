@@ -52,12 +52,11 @@ event_model = api.model(
         "time":fields.String(20), # DateTime(format='%H:%M:%S'),
         "genre":fields.String(max_length=100),
         "description":fields.String(max_length=1000),
-        "venue_name":fields.String(max_length=100),
-        "venue_location":fields.String(max_length=200),
-        "venue_postcode":fields.String(max_length=7),
-        "venue_capacity":fields.Integer(),
-        "artist_firstname":fields.String(max_length=20),
-        "artist_surname":fields.String(max_length=20)
+        "venue_id":fields.Integer(),
+        "venue.name":fields.String(max_length=100),
+        "venue.location":fields.String(max_length=200),
+        "venue.postcode":fields.String(max_length=7),
+        "venue.capacity":fields.Integer()
     }
 )
 
@@ -197,13 +196,12 @@ To do so, it also adds a new venue & a new artist if not already in DB
 class AddEvent(Resource):
 
     @api.expect(event_model)
-    @management_required
+    #@management_required
     def post(self):
         
         data = request.get_json()
         event_name = data.get('event_name')
         venue_name = data.get('venue_name')
-        artist_surname = data.get('artist_surname')
   
         # event already exists in database?
         db_event_name = Event.query.filter_by(event_name=event_name).first()
@@ -223,23 +221,10 @@ class AddEvent(Resource):
             )
             new_venue.save()
             venue_id = new_venue.venue_id
-
-        # add a new artist if not already in DB
-        db_artist = Artist.query.filter_by(surname=artist_surname).first()
-        if db_artist is not None: # if in DB
-            artist_id = db_artist.artist_id
-        else:
-            new_artist = Artist(
-                firstname = data.get('artist_firstname'),
-                surname = data.get('artist_surname')
-            )
-            new_artist.save()
-            artist_id = new_artist.artist_id
-        
+       
         # add a new event
         new_event = Event(
             venue_id = venue_id,
-            artist_id = artist_id,
             event_name = data.get('event_name'),
             date = datetime.strptime(data.get('date'), "%Y-%m-%d").date(),
             time = data.get('time'), #datetime.strptime(data.get('time'), '%H:%M:%S').time(),
@@ -265,11 +250,9 @@ class DeleteEvent(Resource): # HandleEvent class, retrieve/delete by name?
 #                             while they're not null in DB
 @api.route('/event_list')
 class EventList(Resource):
-    #@api.marshal_list_with(event_model)
+    @api.marshal_list_with(event_model)
     def get(self):
-        event_list = Event.query.all()
-        json_list = jsonify([event.serialize() for event in event_list])
-        return json_list
+        return Event.query.all()
 
 
 
