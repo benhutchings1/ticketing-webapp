@@ -47,7 +47,7 @@ event_model = api.model(
     {
         "event_name":fields.String(max_length=100),
         "date":fields.Date(),
-        "time":fields.DateTime(format='%H:%M:%S'),
+        "time":fields.String(20), # DateTime(format='%H:%M:%S'),
         "genre":fields.String(max_length=100),
         "description":fields.String(max_length=1000),
         "venue_name":fields.String(max_length=100),
@@ -228,7 +228,7 @@ class AddEvent(Resource):
             artist_id = artist_id,
             event_name = data.get('event_name'),
             date = datetime.strptime(data.get('date'), "%Y-%m-%d").date(),
-            time = datetime.strptime(data.get('time'), '%H:%M:%S').time(),
+            time = data.get('time'), #datetime.strptime(data.get('time'), '%H:%M:%S').time(),
             genre = data.get('genre'),
             description = data.get('description'),
         )
@@ -244,10 +244,18 @@ class AddEvent(Resource):
 class DeleteEvent(Resource): # HandleEvent class, retrieve/delete by name?
     def delete(self, name):
         event_to_delete = Event.query.filter_by(event_name=name).first_or_404()
-        #data = request.get_json()
         event_to_delete.delete()
         return jsonify({"message" : f"Event {name} deleted successsfully."})
 
+# Get all events.   Need fix: some of the values are returned as null
+#                             while they're not null in DB
+@api.route('/event_list')
+class EventList(Resource):
+    #@api.marshal_list_with(event_model)
+    def get(self):
+        event_list = Event.query.all()
+        json_list = jsonify([event.serialize() for event in event_list])
+        return json_list
 
 
 
