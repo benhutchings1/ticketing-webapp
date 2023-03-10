@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_restx import Api, Resource, fields
 from config import current_config
-from models import User, Event, Venue, Artist, TokenBlocklist
+from models import User, Event, Venue, TokenBlocklist
 from exts import db
 # from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -73,7 +73,6 @@ def check_if_token_blocked(jwt_header, jwt_payload: dict) -> bool:
     token = db.session.query(TokenBlocklist.id).filter_by(jti=jti).scalar()
     return token is not None
 
-
 @app.after_request
 def refresh_expiring_jwts(response):
     try:
@@ -89,7 +88,7 @@ def refresh_expiring_jwts(response):
             access_token = create_access_token(identity=get_jwt_identity())
             set_access_cookies(response, access_token)
         return response
-    except (RuntimeError, KeyError):
+    except (RuntimeError, KeyError, AttributeError):
         # Invalid JWT, return unchanged response
         return response
 
