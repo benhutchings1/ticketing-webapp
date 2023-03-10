@@ -82,34 +82,13 @@ class Event(db.Model):
         db.session.commit()
 
 
-# model for info about ticket types
-class EventTicket(db.Model):
-    ticket_type_id = db.Column(db.Integer(), primary_key=True)  # autoincrement=True, not supported with joint pk
-    event_id = db.Column(db.Integer(), db.ForeignKey('event.event_id'), primary_key=True)
-    ticket_name = db.Column(db.String(40), nullable=False)
-    ticket_description = db.Column(db.String(1000), nullable=False)
-
-    def save(self):
-        db.session.add(self)
-        db.session.commit()
-
-    def delete(self):
-        db.session.delete(self)
-        db.session.commit()
-
-    def update(self, ticket_name, ticket_description):
-        self.ticket_name = ticket_name
-        self.ticket_description = ticket_description
-        db.session.commit()
-
-
 # model for tickets to be generated for specific user
 class UserTicket(db.Model):
     ticket_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
     event_id = db.Column(db.Integer(), db.ForeignKey('event.event_id'), nullable=False)
     user_id = db.Column(db.Integer(), db.ForeignKey('user.user_id'), nullable=False)
-    ticket_type_id = db.Column(db.Integer(), db.ForeignKey('event_ticket.ticket_type_id'), nullable=False)
     cipher_key = db.Column(db.String(), nullable=False)
+    ticket_type = db.Column(db.String(), nullable=False)
     valid = db.Column(db.Boolean, nullable=False)
 
     def save(self):
