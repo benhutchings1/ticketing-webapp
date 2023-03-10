@@ -1,3 +1,5 @@
+from functools import wraps
+
 from flask import Flask, request, jsonify
 from flask_restx import Api, Resource, fields
 from config import current_config
@@ -6,7 +8,7 @@ from exts import db
 # from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, set_access_cookies, \
-    unset_jwt_cookies, get_jwt, get_jwt_identity, current_user
+    unset_jwt_cookies, get_jwt, get_jwt_identity, current_user, verify_jwt_in_request
 from datetime import datetime, timedelta, timezone
 
 app = Flask(__name__)
@@ -64,6 +66,18 @@ event_model = api.model(
 def user_lookup_callback(_jwt_header, jwt_data):
     identity = jwt_data["sub"]
     return User.query.filter_by(user_id=identity).one_or_none()
+
+
+def management_required(fn):
+    @wraps(fn)
+    @jwt_required()
+    def decorator(*args, **kwargs):
+        if current_user.role == "management":
+            return fn(*args, **kwargs)
+        else:
+            return jsonify({'msg': "Role 'management' is required"})
+
+    return decorator
 
 
 @jwt.token_in_blocklist_loader
@@ -183,6 +197,7 @@ To do so, it also adds a new venue & a new artist if not already in DB
 class AddEvent(Resource):
 
     @api.expect(event_model)
+    @management_required
     def post(self):
         
         data = request.get_json()
