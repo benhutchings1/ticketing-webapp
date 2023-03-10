@@ -1,40 +1,52 @@
-.landingPage {
-	background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
-	background-size: 400% 400%;
-	animation: gradient 15s ease infinite;
-	height: 100vh;
+body {
+    background: linear-gradient(32deg, #ff2bd1 0%, #ffc42e 100%);
+    text-align: center;
+    min-height: 100vh;
+    align-items: center;
 }
 
-@keyframes gradient {
-	0% {
-		background-position: 0% 50%;
-	}
-	50% {
-		background-position: 100% 50%;
-	}
-	100% {
-		background-position: 0% 50%;
-	}
+.box {
+    margin: auto;
+    margin-top: 200px;
+    padding: 5rem;
+    width: 30%;
+    height: 300px;
+    
+    text-align: center;
+    
+
+    /* glass effect is from https://css.glass */
+    background: rgba(255, 255, 255, 0.21);
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(6.8px);
+    -webkit-backdrop-filter: blur(6.8px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+.welcome {
+    text-transform: uppercase;
+    white-space: nowrap;
 }
 
-.landingPage {
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-content: center;
-    justify-content: center;
-	align-items: center;
+button {
+	background:linear-gradient(to bottom, #44c767 5%, #5cbf2a 100%);
+	background-color:#44c767;
+	border-radius:12px;
+	border:1px solid #18ab29;
+	display:inline-block;
+	cursor:pointer;
+	color:#ffffff;
+	font-family:Arial;
+	font-size:17px;
+	padding:16px 31px;
+	text-decoration:none;
+	text-shadow:0px 1px 0px #2f6627;
 }
-
-.landingPage h1 {
-	margin-top: 0;
-	margin-bottom: 20px;
-	font-size: 10vw;
+button:hover {
+	background:linear-gradient(to bottom, #5cbf2a 5%, #44c767 100%);
+	background-color:#5cbf2a;
 }
-.landingButtons button {
-        padding: 5vw;
-    }
-.landingButtons button:nth-child(1) {
-	margin-right: 10px;
+button:active {
+	position:relative;
+	top:1px;
 }

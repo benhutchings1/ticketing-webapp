@@ -25,8 +25,8 @@ const Landing = (props) => {
     }, []);
 
     return (
-        <div className={'landingPage'}>
-            <h1>Ticketing App</h1>
+        <div className='box'>
+            <h1 className='welcome'>Welcome to e-ticketing!</h1>
             {user != null ? (
                 <div>
                     <h2>Logged in</h2>

@@ -1,0 +1,9 @@
+.link-button {
+    background: none;
+    color: white;
+    text-decoration: white;
+}
+
+input, label {
+    display: block;
+}
