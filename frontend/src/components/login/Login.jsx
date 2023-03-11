@@ -33,36 +33,24 @@ const Login = (props) => {
     const navigate = useNavigate();
 
     const logInUser = async () => {
-        try {
-            const data = {
-                email_address: email,
-                password: password
-            }
-
-            const requestOptions = {
-                method: 'POST',
-                mode: "cors",
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            };
-
-            const response = await fetch("http://localhost:5000/login", requestOptions)
-            const userData = await response.json();
-
-            console.log(userData);
-            if (userData.success === true) {
-                const token = userData.token;
-                localStorage.setItem("access_token_cookie", token);
-                setAuthToken(token);
-
-                getUser(token).then(r => {
-                    setUser(r);
-                    navigate("/home");
-                })
-            }
-        } catch (error) {
-            alert(error)
+        const data = {
+            email_address: email,
+            password: password
         }
+
+        httpClient.post('/login', data)
+        .then(response => {
+            getUser().then(r => {
+                setUser(r);
+                navigate("/home");
+            })
+        })
+        .catch(error => {
+            console.log(error.response.data);
+            if (error.response && error.response.status === 401) {
+                alert(error.response.data.msg);
+            }
+        });
     };
 
     return (
