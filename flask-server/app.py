@@ -161,10 +161,12 @@ class Login(Resource):
                 "token": access_token
             })
             set_access_cookies(response, access_token)
-            return response, 200
+            return response
 
         # Login failure
-        return jsonify({"msg": "Incorrect email/password"}), 401
+        response = jsonify({'msg': 'Incorrect email/password'})
+        response.status_code = 401
+        return response
 
 
 @api.route('/logout')
