@@ -1,7 +1,7 @@
 from functools import wraps
 
 from flask import Flask, request, jsonify
-from flask_cors import CORS, cross_origin
+from flask_cors import CORS
 from flask_restx import Api, Resource, fields
 from config import current_config
 from models import User, Event, Venue, TokenBlocklist
@@ -109,11 +109,10 @@ def refresh_expiring_jwts(response):
         return response
 
 
-@api.route('/signup', methods=["POST"])
+@api.route('/signup')
 class SignUp(Resource):
 
     @api.expect(signup_model)
-    @cross_origin(supports_credentials=True, allow_headers=['Access-Control-Allow-Credentials'])
     def post(self):
         data = request.get_json()
         email_address = data.get('email_address')
@@ -144,7 +143,6 @@ class SignUp(Resource):
 class Login(Resource):
 
     @api.expect(login_model)
-    @cross_origin(supports_credentials=True, allow_headers=['Access-Control-Allow-Origin'])
     def post(self):
         data = request.get_json()
 
@@ -190,7 +188,6 @@ class Logout(Resource):
 class Account(Resource):
 
     @jwt_required()
-    @cross_origin(supports_credentials=True, allow_headers=['Access-Control-Allow-Credentials'])
     def get(self):
         return jsonify({"email": current_user.email_address,
                         "firstname": current_user.firstname,
