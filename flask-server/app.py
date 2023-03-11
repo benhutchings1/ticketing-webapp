@@ -157,15 +157,14 @@ class Login(Resource):
             # Login was successful
             access_token = create_access_token(identity=db_user.user_id)
             response = jsonify({
-                "success": True,
-                "message": "Successfully logged in",
+                "msg": "Successfully logged in",
                 "token": access_token
             })
             set_access_cookies(response, access_token)
-            return response
+            return response, 200
 
         # Login failure
-        return jsonify({"success": False, "message": "Incorrect email/password"})
+        return jsonify({"msg": "Incorrect email/password"}), 401
 
 
 @api.route('/logout')
