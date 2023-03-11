@@ -13,11 +13,7 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required, se
 from datetime import datetime, timedelta, timezone
 
 app = Flask(__name__)
-cors = CORS(app, supports_credentials=True, resources={
-    r"/login": {"origins": "http://localhost:3000"},
-    r"/signup": {"origins": "http://localhost:3000"},
-    r"/account": {"origins": "http://localhost:3000"}
-})
+cors = CORS(app, supports_credentials=True, origins="http://localhost:3000")
 app.config.from_object(current_config)
 db.init_app(app)
 # migrate=Migrate(app,db)
@@ -95,10 +91,6 @@ def check_if_token_blocked(jwt_header, jwt_payload: dict) -> bool:
 
 @app.after_request
 def refresh_expiring_jwts(response):
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Methods"] = "GET,HEAD,OPTIONS,POST,PUT"
-    response.headers["Access-Control-Allow-Headers"] = "*"
-    response.headers["Access-Control-Allow-Credentials"] = "true"
     try:
         if response.json.get('logout', False):
             # Do nothing if logging out
