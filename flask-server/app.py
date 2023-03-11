@@ -45,19 +45,19 @@ login_model = api.model(
     }
 )
 
+
 # /add_event expected input
 event_model = api.model(
     "Event",
     {
-        "event_name":fields.String(max_length=100),
-        "date":fields.Date(),
-        "time":fields.String(20), # DateTime(format='%H:%M:%S'),
-        "genre":fields.String(max_length=100),
-        "description":fields.String(max_length=1000),
-        "venue.name":fields.String(max_length=100),
-        "venue.location":fields.String(max_length=200),
-        "venue.postcode":fields.String(max_length=7),
-        "venue.capacity":fields.Integer()
+        "event_name":fields.String(max_length=128),
+        "datetime":fields.String(), # e.g. '2023-03-09 12:10:00'
+        "genre":fields.String(max_length=128),
+        "description":fields.String(),
+        "venue_name":fields.String(max_length=128),
+        "venue_location":fields.String(max_length=200),
+        "venue_postcode":fields.String(max_length=8),
+        "venue_capacity":fields.Integer()
     }
 )
 
@@ -271,10 +271,12 @@ class Account(Resource):
                         "postcode": current_user.postcode,
                         "phone_number": current_user.phone_number})
 
+
 ''' 
 This route adds a new event
 To do so, it also adds a new venue if not already in DB
 '''
+# datetime format: "2022-03-11 20:00:00"
 #@jwt_required
 @api.route('/add_event')
 class AddEvent(Resource):
@@ -305,13 +307,12 @@ class AddEvent(Resource):
             )
             new_venue.save()
             venue_id = new_venue.venue_id
-       
+         
         # add a new event
         new_event = Event(
             venue_id = venue_id,
             event_name = data.get('event_name'),
-            date = datetime.strptime(data.get('date'), "%Y-%m-%d").date(),
-            time = data.get('time'), #datetime.strptime(data.get('time'), '%H:%M:%S').time(),
+            datetime = datetime.strptime(data.get('datetime'), '%Y-%m-%d %H:%M:%S'),
             genre = data.get('genre'),
             description = data.get('description'),
         )
