@@ -323,13 +323,16 @@ class AddEvent(Resource):
 # Retrieve event by name/id.   need a route for this?
 
 
-# Delete an event by name.    id instead?
+# Delete an event by name, if it exists.
 @api.route('/delete_event/<string:name>')
 class DeleteEvent(Resource): # HandleEvent class, retrieve/delete by name?
+    #@jwt_required()
     def delete(self, name):
-        event_to_delete = Event.query.filter_by(event_name=name).first_or_404()
-        event_to_delete.delete()
-        return jsonify({"message" : f"Event {name} deleted successsfully."})
+        event_to_delete = Event.query.filter_by(event_name=name).first()
+        if event_to_delete:
+            event_to_delete.delete()
+            return jsonify({"success": True, "message": f"Event {name} deleted successsfully."})
+        return jsonify({"success": False, "message": f"Event {name} does not exist."})
 
 # Get all events. 
 @api.route('/event_list')
