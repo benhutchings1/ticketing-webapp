@@ -1,10 +1,9 @@
+import "./login.css";
+
 import React, {useState} from 'react'
 import httpClient from "../../httpClient";
 import {useNavigate} from "react-router-dom";
-import "./login.css";
-import {getUser} from "../../helpers/checkUser";
-import {setAuthToken} from "../../helpers/setAuthToken";
-import axios from "axios";
+import {getUser} from "../../helpers";
 
 const Login = (props) => {
     const user = props.user;
@@ -40,8 +39,7 @@ const Login = (props) => {
 
         httpClient.post('/login', data)
         .then(response => {
-            getUser().then(r => {
-                setUser(r);
+            getUser(setUser).then(r => {
                 navigate("/home");
             })
         })

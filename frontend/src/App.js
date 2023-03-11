@@ -5,10 +5,10 @@ import {BrowserRouter as Router, Navigate, Route, Routes, useNavigate} from "rea
 import {Landing, Login, Register} from "./components";
 import {Account, Home, Shop} from "./components/dashboard/pages";
 import {Navbar} from "./components/dashboard";
-import {setAuthToken} from "./helpers/setAuthToken";
+import {getUser} from "./helpers/checkUser";
 
 function App() {
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState({});
 
     // First we get the viewport height, and we multiply it by 1% to get a value for a vh unit
     let vh = window.innerHeight * 0.01;
@@ -23,11 +23,7 @@ function App() {
     });
 
     useEffect(() => {
-         const token = localStorage.getItem("access_token_cookie");
-         console.log(token)
-         if (token) {
-             setAuthToken(token);
-         }
+        getUser(setUser);
     }, [])
 
     return (

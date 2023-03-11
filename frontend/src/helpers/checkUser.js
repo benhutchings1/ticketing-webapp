@@ -1,12 +1,13 @@
 import httpClient from "../httpClient";
 
-export async function getUser() {
+export async function getUser(setUser) {
     httpClient.get('/account', {})
-    .then(response => {
-        return response.data;
+    .then((response) => {
+        setUser(response);
+        return response;
     })
     .catch(error => {
-        console.log(error);
+        setUser(null);
         return null;
     });
 }

@@ -1,0 +1,8 @@
+.accountDetails {
+    display: flex;
+    flex-direction: column;
+}
+
+.logoutBtn {
+    background-color: darkred;
+}

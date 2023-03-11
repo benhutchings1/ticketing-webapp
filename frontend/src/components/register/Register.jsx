@@ -1,8 +1,8 @@
-import React, {useState} from 'react'
-import httpClient from "../../httpClient";
-import {useNavigate} from "react-router-dom";
 import "./register.css";
 import "./registerMobile.css";
+
+import React, {useState} from 'react'
+import {useNavigate} from "react-router-dom";
 
 const Register = (props) => {
     const user = props.user;

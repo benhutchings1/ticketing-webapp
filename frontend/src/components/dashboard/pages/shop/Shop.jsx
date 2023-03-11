@@ -1,5 +1,4 @@
 import {useEffect, useState} from "react";
-import {getUser} from "../../../../helpers/checkUser";
 import {useNavigate} from "react-router-dom";
 
 const Shop = (props) => {
@@ -8,17 +7,16 @@ const Shop = (props) => {
 
     const navigate = useNavigate();
 
+    // Once user is updated, check if valid
     useEffect(() => {
-        if (getUser() != null) {
-            setUser(getUser());
-        } else {
+        if (user == null) {
             navigate("/")
         }
-    }, []);
+    }, [user])
 
     return (
         <div className={'contentContainer'}>
-            SHOP
+            <h1>SHOP</h1>
         </div>
     )
 }
