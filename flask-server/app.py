@@ -25,7 +25,7 @@ api = Api(app, doc='/docs')
 signup_model = api.model(
     "SignUp",
     {
-        "email_address": fields.String(max_length=100),  # max_length=100
+        "email_address": fields.String(max_length=100), 
         "password": fields.String(max_length=16),
         "firstname": fields.String(max_length=20),
         "surname": fields.String(max_length=20),
@@ -53,7 +53,6 @@ event_model = api.model(
         "time":fields.String(20), # DateTime(format='%H:%M:%S'),
         "genre":fields.String(max_length=100),
         "description":fields.String(max_length=1000),
-        "venue_id":fields.Integer(),
         "venue.name":fields.String(max_length=100),
         "venue.location":fields.String(max_length=200),
         "venue.postcode":fields.String(max_length=7),
@@ -218,7 +217,7 @@ class Account(Resource):
 
 ''' 
 This route adds a new event
-To do so, it also adds a new venue & a new artist if not already in DB
+To do so, it also adds a new venue if not already in DB
 '''
 #@jwt_required
 @api.route('/add_event')
@@ -275,8 +274,7 @@ class DeleteEvent(Resource): # HandleEvent class, retrieve/delete by name?
         event_to_delete.delete()
         return jsonify({"message" : f"Event {name} deleted successsfully."})
 
-# Get all events.   Need fix: some of the values are returned as null
-#                             while they're not null in DB
+# Get all events. 
 @api.route('/event_list')
 class EventList(Resource):
     @api.marshal_list_with(event_model)
