@@ -337,9 +337,23 @@ class DeleteEvent(Resource): # HandleEvent class, retrieve/delete by name?
 # Get all events. 
 @api.route('/event_list')
 class EventList(Resource):
-    @api.marshal_list_with(event_model)
     def get(self):
-        return Event.query.all()
+        events = Event.query.all()
+        response = []
+        for event in events:
+            venue = Venue.query.filter_by(venue_id=event.venue_id).first()
+            data = {
+                'event_name': event.event_name,
+                'datetime': str(event.datetime),
+                'genre': event.genre,
+                'description': event.description,
+                'venue_name': venue.name,
+                'venue_location': venue.location,
+                'venue_postcode': venue.postcode,
+                'venue_capacity': venue.capacity
+            }
+            response.append(data)
+        return response
 
 @api.route('/addticket')
 class AddTicketResource(Resource):
