@@ -22,8 +22,8 @@ const Landing = (props) => {
             <h1 className='welcome'>TICKETING APP</h1>
             <div>
                 <div className={'landingButtons'}>
-                    <button onClick={() => {navigate('/login')}}>LOGIN</button>
-                    <button onClick={() => {navigate('/register')}}>REGISTER</button>
+                    <button className='landing-button' onClick={() => {navigate('/login')}}>LOGIN</button>
+                    <button className='landing-button' onClick={() => {navigate('/register')}}>REGISTER</button>
                 </div>
             </div>
         </div>

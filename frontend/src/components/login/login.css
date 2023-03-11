@@ -4,10 +4,15 @@ input, label {
 
 label {
     text-align: left;
+    color: white;
 }
 
 input {
     margin-bottom: 20px;
+}
+
+h1 {
+    color: white;
 }
 
 
@@ -19,4 +24,27 @@ input {
 .login-form {
     border: 1px solid black;
     text-align: center;
+}
+
+.submit-button {
+    flex: 1 1 auto;
+    margin: 10px;
+    padding: 30px;
+    text-align: center;
+    text-transform: uppercase;
+    transition: 0.5s;
+    background-size: 200% auto;
+    color: white;
+    /* text-shadow: 0px 0px 10px rgba(0,0,0,0.2);*/
+    /* box-shadow: 0 0 20px #eee; */
+    border-radius: 10px;
+    background-image: linear-gradient(to right, #00ff1e 0%, #8ff4ec 51%, #00ff1e 100%);
+    border: solid white;
+
+    line-height: 10px;
+    min-width: 150px;
+}
+
+.box button:hover {
+    background-position: right center;
 }

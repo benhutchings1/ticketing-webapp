@@ -79,7 +79,7 @@ const Login = (props) => {
                     />
                 </div>
                 <div className='button-container'>
-                  <button onClick={() => {logInUser()}}>Submit</button>
+                  <button className='submit-button' onClick={() => {logInUser()}}>Submit</button>
                 </div>
             <button className='link-button' onClick={() => {navigate('/register')}}>Don't have an account? Register here</button>
         </div>

@@ -147,7 +147,7 @@ const Register = (props) => {
               </div>
           </div>
           <div className='button-container'>
-            <button onClick={() => {registerUser()}}>
+            <button className='submit-button' onClick={() => {registerUser()}}>
                 Submit
             </button>
           </div>
