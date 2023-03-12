@@ -55,6 +55,7 @@ class Event(db.Model):
         self.description = description
         db.session.commit()
 
+
 # Venue model
 class Venue(db.Model):
     venue_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)

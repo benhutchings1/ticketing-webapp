@@ -281,7 +281,8 @@ class Account(Resource):
                         "surname": current_user.surname,
                         "date_of_birth": current_user.date_of_birth,
                         "postcode": current_user.postcode,
-                        "phone_number": current_user.phone_number})
+                        "phone_number": current_user.phone_number,
+                        "role": current_user.role})
 
 
 ''' 
