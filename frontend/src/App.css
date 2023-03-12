@@ -6,6 +6,7 @@ body {
     text-align: center;
     height: 100vh; /* Use vh as a fallback for browsers that do not support Custom Properties */
     height: calc(var(--vh, 1vh) * 100);
+    font-family: "Gill Sans MT", sans-serif;
 }
 
 .pageContainer {
@@ -21,4 +22,39 @@ body {
     width: 100vw;
     overflow-y: auto;
     overflow-x: hidden;
+}
+.contentContainer {
+    width: 100vw;
+    height: 100vh;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+h1 {
+    font-family: "Gill Sans MT", sans-serif;
+}
+
+input {
+    margin-top: 7px;
+    padding: 0.5rem;
+    border: none;
+    border-radius: 5px;
+}
+
+button {
+    cursor: pointer;
+    border-radius: 5px;
+    border: none;
+    outline: none;
+    background-color: #ffffff;
+    padding: 10px;
+    filter: brightness(100%);
+    transition: 0.5s;
+}
+
+button:hover {
+    filter: brightness(80%);
+    transition: 0.5s;
 }

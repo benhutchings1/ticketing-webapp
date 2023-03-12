@@ -1,6 +1,7 @@
+import './home.css';
+
 import {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
-import {getUser} from "../../../../helpers/checkUser";
 
 const Home = (props) => {
     const user = props.user;
@@ -8,18 +9,16 @@ const Home = (props) => {
 
     const navigate = useNavigate();
 
+    // Once user is updated, check if valid
     useEffect(() => {
-        setUser([]) // for testing purposes
-        // if (getUser() != null) {
-        //     setUser(getUser());
-        // } else {
-        //     navigate("/")
-        // }
-    }, []);
+        if (user == null) {
+            navigate("/")
+        }
+    }, [user])
 
     return (
-        <div>
-            HOME
+        <div className={'contentContainer'}>
+            <h1>HOME</h1>
         </div>
     )
 }

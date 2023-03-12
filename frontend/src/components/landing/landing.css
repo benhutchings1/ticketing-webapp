@@ -1,0 +1,82 @@
+body {
+	background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+	background-size: 400% 400%;
+	animation: gradient 15s ease infinite;
+	height: 100vh;
+}
+
+@keyframes gradient {
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
+}
+
+
+.box {
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    align-items: center;
+    justify-content: center;
+
+
+    margin: auto;
+    padding: 5rem;
+    width: fit-content;
+    height: fit-content;
+    
+    text-align: center;
+    
+
+    /* glass effect is from https://css.glass */
+    background: rgba(255, 255, 255, 0.21);
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(6.8px);
+    -webkit-backdrop-filter: blur(6.8px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+.box h1 {
+    margin-top: 0;
+}
+.box button:nth-child(1) {
+    margin-right: 10px;
+}
+.box button {
+    padding: 1rem;
+}
+
+.welcome {
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: white;
+}
+
+.landing-button{
+    flex: 1 1 auto;
+    margin: 10px;
+    padding: 30px;
+    text-align: center;
+    text-transform: uppercase;
+    transition: 0.5s;
+    background-size: 200% auto;
+    color: white;
+    /* text-shadow: 0px 0px 10px rgba(0,0,0,0.2);*/
+    /* box-shadow: 0 0 20px #eee; */
+    border-radius: 10px;
+    background-image: linear-gradient(to right, #84fab0 0%, #8fd3f4 51%, #84fab0 100%);
+    border: solid white;
+
+    line-height: 10px;
+    min-width: 150px;
+}
+
+.landing-button:hover {
+    background-position: right center;
+  }

@@ -1,0 +1,10 @@
+@media only screen and (max-width: 750px) {
+    .innerPageContainer {
+        height: 100vh;
+    }
+
+    .box {
+        width: 80vw;
+        padding: 20px
+    }
+}

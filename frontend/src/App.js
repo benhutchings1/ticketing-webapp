@@ -1,12 +1,14 @@
 import './App.css';
+import './AppMobile.css';
 import React, { useState, useEffect } from "react";
 import {BrowserRouter as Router, Navigate, Route, Routes, useNavigate} from "react-router-dom";
 import {Landing, Login, Register} from "./components";
 import {Account, Home, Shop} from "./components/dashboard/pages";
 import {Navbar} from "./components/dashboard";
+import {getUser} from "./helpers/checkUser";
 
 function App() {
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState({});
 
     // First we get the viewport height, and we multiply it by 1% to get a value for a vh unit
     let vh = window.innerHeight * 0.01;
@@ -20,11 +22,15 @@ function App() {
         document.documentElement.style.setProperty('--vh', `${vh}px`);
     });
 
+    useEffect(() => {
+        getUser(setUser);
+    }, [])
+
     return (
         <div className="App">
             <Router>
                 <div className='pageContainer'>
-                    {(user) ? <Navbar /> : ""} {/* only show navbar is user exists */}
+                    {(user) ? <Navbar user={user} /> : ""} {/* only show navbar is user exists */}
                     <div className='innerPageContainer'>
                         <Routes>
                             <Route exact path="/" element={<Landing user={user} setUser={setUser}/>}/>

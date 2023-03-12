@@ -1,15 +1,13 @@
 import httpClient from "../httpClient";
 
-export function getUser() {
-    let user;
-    (async () => {
-        try {
-          const response = await httpClient.get("//localhost:5000/@me");
-          user = response.data;
-        } catch (error) {
-          user = null
-        }
-      })();
-
-    return user;
+export async function getUser(setUser) {
+    httpClient.get('/account', {})
+    .then((response) => {
+        setUser(response);
+        return response;
+    })
+    .catch(error => {
+        setUser(null);
+        return null;
+    });
 }

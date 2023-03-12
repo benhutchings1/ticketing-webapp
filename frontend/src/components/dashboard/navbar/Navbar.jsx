@@ -6,7 +6,7 @@ import {AccountIcon, HomeIcon, ShopIcon} from "../../../img";
 import {detectMobile} from "../../../helpers/detectMobile";
 
 const Navbar = (props) => {
-    const role = props.role;
+    const user = props.user;
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -59,21 +59,26 @@ const Navbar = (props) => {
                         />
                         {detectMobile() ? "" : <span className="tooltipText">Home</span>}
                     </div>
-                    <div className="tooltip">
-                        <img
-                            style={shopNavColour ? styles.selectedStyle : styles.imgStyle}
-                            onMouseEnter={() => setShopNavColour(true)}
-                            onMouseLeave={() => setShopNavColour(false)}
-                            onClick={() => {
-                                navigate('/shop')
-                                setHomeNavColour(false)
-                                setAccountNavColour(false)
-                            }}
-                            src={ShopIcon}
-                            alt={'Shop'}
-                        />
-                        {detectMobile() ? "" : <span className="tooltipText">Shop</span>}
-                    </div>
+
+                    {user !== null && user.role !== "management" ?
+                        <div className="tooltip">
+                            <img
+                                style={shopNavColour ? styles.selectedStyle : styles.imgStyle}
+                                onMouseEnter={() => setShopNavColour(true)}
+                                onMouseLeave={() => setShopNavColour(false)}
+                                onClick={() => {
+                                    navigate('/shop')
+                                    setHomeNavColour(false)
+                                    setAccountNavColour(false)
+                                }}
+                                src={ShopIcon}
+                                alt={'Shop'}
+                            />
+                            {detectMobile() ? "" : <span className="tooltipText">Shop</span>}
+                        </div>
+                    :
+                        <div style={{display: "none"}}></div>
+                    }
 
                     <div className="tooltip">
                         <img
