@@ -50,7 +50,7 @@ const Account = (props) => {
     return (
         <div className={'contentContainer'}>
             <h1>ACCOUNT</h1>
-            {(user != null && true) ?
+            {(user != null) ?
                 <div>
                     <div className={'accountDetails'}>
                         <div id={'accountPicture'} className={'accountPicture'}>

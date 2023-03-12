@@ -279,7 +279,7 @@ class Account(Resource):
         return jsonify({"email": current_user.email_address,
                         "firstname": current_user.firstname,
                         "surname": current_user.surname,
-                        "date_of_birth": current_user.date_of_birth,
+                        "date_of_birth": str(current_user.date_of_birth),
                         "postcode": current_user.postcode,
                         "phone_number": current_user.phone_number,
                         "role": current_user.role})

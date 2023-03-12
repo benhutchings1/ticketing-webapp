@@ -12,13 +12,13 @@
 }
 
 .navbarLinks {
-    height: 80%;
+    height: 100%;
 }
 
 .navbarContainer {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: space-around;
     height: 100%;
     padding: 0 15px;
 }

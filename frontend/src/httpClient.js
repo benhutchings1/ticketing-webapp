@@ -6,9 +6,6 @@ const httpClient = axios.create({
 });
 
 httpClient.interceptors.response.use(response => {
-    if (response.config.user) {
-
-    }
     return response.data;
 }, error => {
     return Promise.reject(error);

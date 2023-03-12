@@ -3,6 +3,8 @@ import "./registerMobile.css";
 
 import React, {useState} from 'react'
 import {useNavigate} from "react-router-dom";
+import httpClient from "../../httpClient";
+import {getUser} from "../../helpers";
 
 const Register = (props) => {
     const user = props.user;
@@ -13,11 +15,8 @@ const Register = (props) => {
     const [firstName, setFirstName] = useState("");
     const [surname, setSurname] = useState("");
     const [dob, setDob] = useState("");
-    const [checkPassword, setCheckPassword] = useState("");
     const [postcode, setPostcode] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
-
-
 
     const registerUser = async () => {
         try {
@@ -39,14 +38,28 @@ const Register = (props) => {
                 })
             };
 
-            console.log(requestOptions)
-
             const response = await fetch("http://localhost:5000/signup", requestOptions)
             const newData = await response.json();
 
-            console.log(newData);
             if (newData.success === true) {
-              navigate("/home")
+                // THIS MIGHT NEED CHANGING IN BACKEND
+                const data = {
+                    email_address: email,
+                    password: password
+                }
+
+                httpClient.post('/login', data)
+                .then(response => {
+                    getUser(setUser).then(r => {
+                        navigate("/home");
+                    })
+                })
+                .catch(error => {
+                    console.log(error.response.data);
+                    if (error.response && error.response.status === 401) {
+                        alert(error.response.data.msg);
+                    }
+                });
             }
         } catch (error) {
             alert(error)

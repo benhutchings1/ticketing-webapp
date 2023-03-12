@@ -30,7 +30,7 @@ function App() {
         <div className="App">
             <Router>
                 <div className='pageContainer'>
-                    {(user) ? <Navbar /> : ""} {/* only show navbar is user exists */}
+                    {(user) ? <Navbar user={user} /> : ""} {/* only show navbar is user exists */}
                     <div className='innerPageContainer'>
                         <Routes>
                             <Route exact path="/" element={<Landing user={user} setUser={setUser}/>}/>
