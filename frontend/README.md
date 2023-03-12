@@ -1,6 +1,6 @@
 # How to run React client
 
-`cd frontend`
+`npm install`
 `npm start`
 
 Then navigate to https://localhost:3000

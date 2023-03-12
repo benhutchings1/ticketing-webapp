@@ -1,0 +1,24 @@
+@media only screen and (max-width: 750px) {
+    html, body {
+        overflow: hidden;
+    }
+
+    .App {
+        height: 100vh;
+        flex-direction: column-reverse;
+    }
+
+    .pageContainer {
+        display: flex;
+        height: 100vh;
+    }
+
+    .innerPageContainer {
+        display: flex;
+        height: calc(100vh - 62px);
+        /*top: 62px;*/
+        position: absolute;
+        /*overflow-y: auto;*/
+        width: 100%;
+    }
+}

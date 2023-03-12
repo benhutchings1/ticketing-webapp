@@ -1,58 +1,89 @@
+import "./login.css";
+
 import React, {useState} from 'react'
 import httpClient from "../../httpClient";
 import {useNavigate} from "react-router-dom";
+import {getUser} from "../../helpers";
 
-const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+const Login = (props) => {
+    const user = props.user;
+    const setUser = props.setUser;
 
-  const navigate = useNavigate();
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [loginError, setLoginError] = useState({});
+    const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const logInUser = async () => {
-    console.log(email, password);
-
-    try {
-      const resp = await httpClient.post("//localhost:5000/login", {
-        email,
-        password,
-      });
-
-      navigate("/")
-    } catch (error) {
-      if (error.response.status === 401) {
-        alert("Invalid credentials");
+    //temp database account info
+    const database = [
+      {
+        email: "email1",
+        password: "password1"
       }
-    }
-  };
+    ];
 
-  return (
-    <div>
-      <h1>Log Into Your Account</h1>
-      <form>
-        <div>
-          <label>Email: </label>
-          <input
-            type="text"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            id=""
-          />
+    const errors = [
+      {
+        email: "invalid email",
+        password: "invalid password"
+      }
+    ]
+
+    const navigate = useNavigate();
+
+    const logInUser = async () => {
+        const data = {
+            email_address: email,
+            password: password
+        }
+
+        httpClient.post('/login', data)
+        .then(response => {
+            getUser(setUser).then(r => {
+                navigate("/home");
+            })
+        })
+        .catch(error => {
+            console.log(error.response.data);
+            if (error.response && error.response.status === 401) {
+                alert(error.response.data.msg);
+            }
+        });
+    };
+
+    return (
+        <div className='box'>
+            <h1>LOGIN</h1>
+            <div className='input-container'>
+                    <label>Email: </label>
+                    <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        id="email"
+                        name="email"
+                        placeholder="youremail@gmail.com"
+                        required
+                    />
+                </div>
+                <div className='input-container'>
+                    <label>Password: </label>
+                    <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        id="password"
+                        name="password"
+                        placeholder="********"
+                        required
+                    />
+                </div>
+                <div className='button-container'>
+                  <button className='submit-button' onClick={() => {logInUser()}}>Submit</button>
+                </div>
+            <button className='link-button' onClick={() => {navigate('/register')}}>Don't have an account? Register here</button>
         </div>
-        <div>
-          <label>Password: </label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            id=""
-          />
-        </div>
-        <button type="button" onClick={() => logInUser()}>
-          Submit
-        </button>
-      </form>
-    </div>
-  )
+    )
 };
 
 export default Login;

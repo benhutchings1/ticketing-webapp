@@ -1,38 +1,60 @@
+body {
+    margin: 0;
+}
+
 .App {
-  text-align: center;
+    text-align: center;
+    height: 100vh; /* Use vh as a fallback for browsers that do not support Custom Properties */
+    height: calc(var(--vh, 1vh) * 100);
+    font-family: "Gill Sans MT", sans-serif;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.pageContainer {
+    width: 100vw;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+}
+.innerPageContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100vw;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+.contentContainer {
+    width: 100vw;
+    height: 100vh;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+h1 {
+    font-family: "Gill Sans MT", sans-serif;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+input {
+    margin-top: 7px;
+    padding: 0.5rem;
+    border: none;
+    border-radius: 5px;
 }
 
-.App-link {
-  color: #61dafb;
+button {
+    cursor: pointer;
+    border-radius: 5px;
+    border: none;
+    outline: none;
+    background-color: #ffffff;
+    padding: 10px;
+    filter: brightness(100%);
+    transition: 0.5s;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+button:hover {
+    filter: brightness(80%);
+    transition: 0.5s;
 }
