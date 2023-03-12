@@ -433,3 +433,4 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run()
+    # app.run(host="0.0.0.0", port=443, debug=True, ssl_context=("certificate/cert.pem", "certificate/key.pem" ))
