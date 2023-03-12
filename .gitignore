@@ -22,6 +22,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Backend Flask ignore files
 /flask-server/venv/
 /flask-server/*.db
 /flask-server/.env
@@ -29,3 +30,4 @@ yarn-error.log*
 /flask-server/env_vars
 /frontend/node_modules/
 .idea
+./venv/
