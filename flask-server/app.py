@@ -51,14 +51,14 @@ login_model = api.model(
 event_model = api.model(
     "Event",
     {
-        "event_name":fields.String(max_length=128),
-        "datetime":fields.String(), # e.g. '2023-03-09 12:10:00'
-        "genre":fields.String(max_length=128),
-        "description":fields.String(),
-        "venue_name":fields.String(max_length=128),
-        "venue_location":fields.String(max_length=200),
-        "venue_postcode":fields.String(max_length=8),
-        "venue_capacity":fields.Integer()
+        "event_name": fields.String(max_length=128),
+        "datetime": fields.String(),  # e.g. '2023-03-09 12:10:00'
+        "genre": fields.String(max_length=128),
+        "description": fields.String(),
+        "venue_name": fields.String(max_length=128),
+        "venue_location": fields.String(max_length=200),
+        "venue_postcode": fields.String(max_length=8),
+        "venue_capacity": fields.Integer()
     }
 )
 
@@ -81,7 +81,6 @@ requestQRdataModel = api.model(
     }
 )
 
-
 # Validate Ticket input model
 validateTicketModel = api.model(
     "ValidateTicket",
@@ -90,6 +89,7 @@ validateTicketModel = api.model(
         "QRdata": fields.String()
     }
 )
+
 
 @jwt.user_lookup_loader
 def user_lookup_callback(_jwt_header, jwt_data):
@@ -136,6 +136,7 @@ def refresh_expiring_jwts(response):
         # Invalid JWT, return unchanged response
         return response
 
+
 '''
  # old version of the singup route (before adding the format checks to it)
 
@@ -167,6 +168,8 @@ class SignUp(Resource):
         new_user.save()
         return jsonify({"success": True, "message": f"User {email_address} created successfully."})
 '''
+
+
 # Signup route with format & uniquemess checks (to avoid unuseful internal server errors)
 @api.route('/signup')
 class SignUp(Resource):
@@ -188,7 +191,8 @@ class SignUp(Resource):
         phone_number = data.get('phone_number')
         db_user = User.query.filter_by(phone_number=phone_number).first()
         if db_user is not None:
-            return jsonify({"success": False, "message": f"Another user has this {db_user.phone_number} phone number. "})
+            return jsonify(
+                {"success": False, "message": f"Another user has this {db_user.phone_number} phone number. "})
         if len(phone_number) > 16:
             return jsonify({"success": False, "message": f"Phone number must be 16 digits or less."})
         if not phone_number.isnumeric():
@@ -284,8 +288,10 @@ class Account(Resource):
 This route adds a new event
 To do so, it also adds a new venue if not already in DB
 '''
+
+
 # datetime format: "2022-03-11 20:00:00"
-#@jwt_required
+# @jwt_required
 
 
 # @jwt_required
@@ -321,14 +327,14 @@ class AddEvent(Resource):
 
         # add a new event
         new_event = Event(
-            venue_id = venue_id,
-            event_name = data.get('event_name'),
-            datetime = datetime.strptime(data.get('datetime'), '%Y-%m-%d %H:%M:%S'),
-            genre = data.get('genre'),
-            description = data.get('description'),
+            venue_id=venue_id,
+            event_name=data.get('event_name'),
+            datetime=datetime.strptime(data.get('datetime'), '%Y-%m-%d %H:%M:%S'),
+            genre=data.get('genre'),
+            description=data.get('description'),
         )
         new_event.save()
-        return jsonify({"message": f"Event {event_name} created successsfully."})
+        return jsonify({"message": f"Event {event_name} created successfully."})
 
 
 # Retrieve event by name/id.   need a route for this?
@@ -336,14 +342,15 @@ class AddEvent(Resource):
 
 # Delete an event by name, if it exists.
 @api.route('/delete_event/<string:name>')
-class DeleteEvent(Resource): # HandleEvent class, retrieve/delete by name?
-    #@jwt_required()
+class DeleteEvent(Resource):  # HandleEvent class, retrieve/delete by name?
+    # @jwt_required()
     def delete(self, name):
         event_to_delete = Event.query.filter_by(event_name=name).first()
         if event_to_delete:
             event_to_delete.delete()
-            return jsonify({"success": True, "message": f"Event {name} deleted successsfully."})
+            return jsonify({"success": True, "message": f"Event {name} deleted successfully."})
         return jsonify({"success": False, "message": f"Event {name} does not exist."})
+
 
 # Get all events.
 @api.route('/event_list')
@@ -366,6 +373,7 @@ class EventList(Resource):
             response.append(data)
         return response
 
+
 @api.route('/addticket')
 class AddTicketResource(Resource):
     def get(self):
@@ -381,9 +389,9 @@ class AddTicketResource(Resource):
                 retry = False
             except IntegrityError:
                 # Token exists retry generation
-                retry=True
+                retry = True
 
-        return jsonify({"key":token})
+        return jsonify({"key": token})
 
     @api.expect(addTicketInput)
     def post(self):
@@ -393,11 +401,11 @@ class AddTicketResource(Resource):
 
         # Check if token exists
         if existing_code is None:
-            return jsonify({"msg":"Invalid request"})
+            return jsonify({"msg": "Invalid request"})
         else:
             # Check if token is still valid
             if existing_code.valid == 0:
-                return jsonify({"msg":"Invalid token"})
+                return jsonify({"msg": "Invalid token"})
 
         # Set token to be invalid
         existing_code.valid = 0
@@ -406,8 +414,8 @@ class AddTicketResource(Resource):
             eventID=args.get("eventID"),
             ticketTypeID=args.get("ticketTypeID"),
             userID=args.get("userID"),
-            cipherkey="random", ## Update with chris code
-            valid = 1
+            cipherkey="random",  ## Update with chris code
+            valid=1
         )
         db.session.add(newticket)
 
@@ -415,10 +423,11 @@ class AddTicketResource(Resource):
             # Update new ticket and invalidate idepotency token
             db.session.commit()
         except:
-            jsonify({"msg":"Error try again"})
+            jsonify({"msg": "Error try again"})
 
         # Return confirmation message
         return jsonify({"msg": "Ticket sucessfully added"})
+
 
 @api.route('/requestQRdata')
 class requestQRdataResource(Resource):
@@ -426,11 +435,13 @@ class requestQRdataResource(Resource):
     def get():
         pass
 
+
 @api.route('/validateTicket')
 class validateTicketResource(Resource):
     @api.expect(validateTicketModel)
     def get():
         pass
+
 
 @app.shell_context_processor
 def make_shell_context():

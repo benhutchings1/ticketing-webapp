@@ -31,9 +31,9 @@ class User(db.Model):
 
 # Event and ticket models
 class Event(db.Model):
-    event_id = db.Column(db.Integer(8), primary_key=True, autoincrement=True)
+    event_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
     event_name = db.Column(db.String(128), nullable=False)
-    venue_id = db.Column(db.Integer(8), db.ForeignKey('venue.venue_id'), nullable=False)
+    venue_id = db.Column(db.Integer(), db.ForeignKey('venue.venue_id'), nullable=False)
     datetime = db.Column(db.DateTime, nullable=False)  # I have set this to datetime but can be changed if needed
     description = db.Column(db.Text)  # db.Text() . Overflow?
     genre = db.Column(db.String(128))
@@ -57,11 +57,11 @@ class Event(db.Model):
 
 # Venue model
 class Venue(db.Model):
-    venue_id = db.Column(db.Integer(8), primary_key=True, autoincrement=True)
+    venue_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
     location = db.Column(db.String(256), nullable=False)
     name = db.Column(db.String(128), nullable=False)
     postcode = db.Column(db.String(8), nullable=False)
-    capacity = db.Column(db.Integer(8))
+    capacity = db.Column(db.Integer())
 
     def save(self):
         db.session.add(self)
@@ -108,4 +108,4 @@ class TokenBlocklist(db.Model):
 
 class IdempotencyTokens(db.Model):
     token = db.Column(db.String(128), primary_key=True, index=True)
-    valid = db.Column(db.Integer(1))
+    valid = db.Column(db.Integer())
