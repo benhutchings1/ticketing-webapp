@@ -14,21 +14,6 @@ const Login = (props) => {
     const [loginError, setLoginError] = useState({});
     const [isSubmitted, setIsSubmitted] = useState(false);
 
-    //temp database account info
-    const database = [
-      {
-        email: "email1",
-        password: "password1"
-      }
-    ];
-
-    const errors = [
-      {
-        email: "invalid email",
-        password: "invalid password"
-      }
-    ]
-
     const navigate = useNavigate();
 
     const logInUser = async () => {
@@ -44,7 +29,7 @@ const Login = (props) => {
             })
         })
         .catch(error => {
-            console.log(error.response.data);
+            console.log(error)
             if (error.response && error.response.status === 401) {
                 alert(error.response.data.msg);
             }

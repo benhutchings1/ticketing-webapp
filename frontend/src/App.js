@@ -3,9 +3,9 @@ import './AppMobile.css';
 import React, { useState, useEffect } from "react";
 import {BrowserRouter as Router, Navigate, Route, Routes, useNavigate} from "react-router-dom";
 import {Landing, Login, Register} from "./components";
-import {Account, Home, Shop} from "./components/dashboard/pages";
+import {Account, Home, QRCodeScanner, Shop} from "./components/dashboard/pages";
 import {Navbar} from "./components/dashboard";
-import {getUser} from "./helpers/checkUser";
+import {getUser} from "./helpers";
 
 function App() {
     const [user, setUser] = useState({});
@@ -39,6 +39,9 @@ function App() {
                             <Route exact path="/home" element={<Home user={user} setUser={setUser}/>}/>
                             <Route exact path="/shop" element={<Shop user={user} setUser={setUser}/>}/>
                             <Route exact path="/account" element={<Account user={user} setUser={setUser}/>}/>
+
+                            {/* Management Routes */}
+                            <Route exact path="/scanner" element={<QRCodeScanner user={user} setUser={setUser}/>}/>
 
                             {/* If user tries to go to a route that doesn't exist, take them to landing page */}
                             <Route path="*" element={<Navigate to="/" />} />

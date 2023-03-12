@@ -18,7 +18,17 @@ const Home = (props) => {
 
     return (
         <div className={'contentContainer'}>
-            <h1>HOME</h1>
+            <h1 className={'dashboardTitle'}>HOME</h1>
+            {user != null && user.role !== "management" ?
+                // User page
+                <div>
+
+                </div>
+            :
+                // Management page
+                <div>
+                    <button className={'qrCodeBtn'} onClick={() => {navigate("/scanner")}}>SCAN QR CODE</button>
+                </div>}
         </div>
     )
 }

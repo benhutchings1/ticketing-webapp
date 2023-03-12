@@ -1,0 +1,12 @@
+.dashboardTitle {
+    color: black;
+}
+
+.qrCodeBtn {
+    width: 150px;
+    height: 150px;
+    background-color: lightgrey;
+    border-radius: 25px;
+    font-size: 1.5rem;
+    color: #000000;
+}
