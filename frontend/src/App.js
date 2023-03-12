@@ -5,7 +5,7 @@ import {BrowserRouter as Router, Navigate, Route, Routes, useNavigate} from "rea
 import {Landing, Login, Register} from "./components";
 import {Account, Home, QRCodeScanner, Shop} from "./components/dashboard/pages";
 import {Navbar} from "./components/dashboard";
-import {getUser} from "./helpers";
+import {getUser, isUserLoggedIn} from "./helpers";
 
 function App() {
     const [user, setUser] = useState({});
@@ -30,7 +30,7 @@ function App() {
         <div className="App">
             <Router>
                 <div className='pageContainer'>
-                    {(user) ? <Navbar user={user} /> : ""} {/* only show navbar is user exists */}
+                    {(isUserLoggedIn(user)) ? <Navbar user={user} /> : ""} {/* only show navbar is user exists */}
                     <div className='innerPageContainer'>
                         <Routes>
                             <Route exact path="/" element={<Landing user={user} setUser={setUser}/>}/>
