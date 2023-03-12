@@ -8,13 +8,22 @@ import {getCookie} from "../../../../helpers";
 const Account = (props) => {
     const user = props.user;
     const setUser = props.setUser;
+    const [firstLetter, setFirstLetter] = useState("")
 
     const navigate = useNavigate();
+
+    // Generate random colour on first visit
+    useEffect(() => {
+        let randomColour = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+        document.getElementById('accountPicture').style.backgroundColor = randomColour;
+    }, [])
 
     // Once user is updated, check if valid
     useEffect(() => {
         if (user == null) {
             navigate("/")
+        } else if (user.firstname != null) {
+            setFirstLetter(user.firstname[0])
         }
     }, [user])
 
@@ -41,9 +50,13 @@ const Account = (props) => {
     return (
         <div className={'contentContainer'}>
             <h1>ACCOUNT</h1>
-            {(user != null) ?
+            {(user != null && true) ?
                 <div>
                     <div className={'accountDetails'}>
+                        <div id={'accountPicture'} className={'accountPicture'}>
+                            {firstLetter}
+                        </div>
+                        <br/><br/>
                         <b>Email:</b>{user.email}
                         <br/><br/>
                         <b>Name:</b>
