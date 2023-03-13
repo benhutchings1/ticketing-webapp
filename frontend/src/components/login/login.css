@@ -34,6 +34,7 @@ h1 {
 .error {
     color: #ff0000;
     display: none;
+    font-size: 12px;
 }
 
 .input-container input:invalid ~ span{
@@ -63,8 +64,12 @@ h1 {
 } */
 
 .login-form {
-    border: 1px solid black;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    align-items: center;
+    justify-content: center;
 }
 
 .submit-button {

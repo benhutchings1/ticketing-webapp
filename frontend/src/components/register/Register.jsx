@@ -19,7 +19,8 @@ const Register = (props) => {
     const [phoneNumber, setPhoneNumber] = useState("");
     const [registerError, setRegisterError] = useState("");
 
-    const registerUser = async () => {
+    const registerUser = async (event) => {
+        event.preventDefault();
         if(email.length==0||
             password.length==0||
             firstName.length==0||
@@ -85,7 +86,7 @@ const Register = (props) => {
   return (
       <div className='box'>
           <h1>REGISTER</h1>
-          <div className={"registerFields"}>
+          <form id="register-form" className={"registerFields"} onSubmit={registerUser}>
                <div className='input-container'>
                   <label>Email: </label>
                   <input
@@ -152,6 +153,7 @@ const Register = (props) => {
                       name="dob"
                       placeholder="01-01-1999"
                       required
+                      max={new Date().toISOString().split("T")[0]}
                   />
                   {registerError&&String(dob).length<=0?
                   <span className="error">Please enter your DoB</span>:""}
@@ -184,9 +186,9 @@ const Register = (props) => {
                   {registerError&&phoneNumber.length<=0?
                   <span className="error">Please enter your phone number</span>:""}
               </div>
-          </div>
+          </form>
           <div className='button-container'>
-            <button className='submit-button' onClick={() => {registerUser()}}>
+            <button className='submit-button' form="register-form">
                 Submit
             </button>
           </div>

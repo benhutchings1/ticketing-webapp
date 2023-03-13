@@ -13,12 +13,6 @@ const Login = (props) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loginError, setLoginError] = useState("");
-    const [passwordError, setPasswordError] = useState("");
-
-    const [validEmail, setValidEmail] = useState(false)
-    const [validPassword, setValidPassword] = useState(false)
-
-    const [isSubmitted, setIsSubmitted] = useState(false);
 
 
     const navigate = useNavigate();
@@ -30,42 +24,26 @@ const Login = (props) => {
             email_address: email,
             password: password
         }
-
-        if(email.length==0||password.length==0){
-            setLoginError(true)
-        } else { 
-            httpClient.post('/login', data)
-            .then(response => {
-            getUser(setUser).then(r => {
-                navigate("/home");
-            })
-            })
-            .catch(error => {
-            console.log(error.response.data);
-            if (error.response && error.response.status === 401) {
-                alert(error.response.data.msg);
-            }
-            });
+ 
+        httpClient.post('/login', data)
+        .then(response => {
+        getUser(setUser).then(r => {
+            navigate("/home");
+        })
+        })
+        .catch(error => {
+        console.log(error.response.data);
+        if (error.response && error.response.status === 401) {
+            alert(error.response.data.msg);
         }
-
-        // if (email === '' || (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/).test(String(email))){
-        //     setLoginError({emailError: "Please enter your email"})
-        // } else {
-        //     setValidInput({validEmail: true})
-        // }
+        });
         
-        // if (password === ''){
-        //     setLoginError({passwordError: "Please enter password"})
-        // } else {
-        //     setValidInput({validPassword})
-        // }        
-
     };
 
     return (
-        <div>
+        <div className="box">
         <h1>LOGIN</h1>
-            <form className='box' onSubmit={logInUser}>
+            <form className="login-form" id="login-form" onSubmit={logInUser}>
             <div className='input-container'>
                 <label>Email: </label>
                 <input
@@ -94,10 +72,10 @@ const Login = (props) => {
                 {loginError&&password.length<=0?
                 <span className="error">Please enter a Password</span>:""}
             </div>
-            <div className='button-container'>
-                <button className='submit-button' onClick={() => {logInUser()}}>Submit</button>
-            </div>
             </form>
+            <div className='button-container'>
+                <button className='submit-button' form="login-form">Submit</button>
+            </div>
         <button className='link-button' onClick={() => {navigate('/register')}}>Don't have an account? Register here</button>
     </div>
     )
