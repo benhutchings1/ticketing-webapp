@@ -31,7 +31,9 @@ const Login = (props) => {
 
     const navigate = useNavigate();
 
-    const logInUser = async () => {
+    const logInUser = async (event) => {
+        event.preventDefault();
+        
         const data = {
             email_address: email,
             password: password
@@ -52,7 +54,7 @@ const Login = (props) => {
     };
 
     return (
-        <div className='box'>
+        <form className='box' onSubmit={logInUser}>
             <h1>LOGIN</h1>
             <div className='input-container'>
                     <label>Email: </label>
@@ -79,10 +81,10 @@ const Login = (props) => {
                     />
                 </div>
                 <div className='button-container'>
-                  <button className='submit-button' onClick={() => {logInUser()}}>Submit</button>
+                  <button type="submit" className='submit-button'>Submit</button>
                 </div>
             <button className='link-button' onClick={() => {navigate('/register')}}>Don't have an account? Register here</button>
-        </div>
+        </form>
     )
 };
 
