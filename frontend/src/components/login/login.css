@@ -8,7 +8,7 @@ label {
 }
 
 input {
-    margin-bottom: 20px;
+    margin-bottom: 5px;
 }
 
 h1 {
@@ -19,7 +19,48 @@ h1 {
 .input-container {
     text-align: left;
     display: inline-block;
+    margin-bottom: 20px;
 }
+
+.input-container input {
+    border: 2px solid white;
+}
+
+.input-container input:focus{
+    border: 2px solid gray;
+    outline: 0;
+}
+
+.error {
+    color: #ff0000;
+    display: none;
+}
+
+.input-container input:invalid ~ span{
+    display: block;
+}
+
+/* .input-container input:invalid{
+    border-color: #ff0000;
+} */
+
+.input-container input:valid{
+    border-color: #00ff1e;
+}
+
+/* .input-container.success input{
+    border-color: #00ff1e;
+}
+
+.input-container.error input {
+    border-color: #ff0000;
+}
+
+.input-container .error {
+    color: #ff0000;
+    font-size: 10px;
+    height: 14px;
+} */
 
 .login-form {
     border: 1px solid black;

@@ -17,56 +17,68 @@ const Register = (props) => {
     const [dob, setDob] = useState("");
     const [postcode, setPostcode] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
+    const [registerError, setRegisterError] = useState("");
 
     const registerUser = async () => {
-        try {
-            const requestOptions = {
-                method: 'POST',
-                mode: 'cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    "email_address": email,
-                    "password": password,
-                    "firstname": firstName,
-                    "surname": surname,
-                    "date_of_birth": dob,
-                    "postcode": postcode,
-                    "phone_number": phoneNumber
-                })
-            };
-
-            const response = await fetch("http://localhost:5000/signup", requestOptions)
-            const newData = await response.json();
-
-            if (newData.success === true) {
-                // THIS MIGHT NEED CHANGING IN BACKEND
-                const data = {
-                    email_address: email,
-                    password: password
-                }
-
-                httpClient.post('/login', data)
-                .then(response => {
-                    getUser(setUser).then(r => {
-                        navigate("/home");
+        if(email.length==0||
+            password.length==0||
+            firstName.length==0||
+            surname.length==0||
+            String(dob).length==0||
+            postcode.length==0||
+            phoneNumber.length==0
+            ){
+            setRegisterError(true)
+        } else { 
+            try {
+                const requestOptions = {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        "email_address": email,
+                        "password": password,
+                        "firstname": firstName,
+                        "surname": surname,
+                        "date_of_birth": dob,
+                        "postcode": postcode,
+                        "phone_number": phoneNumber
                     })
-                })
-                .catch(error => {
-                    console.log(error.response.data);
-                    if (error.response && error.response.status === 401) {
-                        alert(error.response.data.msg);
+                };
+
+                const response = await fetch("http://localhost:5000/signup", requestOptions)
+                const newData = await response.json();
+
+                if (newData.success === true) {
+                    // THIS MIGHT NEED CHANGING IN BACKEND
+                    const data = {
+                        email_address: email,
+                        password: password
                     }
-                });
-            }
-        } catch (error) {
-            alert(error)
-            // if (error.response.status === 401) {
-            //     alert("Invalid credentials");
-            // }
-      }
+
+                    httpClient.post('/login', data)
+                    .then(response => {
+                        getUser(setUser).then(r => {
+                            navigate("/home");
+                        })
+                    })
+                    .catch(error => {
+                        console.log(error.response.data);
+                        if (error.response && error.response.status === 401) {
+                            alert(error.response.data.msg);
+                        }
+                    });
+                }
+            } catch (error) {
+                alert(error)
+                // if (error.response.status === 401) {
+                //     alert("Invalid credentials");
+                // }
+        }
+    }
     }
     const navigate = useNavigate();
 
@@ -85,6 +97,8 @@ const Register = (props) => {
                       placeholder="youremail@gmail.com"
                       required
                   />
+                  {registerError&&email.length<=0?
+                  <span className="error">Please enter an Email</span>:""}
               </div>
               <div className='input-container'>
                   <label>Password: </label>
@@ -97,6 +111,8 @@ const Register = (props) => {
                       placeholder="********"
                       required
                   />
+                  {registerError&&password.length<=0?
+                  <span className="error">Please enter a Password</span>:""}
               </div>
               <div className='input-container'>
                   <label>First name: </label>
@@ -109,6 +125,8 @@ const Register = (props) => {
                       placeholder="John"
                       required
                   />
+                  {registerError&&firstName.length<=0?
+                  <span className="error">Please enter your firstname</span>:""}
               </div>
               <div className='input-container'>
                   <label>Surname: </label>
@@ -121,6 +139,8 @@ const Register = (props) => {
                       placeholder="Doe"
                       required
                   />
+                  {registerError&&surname.length<=0?
+                  <span className="error">Please enter your surname</span>:""}
               </div>
               <div className='input-container'>
                   <label>Date of Birth: </label>
@@ -133,6 +153,8 @@ const Register = (props) => {
                       placeholder="01-01-1999"
                       required
                   />
+                  {registerError&&String(dob).length<=0?
+                  <span className="error">Please enter your DoB</span>:""}
               </div>
               <div className='input-container'>
                   <label>Postcode: </label>
@@ -145,6 +167,8 @@ const Register = (props) => {
                       placeholder="AB12 3CD"
                       required
                   />
+                  {registerError&&postcode.length<=0?
+                  <span className="error">Please enter your Postcode</span>:""}
               </div>
               <div className='input-container'>
                   <label>Phone Number: </label>
@@ -157,6 +181,8 @@ const Register = (props) => {
                       placeholder="07123 456789"
                       required
                   />
+                  {registerError&&phoneNumber.length<=0?
+                  <span className="error">Please enter your phone number</span>:""}
               </div>
           </div>
           <div className='button-container'>
