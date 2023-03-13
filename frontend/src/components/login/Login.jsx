@@ -23,51 +23,9 @@ const Login = (props) => {
 
     const navigate = useNavigate();
 
-    // const setError = (element, message) => {
-    //     const inputContainer = element.parentElement;
-    //     const errorDisplay = inputContainer.querySelector('.error');
-
-    //     errorDisplay.innerText = message;
-    //     inputContainer.classList.add('error');
-    //     inputContainer.classList.remove('success');
-    // }
-
-    // const setSuccess = element => {
-    //     const inputContainer = element.parentElement;
-    //     const errorDisplay = inputContainer.querySelector('.error');
-
-    //     errorDisplay.innerText = '';
-    //     inputContainer.classList.add('success');
-    //     inputContainer.classList.remove('error');
-    // }
-
-    // const validateInputs = () => {
-    //     const emailValue = email.value.trim();
-    //     const passwordValue = password.value.trim();
-
-    //     if(emailValue === '') {
-    //         setError(email, 'Email is required');
-    //     } else {
-    //         setSuccess(email);
-    //     }
-    // }
-
-    
-    // const regex = new RegExp('/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/')
-
-    // if(!email) {
-    //     setEmailError("Please enter your email")
-    // } else {
-    //     setValidEmail(true)
-    // }
-
-    // if(!password) {
-    //     setPasswordError("Please enter password")
-    // } else {
-    //     setValidPassword(true)
-    // }
-
-    const logInUser = async () => {
+    const logInUser = async (event) => {
+        event.preventDefault();
+        
         const data = {
             email_address: email,
             password: password
@@ -105,8 +63,9 @@ const Login = (props) => {
     };
 
     return (
-        <div className='box'>
-            <h1>LOGIN</h1>
+        <div>
+        <h1>LOGIN</h1>
+            <form className='box' onSubmit={logInUser}>
             <div className='input-container'>
                 <label>Email: </label>
                 <input
@@ -138,6 +97,7 @@ const Login = (props) => {
             <div className='button-container'>
                 <button className='submit-button' onClick={() => {logInUser()}}>Submit</button>
             </div>
+            </form>
         <button className='link-button' onClick={() => {navigate('/register')}}>Don't have an account? Register here</button>
     </div>
     )
