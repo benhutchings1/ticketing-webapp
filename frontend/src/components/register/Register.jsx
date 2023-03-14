@@ -48,55 +48,28 @@ const Register = (props) => {
     const registerUser = async (event) => {
         event.preventDefault();
 
-        
-        try {
-            const requestOptions = {
-                method: 'POST',
-                mode: 'cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    "email_address": values.email,
-                    "password": values.password,
-                    "firstname": values.firstname,
-                    "surname": values.surname,
-                    "date_of_birth": values.dob,
-                    "postcode": values.postcode,
-                    "phone_number": values.phoneNumber
-                })
-            };
+        const data = {
+            "email_address": values.email,
+            "password": values.password,
+            "firstname": values.firstname,
+            "surname": values.surname,
+            "date_of_birth": values.dob,
+            "postcode": values.postcode,
+            "phone_number": values.phoneNumber
+        }
 
-            const response = await fetch("http://localhost:5000/signup", requestOptions)
-            const newData = await response.json();
-
-            if (newData.success === true) {
-                // THIS MIGHT NEED CHANGING IN BACKEND
-                const data = {
-                    email_address: values.email,
-                    password: values.password
-                }
-
-                httpClient.post('/login', data)
-                .then(response => {
-                    getUser(setUser).then(r => {
-                        navigate("/home");
-                    })
-                })
-                .catch(error => {
-                    console.log(error.response.data);
-                    if (error.response && error.response.status === 401) {
-                        alert(error.response.data.msg);
-                    }
-                });
+        httpClient.post('/signup', data)
+        .then(response => {
+            getUser(setUser).then(r => {
+                navigate("/home");
+            })
+        })
+        .catch(error => {
+            console.log(error.response.data);
+            if (error.response && error.response.status === 400) {
+                alert(error.response.data.msg);
             }
-        } catch (error) {
-            alert(error)
-            // if (error.response.status === 401) {
-            //     alert("Invalid credentials");
-            // }
-    }
+        });
     }
 
   return (
