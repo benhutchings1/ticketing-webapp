@@ -20,11 +20,13 @@ const Landing = (props) => {
     }, [user])
 
     return (
-        <div className='box'>
-            <img className={'landingLogo'} src={Logo}/>
-            <div className={'landingButtons'}>
-                <button className='landing-button loginBtn' onClick={() => {navigate('/login')}}>LOGIN</button>
-                <button className='landing-button registerBtn' onClick={() => {navigate('/register')}}>REGISTER</button>
+        <div className={'landingContainer'}>
+            <div className='box'>
+                <img className={'landingLogo'} src={Logo}/>
+                <div className={'landingButtons'}>
+                    <button className='landing-button loginBtn' onClick={() => {navigate('/login')}}>LOGIN</button>
+                    <button className='landing-button registerBtn' onClick={() => {navigate('/register')}}>REGISTER</button>
+                </div>
             </div>
         </div>
     )

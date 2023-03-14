@@ -1,0 +1,8 @@
+.eventCard {
+    border-radius: 5px;
+    outline: 1px #dddddd solid;
+    box-shadow: 5px 5px 16px -4px darkgrey;
+    padding: 10px;
+    margin-right: 25px;
+    text-align: start;
+}

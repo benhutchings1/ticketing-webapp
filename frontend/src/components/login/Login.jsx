@@ -39,37 +39,40 @@ const Login = (props) => {
     };
 
     return (
-        <form className='box' onSubmit={logInUser}>
-            <h1>LOGIN</h1>
-            <div className='input-container'>
-                    <label>Email: </label>
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        id="email"
-                        name="email"
-                        placeholder="youremail@gmail.com"
-                        required
-                    />
-                </div>
+        <div className={'landingContainer'}>
+            <form className='box' onSubmit={logInUser}>
+                <h1>LOGIN</h1>
                 <div className='input-container'>
-                    <label>Password: </label>
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        id="password"
-                        name="password"
-                        placeholder="********"
-                        required
-                    />
-                </div>
-                <div className='button-container'>
-                  <button type="submit" className='submit-button'>Submit</button>
-                </div>
-            <button className='link-button' onClick={() => {navigate('/register')}}>Don't have an account? Register here</button>
-        </form>
+                        <label>Email: </label>
+                        <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            id="email"
+                            name="email"
+                            placeholder="youremail@gmail.com"
+                            required
+                        />
+                    </div>
+                    <div className='input-container'>
+                        <label>Password: </label>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            id="password"
+                            name="password"
+                            placeholder="********"
+                            required
+                        />
+                    </div>
+                    <div className='button-container'>
+                      <button type="submit" className='submit-button'>Submit</button>
+                    </div>
+                <button className='link-button' onClick={() => {navigate('/register')}}>Don't have an account? Register here</button>
+            </form>
+        </div>
+
     )
 };
 

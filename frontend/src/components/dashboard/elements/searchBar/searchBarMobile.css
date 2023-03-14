@@ -1,0 +1,8 @@
+@media only screen and (max-width: 750px) {
+    .searchBar {
+        margin: auto auto 20px;
+    }
+    .searchBarIcon {
+        margin-bottom: 20px;
+    }
+}

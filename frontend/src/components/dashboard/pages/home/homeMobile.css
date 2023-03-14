@@ -1,0 +1,10 @@
+@media only screen and (max-width: 750px) {
+    .eventsListContainer {
+        scroll-snap-type: x mandatory;
+        width: 100vw;
+        margin-left: -25px;
+    }
+    .eventsListContainer div {
+        scroll-snap-align: center;
+    }
+}

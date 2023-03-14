@@ -1,0 +1,6 @@
+@media only screen and (max-width: 750px) {
+    .logoutBtn {
+        top: 47px;
+        right: 25px;
+    }
+}

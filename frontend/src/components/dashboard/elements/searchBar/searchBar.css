@@ -1,0 +1,26 @@
+.searchBarContainer {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.searchBar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 250px;
+    height: 25px;
+    background-color: lightgray;
+    border-radius: 15px;
+    font-family: "Gill Sans MT", sans-serif;
+    font-size: 1rem;
+    margin: auto auto 30px;
+    padding: 10px 10px 10px 50px;
+}
+.searchBarIcon {
+    margin-bottom: 30px;
+    margin-right: 255px;
+    z-index: 2;
+    position: absolute;
+    height: 25px;
+}
