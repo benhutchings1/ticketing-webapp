@@ -1,5 +1,6 @@
 import './home.css';
 import Ticket from '../../elements/ticket/Ticket';
+import Event from '../../elements/event/Event';
 
 import {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";

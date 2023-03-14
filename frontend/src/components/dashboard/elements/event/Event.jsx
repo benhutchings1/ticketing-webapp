@@ -1,7 +1,8 @@
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import Card from 'react-bootstrap/Card';
-import { Component } from "react";
+import react, { Component } from "react";
+
 
 
 export default function Event(){
@@ -24,9 +25,7 @@ export default function Event(){
           items: 1
         }
       };
-      const response = await fetch("http://localhost:5000/signup", requestOptions)
-            const newData = await response.json();
-            
+      
       render () {
         let eventcards = this.state.event.map(event => {
             return (
