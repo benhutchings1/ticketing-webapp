@@ -493,7 +493,7 @@ class validateTicketResource(Resource):
             return jsonify({"msg": "Ticket invalid"})
 
         # Check ticketId's match
-        if decrpyt_ticket_id != args.get("ticketId"):
+        if decrypt_ticket_id != args.get("ticketId"):
             return jsonify({"msg": "Invalid ticket"})
     
         # Check recieved_event against ticket event
