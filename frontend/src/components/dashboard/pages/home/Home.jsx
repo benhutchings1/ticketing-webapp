@@ -1,4 +1,5 @@
 import './home.css';
+import Ticket from '../../elements/ticket/Ticket';
 
 import {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
@@ -16,11 +17,7 @@ const Home = (props) => {
         }
     }, [user])
 
-    return (
-        <div className={'contentContainer'}>
-            <h1>HOME</h1>
-        </div>
-    )
+
 }
 
 export default Home;
