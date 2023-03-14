@@ -137,37 +137,53 @@ def refresh_expiring_jwts(response):
         return response
 
 
-'''
- # old version of the singup route (before adding the format checks to it)
+def login_user_response(user, data=None):
+    """Adds user login with cookie to response"""
+    if data is None:
+        data = {}
+    access_token = create_access_token(identity=user.user_id)
+    data['token'] = access_token
+    response = jsonify(data)
+    set_access_cookies(response, access_token)
+    return response
 
-@api.route('/signup')
-class SignUp(Resource):
 
-    @api.expect(signup_model)
-    def post(self):
-        data = request.get_json()
-        email_address = data.get('email_address')
+def check_signup(data) -> (bool, str):
+    """Returns if signup is valid with error message if invalid"""
+    # Check if user already exists
+    email_address = data.get('email_address')
+    db_user = User.query.filter_by(email_address=email_address).first()
+    if db_user is not None:
+        return False, f"The user {email_address} already exits."
 
-        # user already exists in database?
-        db_email_address = User.query.filter_by(email_address=email_address).first()
-        if db_email_address is not None:
-            return jsonify({"success": False, "message": f"The user {email_address} already exits."})
+    # Email check
+    email_format = r"\"?([-a-zA-Z0-9.`?{}]+@\w+\.\w+)\"?"
+    if not re.match(email_format, email_address):
+        return False, f"{email_address}: invalid email address format."
 
-        # add new user
-        new_user = User(
-            email_address=data.get('email_address'),
-            # salted hash
-            passwd_hash=generate_password_hash(data.get('password'), method="sha256", salt_length=32),
-            firstname=data.get('firstname'),
-            surname=data.get('surname'),
-            date_of_birth=datetime.strptime(data.get('date_of_birth'), "%Y-%m-%d").date(),
-            postcode=data.get('postcode'),
-            phone_number=data.get('phone_number'),
-            role='user'
-        )
-        new_user.save()
-        return jsonify({"success": True, "message": f"User {email_address} created successfully."})
-'''
+    # Phone number uniqueness check + format check
+    phone_number = data.get('phone_number')
+    db_user = User.query.filter_by(phone_number=phone_number).first()
+    if db_user is not None:
+        return False, f"Another user has this {db_user.phone_number} phone number."
+    if len(phone_number) > 16:
+        return False, f"Phone number must be 16 digits or less."
+    if not phone_number.isnumeric():
+        return False, f"Phone number must be numeric."
+
+    # Format checks for firstname & surname
+    firstname = data.get('firstname')
+    surname = data.get('surname')
+    if len(firstname) > 32 or len(surname) > 32:
+        return False, f"The firstname & surname must be 32 characters or less."
+
+    # Format check for postcode
+    postcode = data.get('postcode')
+    if len(postcode) > 8:
+        return False, f"Postcode length must be 8 or less."
+
+    # All checks passed
+    return True, ""
 
 
 # Signup route with format & uniquemess checks (to avoid unuseful internal server errors)
@@ -178,38 +194,14 @@ class SignUp(Resource):
     def post(self):
         data = request.get_json()
 
-        # user already exists?  + email format check
-        email_address = data.get('email_address')
-        db_user = User.query.filter_by(email_address=email_address).first()
-        if db_user is not None:
-            return jsonify({"success": False, "message": f"The user {email_address} already exits."})
-        format = r"\"?([-a-zA-Z0-9.`?{}]+@\w+\.\w+)\"?"
-        if not re.match(format, email_address):
-            return jsonify({"success": False, "message": f"{email_address}: invalid email address format. "})
+        # Check if signup is valid
+        success, msg = check_signup(data)
+        if not success:
+            response = jsonify({"success": False, "message": msg})
+            response.status_code = 400
+            return response
 
-        # phone number uniqueness check + format check
-        phone_number = data.get('phone_number')
-        db_user = User.query.filter_by(phone_number=phone_number).first()
-        if db_user is not None:
-            return jsonify(
-                {"success": False, "message": f"Another user has this {db_user.phone_number} phone number. "})
-        if len(phone_number) > 16:
-            return jsonify({"success": False, "message": f"Phone number must be 16 digits or less."})
-        if not phone_number.isnumeric():
-            return jsonify({"success": False, "message": f"Phone number must be numeric."})
-
-        # format checks for firstname & surname
-        firstname = data.get('firstname')
-        surname = data.get('surname')
-        if len(firstname) > 32 or len(surname) > 32:
-            return jsonify({"success": False, "message": f"The firstname & surname must be 32 characters or less."})
-
-        # format check for postcode
-        postcode = data.get('postcode')
-        if len(postcode) > 8:
-            return jsonify({"success": False, "message": f"Postcode length must be 8 or less."})
-
-        # add new user
+        # Add new user
         new_user = User(
             email_address=data.get('email_address'),
             # salted hash
@@ -223,7 +215,8 @@ class SignUp(Resource):
         )
         new_user.save()
 
-        return jsonify({"success": True, "message": f"User {email_address} created successfully."})
+        response_data = {"success": True, "message": f"User {data.get('email_address')} created successfully."}
+        return login_user_response(new_user, response_data)
 
 
 @api.route('/login')
@@ -240,13 +233,7 @@ class Login(Resource):
 
         if db_user and check_password_hash(db_user.passwd_hash, password):
             # Login was successful
-            access_token = create_access_token(identity=db_user.user_id)
-            response = jsonify({
-                "msg": "Successfully logged in",
-                "token": access_token
-            })
-            set_access_cookies(response, access_token)
-            return response
+            return login_user_response(db_user, data={"msg": "Successfully logged in"})
 
         # Login failure
         response = jsonify({'msg': 'Incorrect email/password'})
