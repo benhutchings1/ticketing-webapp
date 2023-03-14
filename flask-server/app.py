@@ -417,7 +417,7 @@ class AddTicketResource(Resource):
             event_id=args.get("eventID"),
             ticket_type=args.get("ticket_type"),
             user_id=args.get("userID"),
-            cipher_key=utils.gen_key()
+            cipher_key=utils.gen_key(),
             valid=1
         )
         db.session.add(newticket)
@@ -492,7 +492,7 @@ class validateTicketResource(Resource):
         except:
             return jsonify({"msg": "Ticket invalid"})
 
-        Check ticketId's match
+        # Check ticketId's match
         if decrpyt_ticket_id != args.get("ticketId"):
             return jsonify({"msg": "Invalid ticket"})
     
