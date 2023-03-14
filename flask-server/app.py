@@ -137,11 +137,15 @@ def refresh_expiring_jwts(response):
         return response
 
 
-def login_user(response, user):
+def login_user_response(user, data=None):
     """Adds user login with cookie to response"""
+    if data is None:
+        data = {}
     access_token = create_access_token(identity=user.user_id)
-    response.json['token'] = access_token
+    data['token'] = access_token
+    response = jsonify(data)
     set_access_cookies(response, access_token)
+    return response
 
 
 def check_signup(data) -> (bool, str):
@@ -227,11 +231,7 @@ class Login(Resource):
 
         if db_user and check_password_hash(db_user.passwd_hash, password):
             # Login was successful
-            response = jsonify({
-                "msg": "Successfully logged in"
-            })
-            login_user(response, db_user)
-            return response
+            return login_user_response(db_user, data={"msg": "Successfully logged in"})
 
         # Login failure
         response = jsonify({'msg': 'Incorrect email/password'})
