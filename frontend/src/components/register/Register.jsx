@@ -9,182 +9,206 @@ import {getUser} from "../../helpers";
 const Register = (props) => {
     const user = props.user;
     const setUser = props.setUser;
+    const [values, setValues] = useState({
+        email:"",
+        password:"",
+        confirmPassword:"",
+        firstname:"",
+        surname:"",
+        dob:"",
+        postcode:"",
+        phoneNumber:"",
+    })
+    const [focusedEmail, setFocusedEmail] = useState(false)
+    const [focusedPassword, setFocusedPassword] = useState(false)
+    const [focusedConfirm, setFocusedConfirm] = useState(false)
+    const [focusedFirstname, setFocusedFirstname] = useState(false)
+    const [focusedSurname, setFocusedSurname] = useState(false)
+    const [focusedDob, setFocusedDob] = useState(false)
+    const [focusedPostcode, setFocusedPostcode] = useState(false)
+    const [focusedPhone, setFocusedPhone] = useState(false)
 
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [firstName, setFirstName] = useState("");
-    const [surname, setSurname] = useState("");
-    const [dob, setDob] = useState("");
-    const [postcode, setPostcode] = useState("");
-    const [phoneNumber, setPhoneNumber] = useState("");
-    const [registerError, setRegisterError] = useState("");
+    const errorMessage = {
+        emailError: "Invalid Email",
+        passwordError: "Invalid Password",
+        confirmError: "Password does not match",
+        firstnameError: "Please enter your firstname",
+        surnameError: "Please enter your surname",
+        dobError: "Please enter your date of birth",
+        postcodeError: "Please enter your postcode",
+        phoneError: "Please enter your phone number",
+    }
+
+    const onChange = (e) => {
+        setValues({ ...values, [e.target.name]: e.target.value})
+    }
+
+    const navigate = useNavigate();
 
     const registerUser = async (event) => {
         event.preventDefault();
-        if(email.length==0||
-            password.length==0||
-            firstName.length==0||
-            surname.length==0||
-            String(dob).length==0||
-            postcode.length==0||
-            phoneNumber.length==0
-            ){
-            setRegisterError(true)
-        } else { 
-            try {
-                const requestOptions = {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        "email_address": email,
-                        "password": password,
-                        "firstname": firstName,
-                        "surname": surname,
-                        "date_of_birth": dob,
-                        "postcode": postcode,
-                        "phone_number": phoneNumber
-                    })
-                };
 
-                const response = await fetch("http://localhost:5000/signup", requestOptions)
-                const newData = await response.json();
+        
+        try {
+            const requestOptions = {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    "email_address": values.email,
+                    "password": values.password,
+                    "firstname": values.firstname,
+                    "surname": values.surname,
+                    "date_of_birth": values.dob,
+                    "postcode": values.postcode,
+                    "phone_number": values.phoneNumber
+                })
+            };
 
-                if (newData.success === true) {
-                    // THIS MIGHT NEED CHANGING IN BACKEND
-                    const data = {
-                        email_address: email,
-                        password: password
-                    }
+            const response = await fetch("http://localhost:5000/signup", requestOptions)
+            const newData = await response.json();
 
-                    httpClient.post('/login', data)
-                    .then(response => {
-                        getUser(setUser).then(r => {
-                            navigate("/home");
-                        })
-                    })
-                    .catch(error => {
-                        console.log(error.response.data);
-                        if (error.response && error.response.status === 401) {
-                            alert(error.response.data.msg);
-                        }
-                    });
+            if (newData.success === true) {
+                // THIS MIGHT NEED CHANGING IN BACKEND
+                const data = {
+                    email_address: values.email,
+                    password: values.password
                 }
-            } catch (error) {
-                alert(error)
-                // if (error.response.status === 401) {
-                //     alert("Invalid credentials");
-                // }
-        }
+
+                httpClient.post('/login', data)
+                .then(response => {
+                    getUser(setUser).then(r => {
+                        navigate("/home");
+                    })
+                })
+                .catch(error => {
+                    console.log(error.response.data);
+                    if (error.response && error.response.status === 401) {
+                        alert(error.response.data.msg);
+                    }
+                });
+            }
+        } catch (error) {
+            alert(error)
+            // if (error.response.status === 401) {
+            //     alert("Invalid credentials");
+            // }
     }
     }
-    const navigate = useNavigate();
 
   return (
       <div className='box'>
           <h1>REGISTER</h1>
-          <form id="register-form" className={"registerFields"} onSubmit={registerUser}>
+          <form className={"registerFields"} id="register-form" onSubmit={registerUser}>
                <div className='input-container'>
                   <label>Email: </label>
                   <input
                       type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      value={values.email}
+                      onChange={onChange}
+                      onBlur={(e) => setFocusedEmail(true)}
+                      focused={String(focusedEmail)}
                       id="email"
                       name="email"
                       placeholder="youremail@gmail.com"
                       required
+                      // pattern="([-a-zA-Z0-9.`?{}]+@\w+\.\w+)" //TODO: remove when finished with testing
                   />
-                  {registerError&&email.length<=0?
-                  <span className="error">Please enter an Email</span>:""}
+                  <span className="error">Please enter an Email</span>
               </div>
               <div className='input-container'>
                   <label>Password: </label>
                   <input
                       type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      value={values.password}
+                      onChange={onChange}
+                      onBlur={(e) => setFocusedPassword(true)}
+                      focused={String(focusedPassword)}
                       id="password"
                       name="password"
                       placeholder="********"
                       required
                   />
-                  {registerError&&password.length<=0?
-                  <span className="error">Please enter a Password</span>:""}
+                  <span className="error">Please enter a Password</span>
               </div>
               <div className='input-container'>
                   <label>First name: </label>
                   <input
                       type="text"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      id="firstName"
-                      name="firstName"
+                      value={values.firstname}
+                      onChange={onChange}
+                      onBlur={(e) => setFocusedFirstname(true)}
+                      focused={String(focusedFirstname)}
+                      id="firstname"
+                      name="firstname"
                       placeholder="John"
                       required
                   />
-                  {registerError&&firstName.length<=0?
-                  <span className="error">Please enter your firstname</span>:""}
+                  <span className="error">Please enter your firstname</span>
               </div>
               <div className='input-container'>
                   <label>Surname: </label>
                   <input
                       type="text"
-                      value={surname}
-                      onChange={(e) => setSurname(e.target.value)}
+                      value={values.surname}
+                      onChange={onChange}
+                      onBlur={(e) => setFocusedSurname(true)}
+                      focused={String(focusedSurname)}
                       id="surname"
                       name="surname"
                       placeholder="Doe"
                       required
                   />
-                  {registerError&&surname.length<=0?
-                  <span className="error">Please enter your surname</span>:""}
+                  <span className="error">Please enter your surname</span>
               </div>
               <div className='input-container'>
                   <label>Date of Birth: </label>
                   <input
                       type="date"
-                      value={dob}
-                      onChange={(e) => setDob(e.target.value)}
+                      value={values.dob}
+                      onChange={onChange}
+                      onBlur={(e) => setFocusedDob(true)}
+                      focused={String(focusedDob)}
                       id="dob"
                       name="dob"
-                      placeholder="01-01-1999"
+                      placeholder="DD-MM-YYYY"
                       required
                       max={new Date().toISOString().split("T")[0]}
                   />
-                  {registerError&&String(dob).length<=0?
-                  <span className="error">Please enter your DoB</span>:""}
+                  <span className="error">Please enter your DoB</span>
               </div>
               <div className='input-container'>
                   <label>Postcode: </label>
                   <input
                       type="text"
-                      value={postcode}
-                      onChange={(e) => setPostcode(e.target.value)}
+                      value={values.postcode}
+                      onChange={onChange}
+                      onBlur={(e) => setFocusedPostcode(true)}
+                      focused={String(focusedPostcode)}
                       id="postcode"
                       name="postcode"
                       placeholder="AB12 3CD"
                       required
                   />
-                  {registerError&&postcode.length<=0?
-                  <span className="error">Please enter your Postcode</span>:""}
+                  <span className="error">Please enter your Postcode</span>
               </div>
               <div className='input-container'>
                   <label>Phone Number: </label>
                   <input
                       type="text"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      value={values.phoneNumber}
+                      onChange={onChange}
+                      onBlur={(e) => setFocusedPhone(true)}
+                      focused={String(focusedPhone)}
                       id="phoneNumber"
                       name="phoneNumber"
                       placeholder="07123 456789"
                       required
                   />
-                  {registerError&&phoneNumber.length<=0?
-                  <span className="error">Please enter your phone number</span>:""}
+                  <span className="error">Please enter your phone number</span>
               </div>
           </form>
           <div className='button-container'>
