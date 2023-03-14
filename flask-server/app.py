@@ -183,7 +183,7 @@ def check_signup(data) -> (bool, str):
         return False, f"Postcode length must be 8 or less."
 
     # All checks passed
-    return True
+    return True, ""
 
 
 # Signup route with format & uniquemess checks (to avoid unuseful internal server errors)
@@ -193,8 +193,9 @@ class SignUp(Resource):
     @api.expect(signup_model)
     def post(self):
         data = request.get_json()
-        success, msg = check_signup(data)
 
+        # Check if signup is valid
+        success, msg = check_signup(data)
         if not success:
             response = jsonify({"success": False, "message": msg})
             response.status_code = 400
@@ -214,7 +215,8 @@ class SignUp(Resource):
         )
         new_user.save()
 
-        return jsonify({"success": True, "message": f"User {data.get('email_address')} created successfully."})
+        response_data = {"success": True, "message": f"User {data.get('email_address')} created successfully."}
+        return login_user_response(new_user, response_data)
 
 
 @api.route('/login')
