@@ -149,7 +149,7 @@ def login_user_response(user, data=None):
 
 
 def check_signup(data) -> (bool, str):
-    """Returns if signup is valid with message to be passed to response"""
+    """Returns if signup is valid with error message if invalid"""
     # Check if user already exists
     email_address = data.get('email_address')
     db_user = User.query.filter_by(email_address=email_address).first()
