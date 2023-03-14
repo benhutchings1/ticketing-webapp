@@ -144,6 +144,44 @@ def login_user(response, user):
     set_access_cookies(response, access_token)
 
 
+def check_signup(data) -> (bool, str):
+    """Returns if signup is valid with message to be passed to response"""
+    # Check if user already exists
+    email_address = data.get('email_address')
+    db_user = User.query.filter_by(email_address=email_address).first()
+    if db_user is not None:
+        return False, f"The user {email_address} already exits."
+
+    # Email check
+    email_format = r"\"?([-a-zA-Z0-9.`?{}]+@\w+\.\w+)\"?"
+    if not re.match(email_format, email_address):
+        return False, f"{email_address}: invalid email address format."
+
+    # Phone number uniqueness check + format check
+    phone_number = data.get('phone_number')
+    db_user = User.query.filter_by(phone_number=phone_number).first()
+    if db_user is not None:
+        return False, f"Another user has this {db_user.phone_number} phone number."
+    if len(phone_number) > 16:
+        return False, f"Phone number must be 16 digits or less."
+    if not phone_number.isnumeric():
+        return False, f"Phone number must be numeric."
+
+    # Format checks for firstname & surname
+    firstname = data.get('firstname')
+    surname = data.get('surname')
+    if len(firstname) > 32 or len(surname) > 32:
+        return False, f"The firstname & surname must be 32 characters or less."
+
+    # Format check for postcode
+    postcode = data.get('postcode')
+    if len(postcode) > 8:
+        return False, f"Postcode length must be 8 or less."
+
+    # All checks passed
+    return True
+
+
 # Signup route with format & uniquemess checks (to avoid unuseful internal server errors)
 @api.route('/signup')
 class SignUp(Resource):
@@ -151,39 +189,14 @@ class SignUp(Resource):
     @api.expect(signup_model)
     def post(self):
         data = request.get_json()
+        success, msg = check_signup(data)
 
-        # user already exists?  + email format check
-        email_address = data.get('email_address')
-        db_user = User.query.filter_by(email_address=email_address).first()
-        if db_user is not None:
-            return jsonify({"success": False, "message": f"The user {email_address} already exits."})
-        format = r"\"?([-a-zA-Z0-9.`?{}]+@\w+\.\w+)\"?"
-        if not re.match(format, email_address):
-            return jsonify({"success": False, "message": f"{email_address}: invalid email address format. "})
+        if not success:
+            response = jsonify({"success": False, "message": msg})
+            response.status_code = 400
+            return response
 
-        # phone number uniqueness check + format check
-        phone_number = data.get('phone_number')
-        db_user = User.query.filter_by(phone_number=phone_number).first()
-        if db_user is not None:
-            return jsonify(
-                {"success": False, "message": f"Another user has this {db_user.phone_number} phone number. "})
-        if len(phone_number) > 16:
-            return jsonify({"success": False, "message": f"Phone number must be 16 digits or less."})
-        if not phone_number.isnumeric():
-            return jsonify({"success": False, "message": f"Phone number must be numeric."})
-
-        # format checks for firstname & surname
-        firstname = data.get('firstname')
-        surname = data.get('surname')
-        if len(firstname) > 32 or len(surname) > 32:
-            return jsonify({"success": False, "message": f"The firstname & surname must be 32 characters or less."})
-
-        # format check for postcode
-        postcode = data.get('postcode')
-        if len(postcode) > 8:
-            return jsonify({"success": False, "message": f"Postcode length must be 8 or less."})
-
-        # add new user
+        # Add new user
         new_user = User(
             email_address=data.get('email_address'),
             # salted hash
@@ -197,7 +210,7 @@ class SignUp(Resource):
         )
         new_user.save()
 
-        return jsonify({"success": True, "message": f"User {email_address} created successfully."})
+        return jsonify({"success": True, "message": f"User {data.get('email_address')} created successfully."})
 
 
 @api.route('/login')
