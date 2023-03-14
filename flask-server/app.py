@@ -71,7 +71,7 @@ search_event_model = api.model(
 )
 
 # /addticket expected input model
-addTicketInput = api.model(
+add_ticket_input_model = api.model(
     "AddTicket",
     {
         "event_id": fields.Integer(required=True, min=0),
@@ -418,7 +418,7 @@ class AddTicketResource(Resource):
 
         return jsonify({"key": token})
 
-    @api.expect(addTicketInput)
+    @api.expect(add_ticket_input_model)
     @jwt_required()
     def post(self):
         args = request.get_json()
