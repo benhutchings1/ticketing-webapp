@@ -9,11 +9,21 @@ import { element } from "prop-types";
 const Login = (props) => {
     const user = props.user;
     const setUser = props.setUser;
+    const [values, setValues] = useState({
+        email:"",
+        password:""
+    })
+    const [focusedEmail, setFocusedEmail] = useState(false)
+    const [focusedPassword, setFocusedPassword] = useState(false)
 
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [loginError, setLoginError] = useState("");
+    const errorMessage = {
+        emailError: "Invalid Email",
+        passwordError: "Invalid Password"
+    }
 
+    const onChange = (e) => {
+        setValues({ ...values, [e.target.name]: e.target.value})
+    }
 
     const navigate = useNavigate();
 
@@ -21,8 +31,8 @@ const Login = (props) => {
         event.preventDefault();
         
         const data = {
-            email_address: email,
-            password: password
+            email_address: values.email,
+            password: values.password
         }
  
         httpClient.post('/login', data)
@@ -48,29 +58,32 @@ const Login = (props) => {
                 <label>Email: </label>
                 <input
                     type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={values.email}
+                    onChange={onChange}
+                    onBlur={(e) => setFocusedEmail(true)}
+                    focused={String(focusedEmail)}
                     id="email"
                     name="email"
                     placeholder="youremail@gmail.com"
                     required
+                    // pattern="([-a-zA-Z0-9.`?{}]+@\w+\.\w+)" //TODO: remove when finished with testing
                 />
-                {loginError&&email.length<=0?
-                <span className="error">Please enter an Email</span>:""}
+                <span className="error">{errorMessage.emailError}</span>
             </div>
             <div className='input-container'>
                 <label>Password: </label>
                 <input
                     type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    value={values.password}
+                    onChange={onChange}
+                    onBlur={(e) => setFocusedPassword(true)}
+                    focused={String(focusedPassword)}
                     id="password"
                     name="password"
                     placeholder="********"
                     required
                 />
-                {loginError&&password.length<=0?
-                <span className="error">Please enter a Password</span>:""}
+                <span className="error">{errorMessage.passwordError}</span>
             </div>
             </form>
             <div className='button-container'>

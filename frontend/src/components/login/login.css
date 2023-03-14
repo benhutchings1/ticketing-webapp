@@ -26,7 +26,7 @@ h1 {
     border: 2px solid white;
 }
 
-.input-container input:focus{
+input:focus{
     border: 2px solid gray;
     outline: 0;
 }
@@ -37,31 +37,17 @@ h1 {
     font-size: 12px;
 }
 
-.input-container input:invalid ~ span{
+input:invalid[focused="true"] ~ span{
     display: block;
 }
 
-/* .input-container input:invalid{
-    border-color: #ff0000;
-} */
-
-.input-container input:valid{
-    border-color: #00ff1e;
+input:invalid[focused="true"]{
+    border: 2px solid red;
 }
 
-/* .input-container.success input{
-    border-color: #00ff1e;
+input:valid{
+    border: 2px solid #00ff1e;
 }
-
-.input-container.error input {
-    border-color: #ff0000;
-}
-
-.input-container .error {
-    color: #ff0000;
-    font-size: 10px;
-    height: 14px;
-} */
 
 .login-form {
     text-align: center;
