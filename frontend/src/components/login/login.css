@@ -35,6 +35,7 @@ input:focus{
     color: #ff0000;
     display: none;
     font-size: 12px;
+    text-shadow: 1px 1px 1px #0000007a;
 }
 
 input:invalid[focused="true"] ~ span{

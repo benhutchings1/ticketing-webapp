@@ -115,9 +115,9 @@ const Register = (props) => {
                       name="email"
                       placeholder="youremail@gmail.com"
                       required
-                      // pattern="([-a-zA-Z0-9.`?{}]+@\w+\.\w+)" //TODO: remove when finished with testing
+                      // pattern="([-a-zA-Z0-9.`?{}]+@\w+\.\w+)" //TODO: uncomment when finished with testing
                   />
-                  <span className="error">Please enter an Email</span>
+                  <span className="error">{errorMessage.emailError}</span>
               </div>
               <div className='input-container'>
                   <label>Password: </label>
@@ -131,8 +131,25 @@ const Register = (props) => {
                       name="password"
                       placeholder="********"
                       required
+                      // pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).*" //TODO: uncomment when finished with testing
                   />
-                  <span className="error">Please enter a Password</span>
+                  <span className="error">{errorMessage.passwordError}</span>
+              </div>
+              <div className='input-container'>
+                  <label>Confirm Password: </label>
+                  <input
+                      type="password"
+                      value={values.confirmPassword}
+                      onChange={onChange}
+                      onBlur={(e) => setFocusedConfirm(true)}
+                      focused={String(focusedConfirm)}
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      placeholder="********"
+                      required
+                      pattern={values.password}
+                  />
+                  <span className="error">{errorMessage.confirmError}</span>
               </div>
               <div className='input-container'>
                   <label>First name: </label>
@@ -147,7 +164,7 @@ const Register = (props) => {
                       placeholder="John"
                       required
                   />
-                  <span className="error">Please enter your firstname</span>
+                  <span className="error">{errorMessage.firstnameError}</span>
               </div>
               <div className='input-container'>
                   <label>Surname: </label>
@@ -162,7 +179,7 @@ const Register = (props) => {
                       placeholder="Doe"
                       required
                   />
-                  <span className="error">Please enter your surname</span>
+                  <span className="error">{errorMessage.surnameError}</span>
               </div>
               <div className='input-container'>
                   <label>Date of Birth: </label>
@@ -178,7 +195,7 @@ const Register = (props) => {
                       required
                       max={new Date().toISOString().split("T")[0]}
                   />
-                  <span className="error">Please enter your DoB</span>
+                  <span className="error">{errorMessage.dobError}</span>
               </div>
               <div className='input-container'>
                   <label>Postcode: </label>
@@ -193,7 +210,7 @@ const Register = (props) => {
                       placeholder="AB12 3CD"
                       required
                   />
-                  <span className="error">Please enter your Postcode</span>
+                  <span className="error">{errorMessage.postcodeError}</span>
               </div>
               <div className='input-container'>
                   <label>Phone Number: </label>
@@ -208,7 +225,7 @@ const Register = (props) => {
                       placeholder="07123 456789"
                       required
                   />
-                  <span className="error">Please enter your phone number</span>
+                  <span className="error">{errorMessage.phoneError}</span>
               </div>
           </form>
           <div className='button-container'>
