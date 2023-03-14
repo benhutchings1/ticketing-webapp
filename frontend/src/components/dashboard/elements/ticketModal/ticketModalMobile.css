@@ -1,0 +1,6 @@
+@media only screen and (max-width: 1024px) {
+    .ticketModalBoxContainer {
+        width: 70%;
+        font-size: 1.2em;
+    }
+}
