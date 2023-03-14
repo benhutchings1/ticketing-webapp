@@ -62,6 +62,14 @@ event_model = api.model(
     }
 )
 
+# Search by event name model
+search_event_model = api.model(
+    "SearchEvent",
+    {
+        "event_name": fields.String(),
+    }
+)
+
 # /addticket expected input model
 addTicketInput = api.model(
     "AddTicket",
@@ -350,6 +358,31 @@ class DeleteEvent(Resource):  # HandleEvent class, retrieve/delete by name?
 class EventList(Resource):
     def get(self):
         events = Event.query.all()
+        response = []
+        for event in events:
+            data = {
+                'event_name': event.event_name,
+                'event_id': event.event_id,
+                'datetime': str(event.datetime),
+                'genre': event.genre,
+                'description': event.description,
+                'venue_name': event.venue.name,
+                'venue_location': event.venue.location,
+                'venue_postcode': event.venue.postcode,
+                'venue_capacity': event.venue.capacity
+            }
+            response.append(data)
+        return response
+
+
+@api.route('/event_search')
+class EventList(Resource):
+    @api.expect(search_event_model)
+    def post(self):
+        data = request.get_json()
+        query = data.get('event_name')
+
+        events = Event.query.filter(Event.event_name.contains(query)).all()
         response = []
         for event in events:
             data = {
