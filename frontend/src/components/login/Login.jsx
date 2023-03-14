@@ -4,26 +4,15 @@ import React, {useState} from 'react'
 import httpClient from "../../httpClient";
 import {useNavigate} from "react-router-dom";
 import {getUser} from "../../helpers";
-import { element } from "prop-types";
 
 const Login = (props) => {
     const user = props.user;
     const setUser = props.setUser;
-    const [values, setValues] = useState({
-        email:"",
-        password:""
-    })
-    const [focusedEmail, setFocusedEmail] = useState(false)
-    const [focusedPassword, setFocusedPassword] = useState(false)
 
-    const errorMessage = {
-        emailError: "Invalid Email",
-        passwordError: "Invalid Password"
-    }
-
-    const onChange = (e) => {
-        setValues({ ...values, [e.target.name]: e.target.value})
-    }
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [loginError, setLoginError] = useState({});
+    const [isSubmitted, setIsSubmitted] = useState(false);
 
     const navigate = useNavigate();
 
@@ -31,66 +20,59 @@ const Login = (props) => {
         event.preventDefault();
         
         const data = {
-            email_address: values.email,
-            password: values.password
+            email_address: email,
+            password: password
         }
- 
+
         httpClient.post('/login', data)
         .then(response => {
-        getUser(setUser).then(r => {
-            navigate("/home");
-        })
+            getUser(setUser).then(r => {
+                navigate("/home");
+            })
         })
         .catch(error => {
-        console.log(error.response.data);
-        if (error.response && error.response.status === 401) {
-            alert(error.response.data.msg);
-        }
+            console.log(error)
+            if (error.response && error.response.status === 401) {
+                alert(error.response.data.msg);
+            }
         });
-        
     };
 
     return (
-        <div className="box">
-        <h1>LOGIN</h1>
-            <form className="login-form" id="login-form" onSubmit={logInUser}>
-            <div className='input-container'>
-                <label>Email: </label>
-                <input
-                    type="email"
-                    value={values.email}
-                    onChange={onChange}
-                    onBlur={(e) => setFocusedEmail(true)}
-                    focused={String(focusedEmail)}
-                    id="email"
-                    name="email"
-                    placeholder="youremail@gmail.com"
-                    required
-                    // pattern="([-a-zA-Z0-9.`?{}]+@\w+\.\w+)" //TODO: remove when finished with testing
-                />
-                <span className="error">{errorMessage.emailError}</span>
-            </div>
-            <div className='input-container'>
-                <label>Password: </label>
-                <input
-                    type="password"
-                    value={values.password}
-                    onChange={onChange}
-                    onBlur={(e) => setFocusedPassword(true)}
-                    focused={String(focusedPassword)}
-                    id="password"
-                    name="password"
-                    placeholder="********"
-                    required
-                />
-                <span className="error">{errorMessage.passwordError}</span>
-            </div>
+        <div className={'landingContainer'}>
+            <form className='box' onSubmit={logInUser}>
+                <h1>LOGIN</h1>
+                <div className='input-container'>
+                        <label>Email: </label>
+                        <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            id="email"
+                            name="email"
+                            placeholder="youremail@gmail.com"
+                            required
+                        />
+                    </div>
+                    <div className='input-container'>
+                        <label>Password: </label>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            id="password"
+                            name="password"
+                            placeholder="********"
+                            required
+                        />
+                    </div>
+                    <div className='button-container'>
+                      <button type="submit" className='submit-button'>Submit</button>
+                    </div>
+                <button className='link-button' onClick={() => {navigate('/register')}}>Don't have an account? Register here</button>
             </form>
-            <div className='button-container'>
-                <button className='submit-button' form="login-form">Submit</button>
-            </div>
-        <button className='link-button' onClick={() => {navigate('/register')}}>Don't have an account? Register here</button>
-    </div>
+        </div>
+
     )
 };
 

@@ -1,0 +1,42 @@
+.dashboardTitle {
+    color: black;
+}
+
+.qrCodeBtn {
+    width: 150px;
+    height: 150px;
+    background-color: lightgrey;
+    border-radius: 25px;
+    font-size: 1.5rem;
+    color: #000000;
+}
+
+.eventsListContainer {
+    /*white-space: nowrap;*/
+    /*overflow: auto;*/
+    padding: 10px;
+    overflow-x: scroll;
+    margin-left: -35px;
+    width: calc(100vw - 62px);
+    display: flex;
+    flex-direction: row;
+}
+
+/*Scroll bar*/
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+    height: 5px;
+}
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

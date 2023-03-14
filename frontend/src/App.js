@@ -3,9 +3,9 @@ import './AppMobile.css';
 import React, { useState, useEffect } from "react";
 import {BrowserRouter as Router, Navigate, Route, Routes, useNavigate} from "react-router-dom";
 import {Landing, Login, Register} from "./components";
-import {Account, Home, Shop} from "./components/dashboard/pages";
+import {Account, EventPage, Home, QRCodeScanner, Shop} from "./components/dashboard/pages";
 import {Navbar} from "./components/dashboard";
-import {getUser} from "./helpers/checkUser";
+import {getUser, isUserLoggedIn} from "./helpers";
 
 function App() {
     const [user, setUser] = useState({});
@@ -30,15 +30,19 @@ function App() {
         <div className="App">
             <Router>
                 <div className='pageContainer'>
-                    {(user) ? <Navbar user={user} /> : ""} {/* only show navbar is user exists */}
+                    {(isUserLoggedIn(user)) ? <Navbar user={user} /> : ""} {/* only show navbar is user exists */}
                     <div className='innerPageContainer'>
                         <Routes>
                             <Route exact path="/" element={<Landing user={user} setUser={setUser}/>}/>
                             <Route exact path="/login" element={<Login user={user} setUser={setUser}/>}/>
                             <Route exact path="/register" element={<Register user={user} setUser={setUser}/>}/>
-                            <Route exact path="/home" element={<Home user={user} setUser={setUser}/>}/>
-                            <Route exact path="/shop" element={<Shop user={user} setUser={setUser}/>}/>
+                            <Route exact path="/home" element={<Home user={user}/>}/>
+                            <Route exact path="/shop" element={<Shop user={user}/>}/>
                             <Route exact path="/account" element={<Account user={user} setUser={setUser}/>}/>
+                            <Route exact path="/event/:id" element={<EventPage user={user}/>}/>
+
+                            {/* Management Routes */}
+                            <Route exact path="/scanner" element={<QRCodeScanner user={user} setUser={setUser}/>}/>
 
                             {/* If user tries to go to a route that doesn't exist, take them to landing page */}
                             <Route path="*" element={<Navigate to="/" />} />

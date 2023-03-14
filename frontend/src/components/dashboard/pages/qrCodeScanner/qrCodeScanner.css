@@ -1,0 +1,4 @@
+.qrScannerDiv {
+    padding-left: 0;
+    height: calc(100vh - 62px);
+}

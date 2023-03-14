@@ -1,9 +1,9 @@
 import {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
+import {SearchBar} from "../../elements";
 
 const Shop = (props) => {
     const user = props.user;
-    const setUser = props.setUser;
 
     const navigate = useNavigate();
 
@@ -16,7 +16,8 @@ const Shop = (props) => {
 
     return (
         <div className={'contentContainer'}>
-            <h1>SHOP</h1>
+            <SearchBar/>
+            <h1 className={'dashboardTitle'}>SHOP</h1>
         </div>
     )
 }

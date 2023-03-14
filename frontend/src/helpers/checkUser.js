@@ -11,3 +11,7 @@ export async function getUser(setUser) {
         return null;
     });
 }
+
+export function isUserLoggedIn(user) {
+    return (user !== null && user.firstname !== undefined);
+}
