@@ -1,4 +1,5 @@
 import './qrCodeScanner.css';
+import './qrCodeScannerMobile.css';
 
 import {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
@@ -18,9 +19,13 @@ const QRCodeScanner = (props) => {
     }, [user])
 
     return (
-        <div className={'contentContainer'}>
+        <div className={'contentContainer qrScannerDiv'}>
             <QrScanner
-                onDecode={(result) => alert(result)}
+                onDecode={(result) => {
+                    console.log(result)
+                    const ticketInfo = JSON.parse(result)
+                    alert(ticketInfo);
+                }}
                 onError={(error) => console.log(error?.message)}
             />
         </div>

@@ -3,7 +3,6 @@ import {useNavigate} from "react-router-dom";
 
 const Shop = (props) => {
     const user = props.user;
-    const setUser = props.setUser;
 
     const navigate = useNavigate();
 

@@ -5,7 +5,6 @@ import {useNavigate} from "react-router-dom";
 
 const Home = (props) => {
     const user = props.user;
-    const setUser = props.setUser;
 
     const navigate = useNavigate();
 

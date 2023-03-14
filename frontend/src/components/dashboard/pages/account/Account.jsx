@@ -49,14 +49,14 @@ const Account = (props) => {
 
     return (
         <div className={'contentContainer'}>
-            <h1>ACCOUNT</h1>
+            <h1 className={'dashboardTitle'}>ACCOUNT</h1>
             {(user != null) ?
                 <div>
                     <div className={'accountDetails'}>
                         <div id={'accountPicture'} className={'accountPicture'}>
                             {firstLetter}
                         </div>
-                        <br/><br/>
+                        <br/>
                         <b>Email:</b>{user.email}
                         <br/><br/>
                         <b>Name:</b>
@@ -71,7 +71,7 @@ const Account = (props) => {
                         <b>Phone Number:</b>
                         {user.phone_number}
                     </div>
-                    <br/><br/>
+                    <br/>
                     <button className={'logoutBtn'} onClick={() => logoutUser()}>
                         LOGOUT
                     </button>
