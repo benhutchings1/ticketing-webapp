@@ -13,10 +13,6 @@ from datetime import datetime, timedelta, timezone
 import utils
 from sqlalchemy.exc import IntegrityError
 import re
-from Crypto.Random import get_random_bytes
-from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad, unpad
-from base64 import b64encode, b64decode
 
 app = Flask(__name__)
 cors = CORS(app, supports_credentials=True, origins="http://localhost:3000")
@@ -143,64 +139,7 @@ def refresh_expiring_jwts(response):
         return response
 
 
-# Generates a random 32-byte key
-def gen_key():
-    key = get_random_bytes(32)
 
-    return key
-
-
-# Encrypts plain_text using AES-256-CBC
-def encrypt(plain_text, key):
-    # Input validation on key
-    if not isinstance(key, bytes) or not len(key) == 32:
-        return TypeError
-
-    # Input validation on plain_text
-    if not isinstance(plain_text, int) or abs(plain_text) != plain_text or not len(str(plain_text)) <= 8:
-        return TypeError
-
-    # Pad plain text by adding leading zeros
-    plain_text = str(plain_text)
-    plain_text = (8 - len(plain_text)) * '0' + plain_text
-
-    # Encode string as bytes
-    plain_text = bytes(plain_text, encoding='utf8')
-
-    # Encrypt plain_text
-    cypher = AES.new(key, AES.MODE_CBC)
-    cypher_text = cypher.encrypt(pad(plain_text, AES.block_size))
-
-    # Decode from bytes to string
-    cypher_text = b64encode(cypher_text).decode()
-    iv = b64encode(cypher.iv).decode()
-
-    return cypher_text, iv
-
-
-# Decrypts cypher text
-def decrypt(cypher_text, iv, key):
-    # Input validation on cypher text
-    if not isinstance(cypher_text, str) or not len(cypher_text) == 24:
-        return TypeError
-
-    # Input validation on iv
-    if not isinstance(iv, str) or not len(iv) == 24:
-        return TypeError
-
-    # Input validation on key
-    if not isinstance(key, bytes) or not len(key) == 32:
-        return TypeError
-
-    # Decode from string to bytes
-    cypher_text = b64decode(cypher_text)
-    iv = b64decode(iv)
-
-    # Decrypt cypher_text
-    cypher = AES.new(key, AES.MODE_CBC, iv=iv)
-    plain_text = unpad(cypher.decrypt(cypher_text), AES.block_size)
-
-    return plain_text
 
 
 '''
@@ -486,22 +425,19 @@ class AddTicketResource(Resource):
         # Set token to be invalid
         existing_code.valid = 0
         
+        # Make new ticket
         newticket = UserTicket(
             event_id=args.get("eventID"),
             ticket_type=args.get("ticket_type"),
             user_id=args.get("userID"),
-            cipher_key="random", ## Update with chris code
-            iv="random", ## update
+            cipher_key=utils.gen_key()
             valid=1
         )
         db.session.add(newticket)
-        db.session.commit()
-
+        
         # Update new ticket and invalidate idepotency token
-        print("Successfully commited to database")
         try:
-            pass
-            
+            db.session.commit()
         except:
             jsonify({"msg":"Error try again"})
 
@@ -525,12 +461,13 @@ class requestQRdataResource(Resource):
                 return jsonify({"msg":"Invalid token"})
         
         # Encrypt ticketID with cipherkey
-        # try:
-        ciphertext = "123" # ciphertext = encrypt(data=user_ticket.ticket_id, cipherkey=user_ticket.cipher_key)
-        # except encryptionerror:
-        #     return jsonify({"msg": "Ticket error"})
+        try:
+            ciphertext, iv = utils.encrypt(user_ticket.ticket_id, user_ticket.cipher_key)
+        except:
+            print("Failed to encrypt ticket")
+            return jsonify({"msg": "Ticket error"})
 
-        return jsonify({"ticketID": user_ticket.ticket_id, "QRdata": ciphertext})
+        return jsonify({"ticketID": user_ticket.ticket_id, "QRdata": ciphertext+iv})
 
 
 @api.route('/validateTicket')
@@ -560,13 +497,17 @@ class validateTicketResource(Resource):
         
         # Use cipherkey to decrypt ciphertext
         try:
-            decrpyt_ticket_id = 0 # decrypt(args.get("QRdata"), ticket_id.get("cipher_key")) using decrypt function
+            ciphertext = args.get("QRdata")
+            cipher = ciphertext[:24]
+            iv = ciphertext[24:]
+            decrypt_ticket_id = int(decrypt(cipher, iv, user_ticket.cipher_key))
+
         except:
             return jsonify({"msg": "Ticket invalid"})
 
-        # Check ticketId's match
-        # if decrpyt_ticket_id != args.get("ticketId"):
-        #     return jsonify({"msg": "Invalid ticket"})
+        Check ticketId's match
+        if decrpyt_ticket_id != args.get("ticketId"):
+            return jsonify({"msg": "Invalid ticket"})
     
         # Check recieved_event against ticket event
         if not user_ticket.event_id is args.get("eventID"):
