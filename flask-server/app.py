@@ -137,39 +137,6 @@ def refresh_expiring_jwts(response):
         return response
 
 
-'''
- # old version of the singup route (before adding the format checks to it)
-
-@api.route('/signup')
-class SignUp(Resource):
-
-    @api.expect(signup_model)
-    def post(self):
-        data = request.get_json()
-        email_address = data.get('email_address')
-
-        # user already exists in database?
-        db_email_address = User.query.filter_by(email_address=email_address).first()
-        if db_email_address is not None:
-            return jsonify({"success": False, "message": f"The user {email_address} already exits."})
-
-        # add new user
-        new_user = User(
-            email_address=data.get('email_address'),
-            # salted hash
-            passwd_hash=generate_password_hash(data.get('password'), method="sha256", salt_length=32),
-            firstname=data.get('firstname'),
-            surname=data.get('surname'),
-            date_of_birth=datetime.strptime(data.get('date_of_birth'), "%Y-%m-%d").date(),
-            postcode=data.get('postcode'),
-            phone_number=data.get('phone_number'),
-            role='user'
-        )
-        new_user.save()
-        return jsonify({"success": True, "message": f"User {email_address} created successfully."})
-'''
-
-
 # Signup route with format & uniquemess checks (to avoid unuseful internal server errors)
 @api.route('/signup')
 class SignUp(Resource):
