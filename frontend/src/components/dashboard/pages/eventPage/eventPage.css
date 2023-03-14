@@ -1,0 +1,10 @@
+.ticketsBtn {
+    background-color: #7b7bff;
+    color: white;
+    font-family: "Gill Sans MT", sans-serif;
+}
+
+.eventDetails {
+    display: flex;
+    flex-direction: column;
+}

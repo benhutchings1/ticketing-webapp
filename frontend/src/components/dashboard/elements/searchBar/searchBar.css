@@ -17,6 +17,9 @@
     margin: auto auto 30px;
     padding: 10px 10px 10px 50px;
 }
+.searchBar:valid {
+    border: none;
+}
 .searchBarIcon {
     margin-bottom: 30px;
     margin-right: 255px;

@@ -6,9 +6,14 @@ import {Landing, Login, Register} from "./components";
 import {Account, EventPage, Home, QRCodeScanner, Shop} from "./components/dashboard/pages";
 import {Navbar} from "./components/dashboard";
 import {getUser, isUserLoggedIn} from "./helpers";
+import {TicketModal} from "./components/dashboard/elements";
 
 function App() {
+    // For ticket modal
+    let [open, setOpen] = useState(false);
+
     const [user, setUser] = useState({});
+    const [currentEvent, setCurrentEvent] = useState({});
 
     // First we get the viewport height, and we multiply it by 1% to get a value for a vh unit
     let vh = window.innerHeight * 0.01;
@@ -30,16 +35,17 @@ function App() {
         <div className="App">
             <Router>
                 <div className='pageContainer'>
+                    <TicketModal user={user} open={open} setOpen={setOpen} event={currentEvent}/>
                     {(isUserLoggedIn(user)) ? <Navbar user={user} /> : ""} {/* only show navbar is user exists */}
                     <div className='innerPageContainer'>
                         <Routes>
                             <Route exact path="/" element={<Landing user={user} setUser={setUser}/>}/>
                             <Route exact path="/login" element={<Login user={user} setUser={setUser}/>}/>
                             <Route exact path="/register" element={<Register user={user} setUser={setUser}/>}/>
-                            <Route exact path="/home" element={<Home user={user}/>}/>
+                            <Route exact path="/home" element={<Home user={user} setCurrentEvent={setCurrentEvent}/>}/>
                             <Route exact path="/shop" element={<Shop user={user}/>}/>
                             <Route exact path="/account" element={<Account user={user} setUser={setUser}/>}/>
-                            <Route exact path="/event/:id" element={<EventPage user={user}/>}/>
+                            <Route exact path="/event/:id" element={<EventPage user={user} event={currentEvent} setOpen={setOpen}/>}/>
 
                             {/* Management Routes */}
                             <Route exact path="/scanner" element={<QRCodeScanner user={user} setUser={setUser}/>}/>

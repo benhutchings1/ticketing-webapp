@@ -276,7 +276,8 @@ class Account(Resource):
 
     @jwt_required()
     def get(self):
-        return jsonify({"email": current_user.email_address,
+        return jsonify({"user_id": current_user.user_id,
+                        "email": current_user.email_address,
                         "firstname": current_user.firstname,
                         "surname": current_user.surname,
                         "date_of_birth": str(current_user.date_of_birth),
