@@ -487,7 +487,7 @@ class validateTicketResource(Resource):
             ciphertext = args.get("QRdata")
             cipher = ciphertext[:24]
             iv = ciphertext[24:]
-            decrypt_ticket_id = int(decrypt(cipher, iv, user_ticket.cipher_key))
+            decrypt_ticket_id = int(utils.decrypt(cipher, iv, user_ticket.cipher_key))
 
         except:
             return jsonify({"msg": "Ticket invalid"})
