@@ -376,7 +376,7 @@ class EventList(Resource):
 
 
 @api.route('/event_search')
-class EventList(Resource):
+class EventSearch(Resource):
     @api.expect(search_event_model)
     def post(self):
         data = request.get_json()
