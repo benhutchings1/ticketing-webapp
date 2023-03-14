@@ -202,7 +202,7 @@ class SignUp(Resource):
         # Check if signup is valid
         success, msg = check_signup(data)
         if not success:
-            response = jsonify({"success": False, "message": msg})
+            response = jsonify({"msg": msg})
             response.status_code = 400
             return response
 
@@ -220,7 +220,7 @@ class SignUp(Resource):
         )
         new_user.save()
 
-        response_data = {"success": True, "message": f"User {data.get('email_address')} created successfully."}
+        response_data = {"msg": f"User {data.get('email_address')} created successfully."}
         return login_user_response(new_user, response_data)
 
 
