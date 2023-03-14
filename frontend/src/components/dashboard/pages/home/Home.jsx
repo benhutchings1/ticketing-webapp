@@ -9,6 +9,7 @@ import {SearchBar, Event} from "../../elements";
 const Home = (props) => {
     const user = props.user;
     const [events, setEvents] = useState([]);
+    const setCurrentEvent = props.setCurrentEvent;
 
     const navigate = useNavigate();
 
@@ -34,14 +35,9 @@ const Home = (props) => {
 
     const eventsList = events.map((item, index) =>
         <Event key={`event${index}`}
-               name={item.event_name}
-               datetime={item.datetime}
-               genre={item.genre}
-               description={item.description}
-               venueName={item.venue_name}
-               venueLocation={item.venue_location}
-               venuePostcode={item.venue_postcode}
-               venueCapacity={item.venue_capacity}
+               id={item.event_id}
+               item={item}
+               setCurrenteEvent={setCurrentEvent}
         />)
 
     return (

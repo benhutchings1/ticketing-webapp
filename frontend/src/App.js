@@ -9,6 +9,7 @@ import {getUser, isUserLoggedIn} from "./helpers";
 
 function App() {
     const [user, setUser] = useState({});
+    const [currentEvent, setCurrentEvent] = useState({});
 
     // First we get the viewport height, and we multiply it by 1% to get a value for a vh unit
     let vh = window.innerHeight * 0.01;
@@ -36,10 +37,10 @@ function App() {
                             <Route exact path="/" element={<Landing user={user} setUser={setUser}/>}/>
                             <Route exact path="/login" element={<Login user={user} setUser={setUser}/>}/>
                             <Route exact path="/register" element={<Register user={user} setUser={setUser}/>}/>
-                            <Route exact path="/home" element={<Home user={user}/>}/>
+                            <Route exact path="/home" element={<Home user={user} setCurrentEvent={setCurrentEvent}/>}/>
                             <Route exact path="/shop" element={<Shop user={user}/>}/>
                             <Route exact path="/account" element={<Account user={user} setUser={setUser}/>}/>
-                            <Route exact path="/event/:id" element={<EventPage user={user}/>}/>
+                            <Route exact path="/event/:id" element={<EventPage user={user} event={currentEvent}/>}/>
 
                             {/* Management Routes */}
                             <Route exact path="/scanner" element={<QRCodeScanner user={user} setUser={setUser}/>}/>

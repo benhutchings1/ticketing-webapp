@@ -1,19 +1,17 @@
-// import Carousel from "react-multi-carousel";
-// import "react-multi-carousel/lib/styles.css";
-import Card from 'react-bootstrap/Card';
-import react, { Component } from "react";
-import {Button} from "react-bootstrap";
 import './Event.css';
 
+import Card from 'react-bootstrap/Card';
+import {Button} from "react-bootstrap";
+import {useNavigate} from "react-router-dom";
+
 const Event = (props) => {
-    let name = props.name
-    let datetime = props.datetime;
-    let genre = props.genre;
-    let description = props.description;
-    let venueName = props.venueName;
-    let venueLocation = props.venueLocation;
-    let venuePostcode = props.venuePostcode;
-    let venueCapacity = props.venueCapacity;
+    let id = props.id;
+    let item = props.item;
+    let name = item.event_name
+    let description = item.description;
+    let setCurrentEvent = props.setCurrenteEvent;
+
+    let navigate = useNavigate();
 
     return (
         <div className={'eventCard'}>
@@ -24,7 +22,10 @@ const Event = (props) => {
                     <Card.Text>
                         {description}
                     </Card.Text>
-                    {/*<Button className={'eventButton'} onClick={() => {navigate("/event/")}} variant="primary">Go somewhere</Button>*/}
+                    <Button className={'eventButton'} onClick={() => {
+                        setCurrentEvent(item)
+                        navigate(`/event/${id}`)
+                    }} variant="primary">VIEW EVENT</Button>
                 </Card.Body>
             </Card>
         </div>
