@@ -137,6 +137,13 @@ def refresh_expiring_jwts(response):
         return response
 
 
+def login_user(response, user):
+    """Adds user login with cookie to response"""
+    access_token = create_access_token(identity=user.user_id)
+    response.json['token'] = access_token
+    set_access_cookies(response, access_token)
+
+
 # Signup route with format & uniquemess checks (to avoid unuseful internal server errors)
 @api.route('/signup')
 class SignUp(Resource):
@@ -207,12 +214,10 @@ class Login(Resource):
 
         if db_user and check_password_hash(db_user.passwd_hash, password):
             # Login was successful
-            access_token = create_access_token(identity=db_user.user_id)
             response = jsonify({
-                "msg": "Successfully logged in",
-                "token": access_token
+                "msg": "Successfully logged in"
             })
-            set_access_cookies(response, access_token)
+            login_user(response, db_user)
             return response
 
         # Login failure
