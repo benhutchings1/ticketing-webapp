@@ -3,4 +3,13 @@
         width: 70%;
         font-size: 1.2em;
     }
+
+    .ticketModalHeader {
+        font-size: 1.2em;
+        margin-bottom: 10px;
+    }
+
+    .ticketModalBoxContainer select {
+        font-size: 1em;
+    }
 }
