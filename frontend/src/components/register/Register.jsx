@@ -64,7 +64,10 @@ const Register = (props) => {
             })
         })
         .catch(error => {
-            console.log(error);
+            console.log(error)
+            if (error.response && error.response.status === 400) {
+                alert(error.response.data.msg);
+            }
         });
     }
     const navigate = useNavigate();
