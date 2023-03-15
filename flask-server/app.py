@@ -89,12 +89,12 @@ request_qr_data_model = api.model(
 )
 
 # Validate Ticket input model
-validateTicketModel = api.model(
+validate_ticket_model = api.model(
     "ValidateTicket",
     {
-        "eventID": fields.Integer(min=0, required=True),
-        "ticketID": fields.Integer(min=0, required=True),
-        "QRdata": fields.String(required=True)
+        "event_id": fields.Integer(min=0, required=True),
+        "ticket_id": fields.Integer(min=0, required=True),
+        "qr_data": fields.String(required=True)
     }
 )
 
@@ -494,58 +494,57 @@ class RequestQRDataResource(Resource):
         return jsonify({"ticket_id": user_ticket.ticket_id, "qr_data": ciphertext + iv})
 
 
+def invalid_ticket_response(msg):
+    response = jsonify({"msg": msg})
+    response.status_code = 400
+    return response
+
+
 @api.route('/validateTicket')
-class validateTicketResource(Resource):
-    @api.expect(validateTicketModel)
+class ValidateTicketResource(Resource):
+    @api.expect(validate_ticket_model)
+    @management_required
     def post(self):
         args = request.get_json()
 
         # Use ticketID to lookup ticket data
-        try:
-            user_ticket = db.session.query(UserTicket).filter_by(ticket_id=args.get("ticketID")).first()
-            user_data = db.session.query(User).filter_by(user_id=user_ticket.user_id).first()
-        except:
-            return jsonify({"msg": "Server error"})
+        user_ticket = db.session.query(UserTicket).filter_by(ticket_id=args.get("ticket_id")).first()
 
-        # Check if ticket doesnt exist
+        # Check basic ticket details
         if user_ticket is None:
-            return jsonify({"msg": "Invalid request"})
-        else:
-            # Check if ticket is invaild
-            if user_ticket.valid == 0:
-                return jsonify({"msg": "Invalid token"})
-
-        # Check if user_data is retrieved
-        if user_data is None:
-            return jsonify({"msg": "Server error"})
+            # Ticket doesn't exist
+            return invalid_ticket_response("Ticket doesn't exist")
+        elif user_ticket.valid == 0:
+            # Ticket is already used
+            return invalid_ticket_response("Ticket already used")
 
         # Use cipherkey to decrypt ciphertext
         try:
-            ciphertext = args.get("QRdata")
+            ciphertext = args.get("qr_data")
             cipher = ciphertext[:24]
             iv = ciphertext[24:]
             decrypt_ticket_id = int(utils.decrypt(cipher, iv, user_ticket.cipher_key))
 
         except:
-            return jsonify({"msg": "Ticket invalid"})
+            return invalid_ticket_response("Invalid ticket")
 
         # Check ticketId's match
-        if decrypt_ticket_id != args.get("ticketId"):
-            return jsonify({"msg": "Invalid ticket"})
+        if decrypt_ticket_id != args.get("ticket_id"):
+            return invalid_ticket_response("Invalid ticket")
 
-        # Check recieved_event against ticket event
-        if not user_ticket.event_id is args.get("eventID"):
-            return jsonify({"msg": "Event is invalid"})
+        # Check received event against ticket event
+        if user_ticket.event_id is not args.get("event_id"):
+            return invalid_ticket_response(f"Ticket is not valid for this event {user_ticket.event.event_name}")
 
         # Make ticket invalid
         user_ticket.valid = 0
         try:
             user_ticket.save()
         except:
-            return jsonify({"msg", "Server error"})
+            return invalid_ticket_response("Server error")
 
         # Return confirmation data
-        return jsonify({"ticket_type": user_ticket.ticket_type})
+        return jsonify({"ticket_type": user_ticket.ticket_type, "msg": "Ticket is valid"})
 
 
 @app.shell_context_processor
