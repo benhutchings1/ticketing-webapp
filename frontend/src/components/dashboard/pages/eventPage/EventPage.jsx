@@ -11,6 +11,8 @@ const EventPage = (props) => {
     let venuePostcode = event.venue_postcode;
     let venueCapacity = event.venue_capacity;
 
+    let setOpen = props.setOpen;
+
     return (
         <div className={'contentContainer'}>
             <h1 className={'dashboardTitle'}>{name}</h1>
@@ -25,7 +27,7 @@ const EventPage = (props) => {
                 <div><b>Capacity:</b> {venueCapacity}</div>
             </div>
             <br/>
-            <button className={'ticketsBtn'}>BUY TICKETS</button>
+            <button onClick={() => {setOpen(true)}} className={'ticketsBtn'}>BUY TICKETS</button>
         </div>
     )
 }
