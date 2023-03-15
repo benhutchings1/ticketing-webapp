@@ -32,10 +32,9 @@ input:focus{
 }
 
 .error {
-    color: #ff0000;
+    color: #420c0c;
     display: none;
     font-size: 12px;
-    text-shadow: 1px 1px 1px #0000007a;
 }
 
 input:invalid[focused="true"] ~ span{

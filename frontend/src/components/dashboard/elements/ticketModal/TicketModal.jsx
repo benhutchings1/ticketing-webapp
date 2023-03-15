@@ -2,6 +2,8 @@
 import './ticketModalMobile.css';
 import {useEffect, useState} from "react";
 import httpClient from "../../../../httpClient";
+import {getCookie} from "../../../../helpers";
+import {useNavigate} from "react-router-dom";
 
 const TicketModal = (props) => {
     let open = props.open;
@@ -9,6 +11,7 @@ const TicketModal = (props) => {
     let event = props.event;
     let user = props.user;
     let [count, setCount] = useState(1);
+    let [successes, setSuccesses] = useState(0);
 
     const [displayStyle, setDisplayStyle] = useState("none");
 
@@ -20,30 +23,62 @@ const TicketModal = (props) => {
         }
     }, [open]);
 
+    useEffect(() => {
+        if (successes >= count) {
+            loading(false);
+            setOpen(false);
+            navigate("/account"); // tickets will then be shown on account page
+        }
+    }, [successes])
+
+    let navigate = useNavigate();
+
     function buyTickets() {
-        httpClient.get('/addticket')
+        loading(true);
+        for (let i = 0; i < count; i++) {
+            httpClient.get('/addticket')
             .then(response => {
+                let tickets = document.getElementById("ticketTypes");
+                let ticketType = tickets.options[tickets.selectedIndex].text;
+
                 let data = {
-                    userID: user.user_id,
-                    eventID: event.event_id,
-                    ticketTypeID: 1,
+                    event_id: event.event_id,
+                    ticket_type: ticketType,
                     token: response.key
                 }
 
-                httpClient.post("/addticket", data)
+                httpClient.post("/addticket", data, {
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": getCookie("csrf_access_token"),
+                        }
+                    })
                     .then(response => {
                         console.log(response);
+                        setSuccesses(successes += 1);
                     })
             })
             .catch(error => {
                 console.log(error)
             });
+        }
+    }
+
+    function loading(bool) {
+        if (bool) {
+            document.querySelector(".ticketModalContainer").style.pointerEvents = "none";
+        } else {
+            setSuccesses(0);
+            setCount(1);
+            document.querySelector(".ticketModalContainer").style.pointerEvents = "visiblePainted";
+        }
     }
 
     return (
         <div onClick={() => {setOpen(false)}} style={{display: displayStyle}} className='ticketModalContainer noSelect'>
             <div onClick={(e) => {e.stopPropagation();}} className='ticketModalBoxContainer'>
                 <h2>Buy Tickets for {event.event_name}</h2>
+                <div className='ticketModalHeader'><b>Amount:</b></div>
                 <div className={'counterContainer'}>
                     <button onClick={() => {
                         if (count > 1) {
@@ -64,7 +99,14 @@ const TicketModal = (props) => {
                     </button>
                 </div>
                 <br/>
-                <button onClick={() => {buyTickets()}} className={'ticketsBtn'}>BUY TICKETS</button>
+                <div className='ticketModalHeader'><b>Ticket Type:</b></div>
+                <select id="ticketTypes">
+                    <option value="standard">Standard</option>
+                    <option value="deluxe">Deluxe</option>
+                    <option value="vip">VIP</option>
+                </select>
+                <br/>
+                <button onClick={() => {buyTickets()}} className={'ticketsBtn ticketBtnModal'}>BUY TICKETS</button>
             </div>
         </div>
     )

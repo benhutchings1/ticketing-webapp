@@ -9,19 +9,30 @@ const Login = (props) => {
     const user = props.user;
     const setUser = props.setUser;
 
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [loginError, setLoginError] = useState({});
-    const [isSubmitted, setIsSubmitted] = useState(false);
+    const [values, setValues] = useState({
+        email: "",
+        password: ""
+    })
+    const [focusedEmail, setFocusedEmail] = useState(false)
+    const [focusedPassword, setFocusedPassword] = useState(false)
 
     const navigate = useNavigate();
+
+    const errorMessage = {
+        emailError: "Invalid Email",
+        passwordError: "Invalid Password"
+    }
+
+    const onChange = (e) => {
+        setValues({ ...values, [e.target.name]: e.target.value})
+    }
 
     const logInUser = async (event) => {
         event.preventDefault();
         
         const data = {
-            email_address: email,
-            password: password
+            email_address: values.email,
+            password: values.password
         }
 
         httpClient.post('/login', data)
@@ -40,36 +51,45 @@ const Login = (props) => {
 
     return (
         <div className={'landingContainer'}>
-            <form className='box' onSubmit={logInUser}>
-                <h1>LOGIN</h1>
-                <div className='input-container'>
+            <form className="login-form" id='login-form' onSubmit={logInUser}>
+                <div className='box'>
+                    <h1>LOGIN</h1>
+                    <div className='input-container'>
                         <label>Email: </label>
                         <input
                             type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            value={values.email}
+                            onChange={onChange}
+                            onBlur={(e) => setFocusedEmail(true)}
+                            focused={String(focusedEmail)}
                             id="email"
                             name="email"
                             placeholder="youremail@gmail.com"
                             required
+                            // pattern="([-a-zA-Z0-9.`?{}]+@\w+\.\w+)" //TODO: remove when finished with testing
                         />
+                        <span className="error">{errorMessage.emailError}</span>
                     </div>
                     <div className='input-container'>
-                        <label>Password: </label>
+                         <label>Password: </label>
                         <input
                             type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            value={values.password}
+                            onChange={onChange}
+                            onBlur={(e) => setFocusedPassword(true)}
+                            focused={String(focusedPassword)}
                             id="password"
                             name="password"
                             placeholder="********"
                             required
                         />
+                        <span className="error">{errorMessage.passwordError}</span>
                     </div>
                     <div className='button-container'>
-                      <button type="submit" className='submit-button'>Submit</button>
+                        <button className='submit-button' form="login-form" type='submit'>Submit</button>
                     </div>
-                <button className='link-button' onClick={() => {navigate('/register')}}>Don't have an account? Register here</button>
+                    <button className='link-button' onClick={() => {navigate('/register')}}>Don't have an account? Register here</button>
+                </div>
             </form>
         </div>
 

@@ -1,9 +1,16 @@
 from datetime import datetime as dt
 import random
 import string
+from base64 import b64decode, b64encode
+from Crypto.Cipher import AES
+from Crypto.Random import get_random_bytes
+from Crypto.Util.Padding import unpad, pad
+
+
 def generate_token():
-    return dt.now().strftime("%S%M%H%m%d%Y") +\
-        "".join(random.choice(string.ascii_letters) for i in range(114))
+    return dt.now().strftime("%S%M%H%m%d%Y") + \
+           "".join(random.choice(string.ascii_letters) for i in range(114))
+
 
 # Generates a random 32-byte key
 def gen_key():

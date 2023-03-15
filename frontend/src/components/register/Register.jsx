@@ -10,162 +10,198 @@ const Register = (props) => {
     const user = props.user;
     const setUser = props.setUser;
 
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [firstName, setFirstName] = useState("");
-    const [surname, setSurname] = useState("");
-    const [dob, setDob] = useState("");
-    const [postcode, setPostcode] = useState("");
-    const [phoneNumber, setPhoneNumber] = useState("");
+    const [values, setValues] = useState({
+        email:"",
+        password:"",
+        confirmPassword:"",
+        firstName:"",
+        surname:"",
+        dob:"",
+        postcode:"",
+        phoneNumber:"",
+    })
+    const [focusedEmail, setFocusedEmail] = useState(false)
+    const [focusedPassword, setFocusedPassword] = useState(false)
+    const [focusedConfirm, setFocusedConfirm] = useState(false)
+    const [focusedFirstName, setFocusedFirstName] = useState(false)
+    const [focusedSurname, setFocusedSurname] = useState(false)
+    const [focusedDob, setFocusedDob] = useState(false)
+    const [focusedPostcode, setFocusedPostcode] = useState(false)
+    const [focusedPhone, setFocusedPhone] = useState(false)
 
-    const registerUser = async () => {
-        try {
-            const requestOptions = {
-                method: 'POST',
-                mode: 'cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    "email_address": email,
-                    "password": password,
-                    "firstname": firstName,
-                    "surname": surname,
-                    "date_of_birth": dob,
-                    "postcode": postcode,
-                    "phone_number": phoneNumber
-                })
-            };
+    const errorMessage = {
+        emailError: "Invalid Email",
+        passwordError: "Invalid Password",
+        confirmError: "Password does not match",
+        firstNameError: "Please enter your firstname",
+        surnameError: "Please enter your surname",
+        dobError: "Please enter your date of birth",
+        postcodeError: "Please enter your postcode",
+        phoneError: "Please enter your phone number",
+    }
 
-            const response = await fetch("http://localhost:5000/signup", requestOptions)
-            const newData = await response.json();
+    const onChange = (e) => {
+        setValues({ ...values, [e.target.name]: e.target.value})
+    }
 
-            if (newData.success === true) {
-                // THIS MIGHT NEED CHANGING IN BACKEND
-                const data = {
-                    email_address: email,
-                    password: password
-                }
+    const registerUser = async (event) => {
+        event.preventDefault();
 
-                httpClient.post('/login', data)
-                .then(response => {
-                    getUser(setUser).then(r => {
-                        navigate("/home");
-                    })
-                })
-                .catch(error => {
-                    console.log(error.response.data);
-                    if (error.response && error.response.status === 401) {
-                        alert(error.response.data.msg);
-                    }
-                });
-            }
-        } catch (error) {
-            alert(error)
-            // if (error.response.status === 401) {
-            //     alert("Invalid credentials");
-            // }
-      }
+        const data = {
+            "email_address": values.email,
+            "password": values.password,
+            "firstname": values.firstName,
+            "surname": values.surname,
+            "date_of_birth": values.dob,
+            "postcode": values.postcode,
+            "phone_number": values.phoneNumber
+        }
+
+        httpClient.post('http://localhost:5000/signup', data)
+        .then(response => {
+            getUser(setUser).then(r => {
+                navigate("/home");
+            })
+        })
+        .catch(error => {
+            console.log(error);
+        });
     }
     const navigate = useNavigate();
 
   return (
       <div className={'landingContainer'}>
-          <div className='box'>
+          <form id='register-form' className='box' onSubmit={registerUser}>
               <h1>REGISTER</h1>
               <div className={"registerFields"}>
-                   <div className='input-container'>
+                  <div className='input-container'>
                       <label>Email: </label>
                       <input
                           type="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
+                          value={values.email}
+                          onChange={onChange}
+                          onBlur={(e) => setFocusedEmail(true)}
+                          focused={String(focusedEmail)}
                           id="email"
                           name="email"
                           placeholder="youremail@gmail.com"
                           required
                       />
+                      <span className="error">{errorMessage.emailError}</span>
                   </div>
                   <div className='input-container'>
                       <label>Password: </label>
                       <input
                           type="password"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
+                          value={values.password}
+                          onChange={onChange}
+                          onBlur={(e) => setFocusedPassword(true)}
+                          focused={String(focusedPassword)}
                           id="password"
                           name="password"
                           placeholder="********"
                           required
+                          // pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).*" //TODO: uncomment when finished with testing
                       />
+                      <span className="error">{errorMessage.passwordError}</span>
+                  </div>
+                  <div className='input-container'>
+                      <label>Confirm Password: </label>
+                      <input
+                          type="password"
+                          value={values.confirmPassword}
+                          onChange={onChange}
+                          onBlur={(e) => setFocusedConfirm(true)}
+                          focused={String(focusedConfirm)}
+                          id="confirmPassword"
+                          name="confirmPassword"
+                          placeholder="********"
+                          required
+                          pattern={values.password}
+                      />
+                      <span className="error">{errorMessage.confirmError}</span>
                   </div>
                   <div className='input-container'>
                       <label>First name: </label>
                       <input
                           type="text"
-                          value={firstName}
-                          onChange={(e) => setFirstName(e.target.value)}
+                          value={values.firstName}
+                          onChange={onChange}
+                          onBlur={(e) => setFocusedFirstName(true)}
+                          focused={String(focusedFirstName)}
                           id="firstName"
                           name="firstName"
                           placeholder="John"
                           required
                       />
+                      <span className="error">{errorMessage.firstNameError}</span>
                   </div>
                   <div className='input-container'>
                       <label>Surname: </label>
                       <input
                           type="text"
-                          value={surname}
-                          onChange={(e) => setSurname(e.target.value)}
+                          value={values.surname}
+                          onChange={onChange}
+                          onBlur={(e) => setFocusedSurname(true)}
+                          focused={String(focusedSurname)}
                           id="surname"
                           name="surname"
                           placeholder="Doe"
                           required
                       />
+                      <span className="error">{errorMessage.surnameError}</span>
                   </div>
                   <div className='input-container'>
                       <label>Date of Birth: </label>
                       <input
                           type="date"
-                          value={dob}
-                          onChange={(e) => setDob(e.target.value)}
+                          value={values.dob}
+                          onChange={onChange}
+                          onBlur={(e) => setFocusedDob(true)}
+                          focused={String(focusedDob)}
                           id="dob"
                           name="dob"
-                          placeholder="01-01-1999"
+                          placeholder="DD-MM-YYYY"
                           required
+                          max={new Date().toISOString().split("T")[0]}
                       />
+                      <span className="error">{errorMessage.dobError}</span>
                   </div>
                   <div className='input-container'>
                       <label>Postcode: </label>
                       <input
                           type="text"
-                          value={postcode}
-                          onChange={(e) => setPostcode(e.target.value)}
+                          value={values.postcode}
+                          onChange={onChange}
+                          onBlur={(e) => setFocusedPostcode(true)}
+                          focused={String(focusedPostcode)}
                           id="postcode"
                           name="postcode"
                           placeholder="AB12 3CD"
                           required
                       />
+                      <span className="error">{errorMessage.postcodeError}</span>
                   </div>
                   <div className='input-container'>
                       <label>Phone Number: </label>
                       <input
                           type="text"
-                          value={phoneNumber}
-                          onChange={(e) => setPhoneNumber(e.target.value)}
+                          value={values.phoneNumber}
+                          onChange={onChange}
+                          onBlur={(e) => setFocusedPhone(true)}
+                          focused={String(focusedPhone)}
                           id="phoneNumber"
                           name="phoneNumber"
                           placeholder="07123 456789"
                           required
                       />
+                      <span className="error">{errorMessage.phoneError}</span>
                   </div>
               </div>
-              <div className='button-container'>
-                <button className='submit-button' onClick={() => {registerUser()}}>
-                    Submit
-                </button>
-              </div>
-          </div>
+              <button type='submit' className='submit-button' form="register-form">
+                  Submit
+              </button>
+          </form>
       </div>
 
   );
