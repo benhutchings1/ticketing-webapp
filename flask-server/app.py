@@ -439,15 +439,11 @@ class AddTicketResource(Resource):
 
         # Check code and user id
         if existing_code is None or existing_code.valid == 0:
-            response = jsonify({"msg": "Invalid request"})
-            response.status_code = 400
-            return response
+            return msg_response("Invalid request", status_code=400)
 
         # Check event
         if event_data is None:
-            response = jsonify({"msg": "Invalid event"})
-            response.status_code = 400
-            return response
+            return msg_response("Invalid event", status_code=400)
 
         # Remove token
         existing_code.delete()
@@ -462,7 +458,7 @@ class AddTicketResource(Resource):
         )
         new_ticket.save()
 
-        return jsonify({"msg": "Ticket successfully added"})
+        return msg_response("Ticket successfully added")
 
 
 @api.route('/requestQRdata')
