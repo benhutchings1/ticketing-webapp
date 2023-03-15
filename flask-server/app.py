@@ -382,6 +382,27 @@ class EventList(Resource):
         return response
 
 
+@api.route('/event/<int:event_id>')
+class EventDetails(Resource):
+    @jwt_required()
+    def get(self, event_id):
+        event = Event.query.filter_by(event_id=event_id).one_or_none()
+
+        if event is None:
+            return msg_response("Event does not exist", status_code=400)
+
+        return jsonify({'event_name': event.event_name,
+                        'event_id': event.event_id,
+                        'datetime': str(event.datetime),
+                        'genre': event.genre,
+                        'description': event.description,
+                        'venue_name': event.venue.name,
+                        'venue_location': event.venue.location,
+                        'venue_postcode': event.venue.postcode,
+                        'venue_capacity': event.venue.capacity
+                        })
+
+
 @api.route('/event_search')
 class EventSearch(Resource):
     @api.expect(search_event_model)
