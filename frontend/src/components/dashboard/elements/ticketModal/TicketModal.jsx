@@ -1,4 +1,4 @@
-import './ticketModal.css';
+ import './ticketModal.css';
 import './ticketModalMobile.css';
 import {useEffect, useState} from "react";
 import httpClient from "../../../../httpClient";
