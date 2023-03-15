@@ -156,6 +156,17 @@ def login_user_response(user, data=None):
     return response
 
 
+def msg_response(msg, data=None, status_code=200):
+    """Creates a response that includes msg and other data passed with the given status code"""
+    if not data:
+        data = {}
+    response_data = data
+    response_data.update({"msg": msg})
+    response = jsonify(response_data)
+    response.status_code = status_code
+    return response
+
+
 def check_signup(data) -> (bool, str):
     """Returns if signup is valid with error message if invalid"""
     # Check if user already exists
@@ -465,39 +476,23 @@ class RequestQRDataResource(Resource):
         user_ticket = db.session.query(UserTicket).filter_by(ticket_id=args.get("ticket_id")).one_or_none()
 
         # Check basic ticket details
-        error = False
-        response = jsonify({"msg": "Error occurred"})
-
         if user_ticket is None:
             # Ticket doesn't exist
-            error, response = True, jsonify({"msg": "Invalid request"})
+            return msg_response("Invalid request", status_code=400)
         elif user_ticket.valid == 0:
             # Ticket is invalid
-            error, response = True, jsonify({"msg": "Invalid token"})
+            return msg_response("Invalid token", status_code=400)
         elif user_ticket.user_id != current_user.user_id:
             # Ticket does not belong to user
-            error, response = True, jsonify({"msg": "Unauthorised ticket"})
-
-        if error:
-            # Error detected
-            response.status_code = 400
-            return response
+            return msg_response("Unauthorised ticket", status_code=400)
 
         # Encrypt ticket_id with cipher key
         try:
             ciphertext, iv = utils.encrypt(user_ticket.ticket_id, user_ticket.cipher_key)
         except:
-            response = jsonify({"msg": "Error generating QR data"})
-            response.status_code = 400
-            return response
+            return msg_response("Error generating QR data", status_code=400)
 
         return jsonify({"ticket_id": user_ticket.ticket_id, "qr_data": ciphertext + iv})
-
-
-def invalid_ticket_response(msg):
-    response = jsonify({"msg": msg})
-    response.status_code = 400
-    return response
 
 
 @api.route('/validateTicket')
@@ -513,10 +508,10 @@ class ValidateTicketResource(Resource):
         # Check basic ticket details
         if user_ticket is None:
             # Ticket doesn't exist
-            return invalid_ticket_response("Ticket doesn't exist")
+            return msg_response("Ticket doesn't exist", status_code=400)
         elif user_ticket.valid == 0:
             # Ticket is already used
-            return invalid_ticket_response("Ticket already used")
+            return msg_response("Ticket already used", status_code=400)
 
         # Use cipherkey to decrypt ciphertext
         try:
@@ -526,22 +521,23 @@ class ValidateTicketResource(Resource):
             decrypt_ticket_id = int(utils.decrypt(cipher, iv, user_ticket.cipher_key))
 
         except:
-            return invalid_ticket_response("Invalid ticket")
+            return msg_response("Invalid ticket", status_code=400)
 
         # Check ticketId's match
         if decrypt_ticket_id != args.get("ticket_id"):
-            return invalid_ticket_response("Invalid ticket")
+            return msg_response("Invalid ticket", status_code=400)
 
         # Check received event against ticket event
         if user_ticket.event_id is not args.get("event_id"):
-            return invalid_ticket_response(f"Ticket is not valid for this event {user_ticket.event.event_name}")
+            return msg_response(f"Ticket is not valid for this event "
+                                f"{user_ticket.event.event_name}", status_code=400)
 
         # Make ticket invalid
         user_ticket.valid = 0
         try:
             user_ticket.save()
         except:
-            return invalid_ticket_response("Server error")
+            return msg_response("Server error", status_code=400)
 
         # Return confirmation data
         return jsonify({"ticket_type": user_ticket.ticket_type, "msg": "Ticket is valid"})
