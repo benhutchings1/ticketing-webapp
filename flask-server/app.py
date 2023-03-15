@@ -428,8 +428,8 @@ class AddTicketResource(Resource):
         while retry:
             # Generate and store new idepotency token
             token = utils.generate_token()
-            newToken = IdempotencyTokens(token=token, valid=1)
-            db.session.add(newToken)
+            new_token = IdempotencyTokens(token=token, valid=1)
+            db.session.add(new_token)
 
             try:
                 # Throw error if idempotency token already exists
