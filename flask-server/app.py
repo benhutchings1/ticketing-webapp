@@ -24,6 +24,9 @@ db.init_app(app)
 jwt = JWTManager(app)
 api = Api(app, doc='/docs')
 
+# Valid ticket types
+TICKET_TYPES = ["Standard", "Deluxe", "VIP"]
+
 # /signup expected input
 signup_model = api.model(
     "SignUp",
@@ -208,7 +211,6 @@ def check_signup(data) -> (bool, str):
 # Signup route with format & uniquemess checks (to avoid unuseful internal server errors)
 @api.route('/signup')
 class SignUp(Resource):
-
     @api.expect(signup_model)
     def post(self):
         data = request.get_json()
@@ -240,7 +242,6 @@ class SignUp(Resource):
 
 @api.route('/login')
 class Login(Resource):
-
     @api.expect(login_model)
     def post(self):
         data = request.get_json()
@@ -262,7 +263,6 @@ class Login(Resource):
 
 @api.route('/logout')
 class Logout(Resource):
-
     @jwt_required()
     def post(self):
         # Unset cookies
@@ -279,7 +279,6 @@ class Logout(Resource):
 
 @api.route('/account')
 class Account(Resource):
-
     @jwt_required()
     def get(self):
         return jsonify({"user_id": current_user.user_id,
@@ -298,16 +297,10 @@ To do so, it also adds a new venue if not already in DB
 '''
 
 
-# datetime format: "2022-03-11 20:00:00"
-# @jwt_required
-
-
-# @jwt_required
 @api.route('/add_event')
 class AddEvent(Resource):
-
     @api.expect(event_model)
-    # @management_required
+    @management_required
     def post(self):
 
         data = request.get_json()
@@ -345,13 +338,10 @@ class AddEvent(Resource):
         return jsonify({"message": f"Event {event_name} created successfully."})
 
 
-# Retrieve event by name/id.   need a route for this?
-
-
 # Delete an event by name, if it exists.
 @api.route('/delete_event/<string:name>')
 class DeleteEvent(Resource):  # HandleEvent class, retrieve/delete by name?
-    # @jwt_required()
+    @management_required
     def delete(self, name):
         event_to_delete = Event.query.filter_by(event_name=name).first()
         if event_to_delete:
@@ -363,6 +353,7 @@ class DeleteEvent(Resource):  # HandleEvent class, retrieve/delete by name?
 # Get all events.
 @api.route('/event_list')
 class EventList(Resource):
+    @jwt_required()
     def get(self):
         events = Event.query.all()
         response = []
@@ -406,6 +397,7 @@ class EventDetails(Resource):
 @api.route('/event_search')
 class EventSearch(Resource):
     @api.expect(search_event_model)
+    @jwt_required()
     def post(self):
         data = request.get_json()
         query = data.get('event_name')
@@ -430,13 +422,14 @@ class EventSearch(Resource):
 
 @api.route('/addticket')
 class AddTicketResource(Resource):
+    @jwt_required()
     def get(self):
         retry = True
         while retry:
             # Generate and store new idepotency token
             token = utils.generate_token()
-            newToken = IdempotencyTokens(token=token, valid=1)
-            db.session.add(newToken)
+            new_token = IdempotencyTokens(token=token, valid=1)
+            db.session.add(new_token)
 
             try:
                 # Throw error if idempotency token already exists
@@ -446,7 +439,7 @@ class AddTicketResource(Resource):
                 # Token exists retry generation
                 retry = True
             except:
-                return jsonify({"msg", "Server Error"})
+                return msg_response("Server Error", status_code=400)
 
         return jsonify({"key": token})
 
@@ -465,6 +458,10 @@ class AddTicketResource(Resource):
         # Check event
         if event_data is None:
             return msg_response("Invalid event", status_code=400)
+
+        # Check ticket type
+        if args.get("ticket_type") not in TICKET_TYPES:
+            return msg_response("Invalid ticket type", status_code=400)
 
         # Remove token
         existing_code.delete()
