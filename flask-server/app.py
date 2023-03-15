@@ -24,6 +24,9 @@ db.init_app(app)
 jwt = JWTManager(app)
 api = Api(app, doc='/docs')
 
+# Valid ticket types
+TICKET_TYPES = ["Standard", "Deluxe", "VIP"]
+
 # /signup expected input
 signup_model = api.model(
     "SignUp",
@@ -81,20 +84,20 @@ add_ticket_input_model = api.model(
 )
 
 # Request QR code data input model
-requestQRdataModel = api.model(
+request_qr_data_model = api.model(
     "RequestQRdata",
     {
-        "ticketId": fields.Integer(min=0, required=True)
+        "ticket_id": fields.Integer(min=0, required=True)
     }
 )
 
 # Validate Ticket input model
-validateTicketModel = api.model(
+validate_ticket_model = api.model(
     "ValidateTicket",
     {
-        "eventID": fields.Integer(min=0, required=True),
-        "ticketID": fields.Integer(min=0, required=True),
-        "QRdata": fields.String(required=True)
+        "event_id": fields.Integer(min=0, required=True),
+        "ticket_id": fields.Integer(min=0, required=True),
+        "qr_data": fields.String(required=True)
     }
 )
 
@@ -156,6 +159,17 @@ def login_user_response(user, data=None):
     return response
 
 
+def msg_response(msg, data=None, status_code=200):
+    """Creates a response that includes msg and other data passed with the given status code"""
+    if not data:
+        data = {}
+    response_data = data
+    response_data.update({"msg": msg})
+    response = jsonify(response_data)
+    response.status_code = status_code
+    return response
+
+
 def check_signup(data) -> (bool, str):
     """Returns if signup is valid with error message if invalid"""
     # Check if user already exists
@@ -197,7 +211,6 @@ def check_signup(data) -> (bool, str):
 # Signup route with format & uniquemess checks (to avoid unuseful internal server errors)
 @api.route('/signup')
 class SignUp(Resource):
-
     @api.expect(signup_model)
     def post(self):
         data = request.get_json()
@@ -229,7 +242,6 @@ class SignUp(Resource):
 
 @api.route('/login')
 class Login(Resource):
-
     @api.expect(login_model)
     def post(self):
         data = request.get_json()
@@ -251,7 +263,6 @@ class Login(Resource):
 
 @api.route('/logout')
 class Logout(Resource):
-
     @jwt_required()
     def post(self):
         # Unset cookies
@@ -268,7 +279,6 @@ class Logout(Resource):
 
 @api.route('/account')
 class Account(Resource):
-
     @jwt_required()
     def get(self):
         return jsonify({"user_id": current_user.user_id,
@@ -287,16 +297,10 @@ To do so, it also adds a new venue if not already in DB
 '''
 
 
-# datetime format: "2022-03-11 20:00:00"
-# @jwt_required
-
-
-# @jwt_required
 @api.route('/add_event')
 class AddEvent(Resource):
-
     @api.expect(event_model)
-    # @management_required
+    @management_required
     def post(self):
 
         data = request.get_json()
@@ -334,13 +338,10 @@ class AddEvent(Resource):
         return jsonify({"message": f"Event {event_name} created successfully."})
 
 
-# Retrieve event by name/id.   need a route for this?
-
-
 # Delete an event by name, if it exists.
 @api.route('/delete_event/<string:name>')
 class DeleteEvent(Resource):  # HandleEvent class, retrieve/delete by name?
-    # @jwt_required()
+    @management_required
     def delete(self, name):
         event_to_delete = Event.query.filter_by(event_name=name).first()
         if event_to_delete:
@@ -352,6 +353,7 @@ class DeleteEvent(Resource):  # HandleEvent class, retrieve/delete by name?
 # Get all events.
 @api.route('/event_list')
 class EventList(Resource):
+    @jwt_required()
     def get(self):
         events = Event.query.all()
         response = []
@@ -371,9 +373,31 @@ class EventList(Resource):
         return response
 
 
+@api.route('/event/<int:event_id>')
+class EventDetails(Resource):
+    @jwt_required()
+    def get(self, event_id):
+        event = Event.query.filter_by(event_id=event_id).one_or_none()
+
+        if event is None:
+            return msg_response("Event does not exist", status_code=400)
+
+        return jsonify({'event_name': event.event_name,
+                        'event_id': event.event_id,
+                        'datetime': str(event.datetime),
+                        'genre': event.genre,
+                        'description': event.description,
+                        'venue_name': event.venue.name,
+                        'venue_location': event.venue.location,
+                        'venue_postcode': event.venue.postcode,
+                        'venue_capacity': event.venue.capacity
+                        })
+
+
 @api.route('/event_search')
 class EventSearch(Resource):
     @api.expect(search_event_model)
+    @jwt_required()
     def post(self):
         data = request.get_json()
         query = data.get('event_name')
@@ -398,13 +422,14 @@ class EventSearch(Resource):
 
 @api.route('/addticket')
 class AddTicketResource(Resource):
+    @jwt_required()
     def get(self):
         retry = True
         while retry:
             # Generate and store new idepotency token
             token = utils.generate_token()
-            newToken = IdempotencyTokens(token=token, valid=1)
-            db.session.add(newToken)
+            new_token = IdempotencyTokens(token=token, valid=1)
+            db.session.add(new_token)
 
             try:
                 # Throw error if idempotency token already exists
@@ -414,7 +439,7 @@ class AddTicketResource(Resource):
                 # Token exists retry generation
                 retry = True
             except:
-                return jsonify({"msg", "Server Error"})
+                return msg_response("Server Error", status_code=400)
 
         return jsonify({"key": token})
 
@@ -428,15 +453,15 @@ class AddTicketResource(Resource):
 
         # Check code and user id
         if existing_code is None or existing_code.valid == 0:
-            response = jsonify({"msg": "Invalid request"})
-            response.status_code = 400
-            return response
+            return msg_response("Invalid request", status_code=400)
 
         # Check event
         if event_data is None:
-            response = jsonify({"msg": "Invalid event"})
-            response.status_code = 400
-            return response
+            return msg_response("Invalid event", status_code=400)
+
+        # Check ticket type
+        if args.get("ticket_type") not in TICKET_TYPES:
+            return msg_response("Invalid ticket type", status_code=400)
 
         # Remove token
         existing_code.delete()
@@ -451,88 +476,85 @@ class AddTicketResource(Resource):
         )
         new_ticket.save()
 
-        return jsonify({"msg": "Ticket successfully added"})
+        return msg_response("Ticket successfully added")
 
 
 @api.route('/requestQRdata')
-class requestQRdataResource(Resource):
-    @api.expect(requestQRdataModel)
+class RequestQRDataResource(Resource):
+    @api.expect(request_qr_data_model)
+    @jwt_required()
     def post(self):
         args = request.get_json()
 
-        # Use ticketID to lookup ticket data    
-        user_ticket = db.session.query(UserTicket).filter_by(ticket_id=args.get("ticketId")).first()
+        # Use ticket_id to lookup ticket data
+        user_ticket = db.session.query(UserTicket).filter_by(ticket_id=args.get("ticket_id")).one_or_none()
 
-        # Check if ticket doesnt exist
+        # Check basic ticket details
         if user_ticket is None:
-            return jsonify({"msg": "Invalid request"})
-        else:
-            # Check if ticket is invaild
-            if user_ticket.valid == 0:
-                return jsonify({"msg": "Invalid token"})
+            # Ticket doesn't exist
+            return msg_response("Invalid request", status_code=400)
+        elif user_ticket.valid == 0:
+            # Ticket is invalid
+            return msg_response("Invalid token", status_code=400)
+        elif user_ticket.user_id != current_user.user_id:
+            # Ticket does not belong to user
+            return msg_response("Unauthorised ticket", status_code=400)
 
-        # Encrypt ticketID with cipherkey
+        # Encrypt ticket_id with cipher key
         try:
             ciphertext, iv = utils.encrypt(user_ticket.ticket_id, user_ticket.cipher_key)
         except:
-            print("Failed to encrypt ticket")
-            return jsonify({"msg": "Ticket error"})
+            return msg_response("Error generating QR data", status_code=400)
 
-        return jsonify({"ticketID": user_ticket.ticket_id, "QRdata": ciphertext + iv})
+        return jsonify({"ticket_id": user_ticket.ticket_id, "qr_data": ciphertext + iv})
 
 
 @api.route('/validateTicket')
-class validateTicketResource(Resource):
-    @api.expect(validateTicketModel)
+class ValidateTicketResource(Resource):
+    @api.expect(validate_ticket_model)
+    @management_required
     def post(self):
         args = request.get_json()
 
         # Use ticketID to lookup ticket data
-        try:
-            user_ticket = db.session.query(UserTicket).filter_by(ticket_id=args.get("ticketID")).first()
-            user_data = db.session.query(User).filter_by(user_id=user_ticket.user_id).first()
-        except:
-            return jsonify({"msg": "Server error"})
+        user_ticket = db.session.query(UserTicket).filter_by(ticket_id=args.get("ticket_id")).first()
 
-        # Check if ticket doesnt exist
+        # Check basic ticket details
         if user_ticket is None:
-            return jsonify({"msg": "Invalid request"})
-        else:
-            # Check if ticket is invaild
-            if user_ticket.valid == 0:
-                return jsonify({"msg": "Invalid token"})
-
-        # Check if user_data is retrieved
-        if user_data is None:
-            return jsonify({"msg": "Server error"})
+            # Ticket doesn't exist
+            return msg_response("Ticket doesn't exist", status_code=400)
+        elif user_ticket.valid == 0:
+            # Ticket is already used
+            return msg_response("Ticket already used", status_code=400)
 
         # Use cipherkey to decrypt ciphertext
         try:
-            ciphertext = args.get("QRdata")
+            ciphertext = args.get("qr_data")
             cipher = ciphertext[:24]
             iv = ciphertext[24:]
             decrypt_ticket_id = int(utils.decrypt(cipher, iv, user_ticket.cipher_key))
 
         except:
-            return jsonify({"msg": "Ticket invalid"})
+            return msg_response("Invalid ticket", status_code=400)
 
         # Check ticketId's match
-        if decrypt_ticket_id != args.get("ticketId"):
-            return jsonify({"msg": "Invalid ticket"})
+        if decrypt_ticket_id != args.get("ticket_id"):
+            return msg_response("Invalid ticket", status_code=400)
 
-        # Check recieved_event against ticket event
-        if not user_ticket.event_id is args.get("eventID"):
-            return jsonify({"msg": "Event is invalid"})
+        # Check received event against ticket event
+        if user_ticket.event_id is not args.get("event_id"):
+            return msg_response(f"Ticket is not valid for this event "
+                                f"{user_ticket.event.event_name}", status_code=400)
 
         # Make ticket invalid
         user_ticket.valid = 0
         try:
             user_ticket.save()
         except:
-            return jsonify({"msg", "Server error"})
+            return msg_response("Server error", status_code=400)
 
         # Return confirmation data
-        return jsonify({"ticket_type": user_ticket.ticket_type})
+        return jsonify({"ticket_type": user_ticket.ticket_type, "msg": "Ticket is valid"})
 
 
 @app.shell_context_processor
