@@ -439,7 +439,7 @@ class AddTicketResource(Resource):
                 # Token exists retry generation
                 retry = True
             except:
-                return jsonify({"msg", "Server Error"})
+                return msg_response("Server Error", status_code=400)
 
         return jsonify({"key": token})
 
