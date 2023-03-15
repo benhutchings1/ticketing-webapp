@@ -24,6 +24,9 @@ db.init_app(app)
 jwt = JWTManager(app)
 api = Api(app, doc='/docs')
 
+# Valid ticket types
+TICKET_TYPES = ["Standard", "Deluxe", "VIP"]
+
 # /signup expected input
 signup_model = api.model(
     "SignUp",
@@ -455,6 +458,10 @@ class AddTicketResource(Resource):
         # Check event
         if event_data is None:
             return msg_response("Invalid event", status_code=400)
+
+        # Check ticket type
+        if args.get("ticket_type") not in TICKET_TYPES:
+            return msg_response("Invalid ticket type", status_code=400)
 
         # Remove token
         existing_code.delete()
