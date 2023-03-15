@@ -81,10 +81,10 @@ add_ticket_input_model = api.model(
 )
 
 # Request QR code data input model
-requestQRdataModel = api.model(
+request_qr_data_model = api.model(
     "RequestQRdata",
     {
-        "ticketId": fields.Integer(min=0, required=True)
+        "ticket_id": fields.Integer(min=0, required=True)
     }
 )
 
@@ -455,30 +455,43 @@ class AddTicketResource(Resource):
 
 
 @api.route('/requestQRdata')
-class requestQRdataResource(Resource):
-    @api.expect(requestQRdataModel)
+class RequestQRDataResource(Resource):
+    @api.expect(request_qr_data_model)
+    @jwt_required()
     def post(self):
         args = request.get_json()
 
-        # Use ticketID to lookup ticket data    
-        user_ticket = db.session.query(UserTicket).filter_by(ticket_id=args.get("ticketId")).first()
+        # Use ticket_id to lookup ticket data
+        user_ticket = db.session.query(UserTicket).filter_by(ticket_id=args.get("ticket_id")).one_or_none()
 
-        # Check if ticket doesnt exist
+        # Check basic ticket details
+        error = False
+        response = jsonify({"msg": "Error occurred"})
+
         if user_ticket is None:
-            return jsonify({"msg": "Invalid request"})
-        else:
-            # Check if ticket is invaild
-            if user_ticket.valid == 0:
-                return jsonify({"msg": "Invalid token"})
+            # Ticket doesn't exist
+            error, response = True, jsonify({"msg": "Invalid request"})
+        elif user_ticket.valid == 0:
+            # Ticket is invalid
+            error, response = True, jsonify({"msg": "Invalid token"})
+        elif user_ticket.user_id != current_user.user_id:
+            # Ticket does not belong to user
+            error, response = True, jsonify({"msg": "Unauthorised ticket"})
 
-        # Encrypt ticketID with cipherkey
+        if error:
+            # Error detected
+            response.status_code = 400
+            return response
+
+        # Encrypt ticket_id with cipher key
         try:
             ciphertext, iv = utils.encrypt(user_ticket.ticket_id, user_ticket.cipher_key)
         except:
-            print("Failed to encrypt ticket")
-            return jsonify({"msg": "Ticket error"})
+            response = jsonify({"msg": "Error generating QR data"})
+            response.status_code = 400
+            return response
 
-        return jsonify({"ticketID": user_ticket.ticket_id, "QRdata": ciphertext + iv})
+        return jsonify({"ticket_id": user_ticket.ticket_id, "qr_data": ciphertext + iv})
 
 
 @api.route('/validateTicket')
