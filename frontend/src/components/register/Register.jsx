@@ -29,6 +29,8 @@ const Register = (props) => {
     const [focusedPostcode, setFocusedPostcode] = useState(false)
     const [focusedPhone, setFocusedPhone] = useState(false)
 
+    const[catchError, setCatchError] = useState("")
+
     const errorMessage = {
         emailError: "Invalid Email",
         passwordError: "Invalid Password",
@@ -66,11 +68,14 @@ const Register = (props) => {
         .catch(error => {
             console.log(error)
             if (error.response && error.response.status === 400) {
-                alert(error.response.data.msg);
+                // alert(error.response.data.msg);
+                setCatchError(error.response.data.msg)
             }
         });
     }
     const navigate = useNavigate();
+
+    //TODO: add regex/patterns to match backend format to avoid invalid input errors
 
   return (
       <div className={'landingContainer'}>
@@ -180,7 +185,7 @@ const Register = (props) => {
                           focused={String(focusedPostcode)}
                           id="postcode"
                           name="postcode"
-                          placeholder="AB12 3CD"
+                          placeholder="AB123CD"
                           required
                       />
                       <span className="error">{errorMessage.postcodeError}</span>
@@ -195,11 +200,14 @@ const Register = (props) => {
                           focused={String(focusedPhone)}
                           id="phoneNumber"
                           name="phoneNumber"
-                          placeholder="07123 456789"
+                          placeholder="07123456789"
                           required
                       />
                       <span className="error">{errorMessage.phoneError}</span>
                   </div>
+              </div>
+              <div>
+                <span className="catch-error">{catchError}</span>
               </div>
               <button type='submit' className='submit-button' form="register-form">
                   Submit

@@ -42,3 +42,9 @@ input, label {
 .box button:hover {
     background-position: right center;
 }
+
+.catch-error {
+    color: #420c0c;
+    /* display: none; */
+    font-size: 15px;
+}
