@@ -20,6 +20,10 @@ input, label {
     width: 160px;
 }
 
+.registerFields input.postcode {
+    text-transform: uppercase;
+}
+
 .submit-button {
     flex: 1 1 auto;
     margin: 10px;
