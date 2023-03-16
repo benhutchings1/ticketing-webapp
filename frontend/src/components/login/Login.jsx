@@ -16,11 +16,13 @@ const Login = (props) => {
     const [focusedEmail, setFocusedEmail] = useState(false)
     const [focusedPassword, setFocusedPassword] = useState(false)
 
+    const[catchError, setCatchError] = useState("")
+
     const navigate = useNavigate();
 
     const errorMessage = {
         emailError: "Invalid Email",
-        passwordError: "Invalid Password"
+        passwordError: "Password must be at least 8 characters"
     }
 
     const onChange = (e) => {
@@ -43,8 +45,8 @@ const Login = (props) => {
         })
         .catch(error => {
             console.log(error)
-            if (error.response && error.response.status === 401) {
-                alert(error.response.data.msg);
+            if (error.response && (error.response.status === 400 || error.response.status === 401)) {
+                setCatchError("Invalid Credentials")
             }
         });
     };
@@ -66,7 +68,7 @@ const Login = (props) => {
                             name="email"
                             placeholder="youremail@gmail.com"
                             required
-                            // pattern="([-a-zA-Z0-9.`?{}]+@\w+\.\w+)" //TODO: remove when finished with testing
+                            pattern="([-a-zA-Z0-9.`?{}]+@\w+\.\w+)"
                         />
                         <span className="error">{errorMessage.emailError}</span>
                     </div>
@@ -82,8 +84,12 @@ const Login = (props) => {
                             name="password"
                             placeholder="********"
                             required
+                            pattern="^.{8,}$"
                         />
                         <span className="error">{errorMessage.passwordError}</span>
+                    </div>
+                    <div>
+                        <span className="catch-error">{catchError}</span>
                     </div>
                     <div className='button-container'>
                         <button className='submit-button' form="login-form" type='submit'>Submit</button>
