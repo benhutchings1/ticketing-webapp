@@ -4,7 +4,7 @@ from models import User, Venue, Event
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash
 
-# Test users will have default password 'test'
+# Test users will have default password 'test1234'
 TEST_USERS = [
     {'email': 'test@test.com', 'role': 'user'},
     {'email': 'test1@test.com', 'role': 'user'},
@@ -39,7 +39,7 @@ if __name__ == "__main__":
         for i, data in enumerate(TEST_USERS):
             test_user = User(
                 email_address=data.get('email'),
-                passwd_hash=generate_password_hash('test', method="sha256", salt_length=32),
+                passwd_hash=generate_password_hash('test1234', method="sha256", salt_length=32),
                 firstname='Test',
                 surname='Test',
                 date_of_birth=datetime.strptime('2000-01-01', "%Y-%m-%d").date(),
