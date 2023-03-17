@@ -29,15 +29,17 @@ const Register = (props) => {
     const [focusedPostcode, setFocusedPostcode] = useState(false)
     const [focusedPhone, setFocusedPhone] = useState(false)
 
+    const[catchError, setCatchError] = useState("")
+
     const errorMessage = {
         emailError: "Invalid Email",
-        passwordError: "Invalid Password",
+        passwordError: "Password must be at least 8 characters",
         confirmError: "Password does not match",
-        firstNameError: "Please enter your firstname",
-        surnameError: "Please enter your surname",
+        firstNameError: "Please enter a valid firstname",
+        surnameError: "Please enter a valid surname",
         dobError: "Please enter your date of birth",
-        postcodeError: "Please enter your postcode",
-        phoneError: "Please enter your phone number",
+        postcodeError: "Please enter a valid postcode",
+        phoneError: "Please enter a valid phone number",
     }
 
     const onChange = (e) => {
@@ -66,7 +68,7 @@ const Register = (props) => {
         .catch(error => {
             console.log(error)
             if (error.response && error.response.status === 400) {
-                alert(error.response.data.msg);
+                setCatchError(error.response.data.msg)
             }
         });
     }
@@ -89,6 +91,7 @@ const Register = (props) => {
                           name="email"
                           placeholder="youremail@gmail.com"
                           required
+                          pattern="([-a-zA-Z0-9.`?{}]+@\w+\.\w+)"
                       />
                       <span className="error">{errorMessage.emailError}</span>
                   </div>
@@ -104,7 +107,7 @@ const Register = (props) => {
                           name="password"
                           placeholder="********"
                           required
-                          // pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).*" //TODO: uncomment when finished with testing
+                          pattern="^.{8,}$"
                       />
                       <span className="error">{errorMessage.passwordError}</span>
                   </div>
@@ -136,6 +139,7 @@ const Register = (props) => {
                           name="firstName"
                           placeholder="John"
                           required
+                          pattern="^[a-zA-Z]{1,32}$"
                       />
                       <span className="error">{errorMessage.firstNameError}</span>
                   </div>
@@ -151,6 +155,7 @@ const Register = (props) => {
                           name="surname"
                           placeholder="Doe"
                           required
+                          pattern="^[a-zA-Z]{1,32}$"
                       />
                       <span className="error">{errorMessage.surnameError}</span>
                   </div>
@@ -180,8 +185,10 @@ const Register = (props) => {
                           focused={String(focusedPostcode)}
                           id="postcode"
                           name="postcode"
-                          placeholder="AB12 3CD"
+                          placeholder="AB123CD"
                           required
+                          pattern="^[a-zA-Z0-9]{1,8}$"
+                          className="postcode"
                       />
                       <span className="error">{errorMessage.postcodeError}</span>
                   </div>
@@ -195,11 +202,15 @@ const Register = (props) => {
                           focused={String(focusedPhone)}
                           id="phoneNumber"
                           name="phoneNumber"
-                          placeholder="07123 456789"
+                          placeholder="07123456789"
                           required
+                          pattern="^\d{1,16}$"
                       />
                       <span className="error">{errorMessage.phoneError}</span>
                   </div>
+              </div>
+              <div>
+                <span className="catch-error">{catchError}</span>
               </div>
               <button type='submit' className='submit-button' form="register-form">
                   Submit

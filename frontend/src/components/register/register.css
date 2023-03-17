@@ -20,6 +20,10 @@ input, label {
     width: 160px;
 }
 
+.registerFields input.postcode {
+    text-transform: uppercase;
+}
+
 .submit-button {
     flex: 1 1 auto;
     margin: 10px;
@@ -41,4 +45,10 @@ input, label {
 
 .box button:hover {
     background-position: right center;
+}
+
+.catch-error {
+    color: #420c0c;
+    /* display: none; */
+    font-size: 15px;
 }
