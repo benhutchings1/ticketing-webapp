@@ -6,7 +6,10 @@ from flask_jwt_extended import JWTManager, create_access_token, set_access_cooki
 from datetime import datetime, timedelta, timezone
 from config import current_config
 from models import User, TokenBlocklist
-from resources import ns
+from resources.user import ns as user_ns
+from resources.event import ns as event_ns
+from resources.ticket import ns as ticket_ns
+from resources.ticket_no_sign import ns as ticket_no_sign_ns
 
 
 def create_app(config=None):
@@ -20,7 +23,10 @@ def create_app(config=None):
     jwt = JWTManager(app)
     api = Api(app, doc='/docs')
 
-    api.add_namespace(ns, '')
+    api.add_namespace(user_ns)
+    api.add_namespace(event_ns)
+    api.add_namespace(ticket_ns)
+    api.add_namespace(ticket_no_sign_ns)
 
     @jwt.user_lookup_loader
     def user_lookup_callback(_jwt_header, jwt_data):

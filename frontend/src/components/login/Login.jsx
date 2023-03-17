@@ -37,7 +37,7 @@ const Login = (props) => {
             password: values.password
         }
 
-        httpClient.post('/login', data)
+        httpClient.post('/user/login', data)
         .then(response => {
             getUser(setUser).then(r => {
                 navigate("/home");
