@@ -1,4 +1,5 @@
 import re
+from base64 import b64encode, b64decode
 from datetime import datetime, timezone
 from functools import wraps
 from flask import jsonify, request
@@ -10,6 +11,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import utils
 from exts import db
 from models import TokenBlocklist, User, Event, Venue, IdempotencyTokens, UserTicket
+from signature import create_key_pair, sign_msg, verify_msg
 
 ns = Namespace('')
 
@@ -77,12 +79,21 @@ request_qr_data_model = ns.model(
     }
 )
 
-# Validate Ticket input model
-validate_ticket_model = ns.model(
+# Validate Ticket input model without signature
+validate_ticket_model_no_sign = ns.model(
     "ValidateTicket",
     {
         "event_id": fields.Integer(min=0, required=True),
         "ticket_id": fields.Integer(min=0, required=True),
+        "qr_data": fields.String(required=True)
+    }
+)
+
+# Validate Ticket input model with signature
+validate_ticket_model = ns.model(
+    "ValidateTicket",
+    {
+        "event_id": fields.Integer(min=0, required=True),
         "qr_data": fields.String(required=True)
     }
 )
@@ -428,7 +439,102 @@ class AddTicketResource(Resource):
         return msg_response("Ticket successfully added")
 
 
+public_key, private_key = create_key_pair()
+
+
 @ns.route('/requestQRdata')
+class RequestQRDataResource(Resource):
+    @ns.expect(request_qr_data_model)
+    @jwt_required()
+    def post(self):
+        data = request.get_json()
+
+        # Use ticket_id to lookup ticket data
+        user_ticket = UserTicket.query.get(data.get("ticket_id"))
+
+        # Check basic ticket details
+        if user_ticket is None:
+            # Ticket doesn't exist
+            return msg_response("Ticket does not exist", status_code=400)
+        elif user_ticket.valid == 0:
+            # Ticket is invalid
+            return msg_response("Ticket already used", status_code=400)
+        elif user_ticket.user_id != current_user.user_id:
+            # Ticket does not belong to user
+            return msg_response("Unauthorised ticket", status_code=401)
+
+        # Ticket details as plaintext
+        details = f"{user_ticket.ticket_id},{user_ticket.event_id},{user_ticket.ticket_type}"
+        details_bytes = details.encode()
+
+        # Sign ticket details with private key
+        signature_bytes = sign_msg(details_bytes, private_key)
+        signature = b64encode(signature_bytes).decode()
+
+        # QR Code data
+        qr_data = f"{details},{signature}"
+
+        return jsonify({"ticket_id": user_ticket.ticket_id, "qr_data": qr_data})
+
+
+@ns.route('/validateTicket')
+class ValidateTicketResource(Resource):
+    @ns.expect(validate_ticket_model)
+    @management_required
+    def post(self):
+        data = request.get_json()
+
+        # QR Code data
+        qr_data = data.get('qr_data')
+        qr_data_structure = qr_data.split(",")
+
+        # Validation of structure
+        if len(qr_data_structure) != 4 or False in [i.isdecimal() for i in qr_data_structure[0:2]]:
+            return msg_response("Ticket is invalid", status_code=400)
+
+        # Get ticket details
+        ticket_id = int(qr_data_structure[0])
+        event_id = int(qr_data_structure[1])
+        ticket_type = qr_data_structure[2]
+
+        # Check ticket event matches current event
+        if event_id != data.get('event_id'):
+            return msg_response("Ticket doesn't match event", status_code=400)
+
+        # Get original msg
+        msg = f"{ticket_id},{event_id},{ticket_type}"
+        msg_bytes = msg.encode()
+
+        # Get signature
+        signature = qr_data_structure[3]
+        signature_bytes = b64decode(signature)
+
+        # Verify signature
+        valid = verify_msg(msg_bytes, signature_bytes, public_key)
+        if not valid:
+            return msg_response("Ticket is invalid", status_code=400)
+
+        # Fetch ticket from database
+        user_ticket = UserTicket.query.get(ticket_id)
+
+        # Check basic ticket details
+        if user_ticket is None:
+            # Ticket was deleted
+            return msg_response("Ticket was deleted", status_code=400)
+        elif user_ticket.valid == 0:
+            # Ticket is already used
+            return msg_response("Ticket already used", status_code=400)
+
+        # Set ticket as used
+        user_ticket.valid = 0
+        user_ticket.save()
+
+        # Return confirmation data
+        return jsonify({"ticket_type": user_ticket.ticket_type, "msg": "Ticket is valid"})
+
+
+# No sign
+@ns.route('/requestQRdata_no_sign')
 class RequestQRDataResource(Resource):
     @ns.expect(request_qr_data_model)
     @jwt_required()
@@ -458,9 +564,9 @@ class RequestQRDataResource(Resource):
         return jsonify({"ticket_id": user_ticket.ticket_id, "qr_data": ciphertext + iv})
 
 
-@ns.route('/validateTicket')
+@ns.route('/validateTicket_no_sign')
 class ValidateTicketResource(Resource):
-    @ns.expect(validate_ticket_model)
+    @ns.expect(validate_ticket_model_no_sign)
     @management_required
     def post(self):
         args = request.get_json()
