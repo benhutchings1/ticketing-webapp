@@ -1,4 +1,4 @@
-from app import app
+from app import create_app
 from exts import db
 from models import User, Venue, Event
 from datetime import datetime, timedelta
@@ -28,6 +28,8 @@ TEST_EVENTS = [
 ]
 
 if __name__ == "__main__":
+    app = create_app()
+
     with app.app_context():
         # Delete contents of db and recreate
         db.drop_all()
