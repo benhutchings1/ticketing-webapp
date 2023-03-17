@@ -21,7 +21,7 @@ const Home = (props) => {
     }, [user])
 
     useEffect(() => {
-        httpClient.get('/event_list')
+        httpClient.get('/event/list')
         .then(response => {
             setEvents(response)
         })

@@ -59,7 +59,7 @@ const Register = (props) => {
             "phone_number": values.phoneNumber
         }
 
-        httpClient.post('http://localhost:5000/signup', data)
+        httpClient.post('/user/signup', data)
         .then(response => {
             getUser(setUser).then(r => {
                 navigate("/home");

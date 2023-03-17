@@ -47,8 +47,8 @@ def singup_and_login():
             "email_address": "test@test.com",
             "password": "test1234"
         }
-    signup_response = client.post('/signup', data=json.dumps(data), content_type='application/json')
-    login_response = client.post('/login', data=json.dumps(login_data), content_type='application/json')
+    signup_response = client.post('/user/signup', data=json.dumps(data), content_type='application/json')
+    login_response = client.post('/user/login', data=json.dumps(login_data), content_type='application/json')
     return login_response
 
 def reponse_time():
