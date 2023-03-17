@@ -11,7 +11,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import utils
 from exts import db
 from models import TokenBlocklist, User, Event, Venue, IdempotencyTokens, UserTicket
-from signature import create_key_pair, sign_msg, verify_msg
+from utils.encryption import encrypt, decrypt
+from utils.signature import create_key_pair, sign_msg, verify_msg
 
 ns = Namespace('')
 
@@ -562,7 +563,7 @@ class RequestQRDataResource(Resource):
 
         # Encrypt ticket_id with cipher key
         try:
-            ciphertext, iv = utils.encrypt(user_ticket.ticket_id, user_ticket.cipher_key)
+            ciphertext, iv = encrypt(user_ticket.ticket_id, user_ticket.cipher_key)
         except:
             return msg_response("Error generating QR data", status_code=400)
 
@@ -592,7 +593,7 @@ class ValidateTicketResource(Resource):
             ciphertext = args.get("qr_data")
             cipher = ciphertext[:24]
             iv = ciphertext[24:]
-            decrypt_ticket_id = int(utils.decrypt(cipher, iv, user_ticket.cipher_key))
+            decrypt_ticket_id = int(decrypt(cipher, iv, user_ticket.cipher_key))
 
         except:
             return msg_response("Invalid ticket", status_code=400)
