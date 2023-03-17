@@ -13,6 +13,7 @@ from exts import db
 from models import TokenBlocklist, User, Event, Venue, IdempotencyTokens, UserTicket
 from utils.access_control import management_required
 from utils.encryption import encrypt, decrypt, gen_key, generate_token
+from utils.response import login_user_response, msg_response
 from utils.signature import create_key_pair, sign_msg, verify_msg
 
 ns = Namespace('')
@@ -102,28 +103,6 @@ validate_ticket_model = ns.model(
 
 # Valid ticket types
 TICKET_TYPES = ["Standard", "Deluxe", "VIP"]
-
-
-def login_user_response(user, data=None):
-    """Adds user login with cookie to response"""
-    if data is None:
-        data = {}
-    access_token = create_access_token(identity=user.user_id)
-    data['token'] = access_token
-    response = jsonify(data)
-    set_access_cookies(response, access_token)
-    return response
-
-
-def msg_response(msg, data=None, status_code=200):
-    """Creates a response that includes msg and other data passed with the given status code"""
-    if not data:
-        data = {}
-    response_data = data
-    response_data.update({"msg": msg})
-    response = jsonify(response_data)
-    response.status_code = status_code
-    return response
 
 
 def check_signup(data) -> (bool, str):
