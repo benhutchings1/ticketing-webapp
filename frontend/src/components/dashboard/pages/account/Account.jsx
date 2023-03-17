@@ -29,7 +29,7 @@ const Account = (props) => {
     }, [user])
 
     const logoutUser = async () => {
-        httpClient.post('/logout', {}, {
+        httpClient.post('/user/logout', {}, {
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-TOKEN": getCookie("csrf_access_token"),

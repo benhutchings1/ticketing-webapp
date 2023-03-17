@@ -1,7 +1,7 @@
 import httpClient from "../httpClient";
 
 export async function getUser(setUser) {
-    httpClient.get('/account', {})
+    httpClient.get('/user/account', {})
     .then((response) => {
         setUser(response);
         return response;
