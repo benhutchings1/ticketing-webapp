@@ -12,7 +12,7 @@ import utils
 from exts import db
 from models import TokenBlocklist, User, Event, Venue, IdempotencyTokens, UserTicket
 from utils.access_control import management_required
-from utils.encryption import encrypt, decrypt
+from utils.encryption import encrypt, decrypt, gen_key, generate_token
 from utils.signature import create_key_pair, sign_msg, verify_msg
 
 ns = Namespace('')
@@ -382,7 +382,7 @@ class AddTicketResource(Resource):
         retry = True
         while retry:
             # Generate and store new idepotency token
-            token = utils.generate_token()
+            token = generate_token()
             new_token = IdempotencyTokens(token=token, valid=1)
             db.session.add(new_token)
 
@@ -426,7 +426,7 @@ class AddTicketResource(Resource):
             event_id=args.get("event_id"),
             ticket_type=args.get("ticket_type"),
             user_id=current_user.user_id,
-            cipher_key=utils.gen_key(),
+            cipher_key=gen_key(),
             valid=True
         )
         new_ticket.save()
