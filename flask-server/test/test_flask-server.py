@@ -44,7 +44,7 @@ class Tests(unittest.TestCase):
             "phone_number": "345345"
         }
 
-        response = self.app.post('/signup', data=json.dumps(data), content_type='application/json')
+        response = self.app.post('/user/signup', data=json.dumps(data), content_type='application/json')
 
         self.assertEqual(200, response.status_code)
 
@@ -54,7 +54,7 @@ class Tests(unittest.TestCase):
             "password": "test1234"
         }
 
-        response = self.app.post('/login', data=json.dumps(data), content_type='application/json')
+        response = self.app.post('/user/login', data=json.dumps(data), content_type='application/json')
 
         self.assertEqual(200, response.status_code)
 
