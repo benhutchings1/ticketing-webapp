@@ -16,7 +16,7 @@ def setUp():
         db.create_all()
         test_user = User(
             email_address='test@test.com',
-            passwd_hash=generate_password_hash('test', method="sha256", salt_length=32),
+            passwd_hash=generate_password_hash('test1234', method="sha256", salt_length=32),
             firstname='Test',
             surname='Test',
             date_of_birth=datetime.strptime('2000-01-01', "%Y-%m-%d").date(),
@@ -36,7 +36,7 @@ def tearDown():
 def singup_and_login():
     data = {
         "email_address": "random@random.com",
-        "password": "test",
+        "password": "test1234",
         "firstname": "test",
         "surname": "test",
         "date_of_birth": "2023-03-16",
@@ -45,7 +45,7 @@ def singup_and_login():
     }
     login_data = {
             "email_address": "test@test.com",
-            "password": "test"
+            "password": "test1234"
         }
     signup_response = client.post('/signup', data=json.dumps(data), content_type='application/json')
     login_response = client.post('/login', data=json.dumps(login_data), content_type='application/json')
