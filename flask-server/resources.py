@@ -11,6 +11,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import utils
 from exts import db
 from models import TokenBlocklist, User, Event, Venue, IdempotencyTokens, UserTicket
+from utils.access_control import management_required
 from utils.encryption import encrypt, decrypt
 from utils.signature import create_key_pair, sign_msg, verify_msg
 
@@ -101,18 +102,6 @@ validate_ticket_model = ns.model(
 
 # Valid ticket types
 TICKET_TYPES = ["Standard", "Deluxe", "VIP"]
-
-
-def management_required(fn):
-    @wraps(fn)
-    @jwt_required()
-    def decorator(*args, **kwargs):
-        if current_user.role == "management":
-            return fn(*args, **kwargs)
-        else:
-            return jsonify({'msg': "Role 'management' is required"})
-
-    return decorator
 
 
 def login_user_response(user, data=None):
