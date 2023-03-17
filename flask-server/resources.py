@@ -149,6 +149,11 @@ def check_signup(data) -> (bool, str):
     if not re.match(email_format, email_address):
         return False, f"{email_address}: invalid email address format."
 
+    # Password check
+    password = data.get('password')
+    if len(password) <= 8:
+        return False, f"Password length must be 8 or less."
+
     # Phone number uniqueness check + format check
     phone_number = data.get('phone_number')
     db_user = User.query.filter_by(phone_number=phone_number).first()
