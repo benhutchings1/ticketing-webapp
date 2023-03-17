@@ -1,4 +1,5 @@
 import re
+from base64 import b64encode, b64decode
 from datetime import datetime, timezone
 from functools import wraps
 from flask import jsonify, request
@@ -10,6 +11,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import utils
 from exts import db
 from models import TokenBlocklist, User, Event, Venue, IdempotencyTokens, UserTicket
+from utils.access_control import management_required
+from utils.encryption import encrypt, decrypt, gen_key, generate_token
+from utils.response import login_user_response, msg_response
+from utils.signature import create_key_pair, sign_msg, verify_msg
 
 ns = Namespace('')
 
@@ -77,8 +82,8 @@ request_qr_data_model = ns.model(
     }
 )
 
-# Validate Ticket input model
-validate_ticket_model = ns.model(
+# Validate Ticket input model without signature
+validate_ticket_model_no_sign = ns.model(
     "ValidateTicket",
     {
         "event_id": fields.Integer(min=0, required=True),
@@ -87,42 +92,17 @@ validate_ticket_model = ns.model(
     }
 )
 
+# Validate Ticket input model with signature
+validate_ticket_model = ns.model(
+    "ValidateTicket",
+    {
+        "event_id": fields.Integer(min=0, required=True),
+        "qr_data": fields.String(required=True)
+    }
+)
+
 # Valid ticket types
 TICKET_TYPES = ["Standard", "Deluxe", "VIP"]
-
-
-def management_required(fn):
-    @wraps(fn)
-    @jwt_required()
-    def decorator(*args, **kwargs):
-        if current_user.role == "management":
-            return fn(*args, **kwargs)
-        else:
-            return jsonify({'msg': "Role 'management' is required"})
-
-    return decorator
-
-
-def login_user_response(user, data=None):
-    """Adds user login with cookie to response"""
-    if data is None:
-        data = {}
-    access_token = create_access_token(identity=user.user_id)
-    data['token'] = access_token
-    response = jsonify(data)
-    set_access_cookies(response, access_token)
-    return response
-
-
-def msg_response(msg, data=None, status_code=200):
-    """Creates a response that includes msg and other data passed with the given status code"""
-    if not data:
-        data = {}
-    response_data = data
-    response_data.update({"msg": msg})
-    response = jsonify(response_data)
-    response.status_code = status_code
-    return response
 
 
 def check_signup(data) -> (bool, str):
@@ -137,6 +117,11 @@ def check_signup(data) -> (bool, str):
     email_format = r"\"?([-a-zA-Z0-9.`?{}]+@\w+\.\w+)\"?"
     if not re.match(email_format, email_address):
         return False, f"{email_address}: invalid email address format."
+
+    # Password check
+    password = data.get('password')
+    if len(password) < 8:
+        return False, f"Password length must be 8 or less."
 
     # Phone number uniqueness check + format check
     phone_number = data.get('phone_number')
@@ -376,7 +361,7 @@ class AddTicketResource(Resource):
         retry = True
         while retry:
             # Generate and store new idepotency token
-            token = utils.generate_token()
+            token = generate_token()
             new_token = IdempotencyTokens(token=token, valid=1)
             db.session.add(new_token)
 
@@ -420,7 +405,7 @@ class AddTicketResource(Resource):
             event_id=args.get("event_id"),
             ticket_type=args.get("ticket_type"),
             user_id=current_user.user_id,
-            cipher_key=utils.gen_key(),
+            cipher_key=gen_key(),
             valid=True
         )
         new_ticket.save()
@@ -428,7 +413,102 @@ class AddTicketResource(Resource):
         return msg_response("Ticket successfully added")
 
 
+public_key, private_key = create_key_pair()
+
+
 @ns.route('/requestQRdata')
+class RequestQRDataResource(Resource):
+    @ns.expect(request_qr_data_model)
+    @jwt_required()
+    def post(self):
+        data = request.get_json()
+
+        # Use ticket_id to lookup ticket data
+        user_ticket = UserTicket.query.get(data.get("ticket_id"))
+
+        # Check basic ticket details
+        if user_ticket is None:
+            # Ticket doesn't exist
+            return msg_response("Ticket does not exist", status_code=400)
+        elif user_ticket.valid == 0:
+            # Ticket is invalid
+            return msg_response("Ticket already used", status_code=400)
+        elif user_ticket.user_id != current_user.user_id:
+            # Ticket does not belong to user
+            return msg_response("Unauthorised ticket", status_code=401)
+
+        # Ticket details as plaintext
+        details = f"{user_ticket.ticket_id},{user_ticket.event_id},{user_ticket.ticket_type}"
+        details_bytes = details.encode()
+
+        # Sign ticket details with private key
+        signature_bytes = sign_msg(details_bytes, private_key)
+        signature = b64encode(signature_bytes).decode()
+
+        # QR Code data
+        qr_data = f"{details},{signature}"
+
+        return jsonify({"ticket_id": user_ticket.ticket_id, "qr_data": qr_data})
+
+
+@ns.route('/validateTicket')
+class ValidateTicketResource(Resource):
+    @ns.expect(validate_ticket_model)
+    @management_required
+    def post(self):
+        data = request.get_json()
+
+        # QR Code data
+        qr_data = data.get('qr_data')
+        qr_data_structure = qr_data.split(",")
+
+        # Validation of structure
+        if len(qr_data_structure) != 4 or False in [i.isdecimal() for i in qr_data_structure[0:2]]:
+            return msg_response("Ticket is invalid", status_code=400)
+
+        # Get ticket details
+        ticket_id = int(qr_data_structure[0])
+        event_id = int(qr_data_structure[1])
+        ticket_type = qr_data_structure[2]
+
+        # Check ticket event matches current event
+        if event_id != data.get('event_id'):
+            return msg_response("Ticket doesn't match event", status_code=400)
+
+        # Get original msg
+        msg = f"{ticket_id},{event_id},{ticket_type}"
+        msg_bytes = msg.encode()
+
+        # Get signature
+        signature = qr_data_structure[3]
+        signature_bytes = b64decode(signature)
+
+        # Verify signature
+        valid = verify_msg(msg_bytes, signature_bytes, public_key)
+        if not valid:
+            return msg_response("Ticket is invalid", status_code=400)
+
+        # Fetch ticket from database
+        user_ticket = UserTicket.query.get(ticket_id)
+
+        # Check basic ticket details
+        if user_ticket is None:
+            # Ticket was deleted
+            return msg_response("Ticket was deleted", status_code=400)
+        elif user_ticket.valid == 0:
+            # Ticket is already used
+            return msg_response("Ticket already used", status_code=400)
+
+        # Set ticket as used
+        user_ticket.valid = 0
+        user_ticket.save()
+
+        # Return confirmation data
+        return jsonify({"ticket_type": user_ticket.ticket_type, "msg": "Ticket is valid"})
+
+
+# No sign
+@ns.route('/requestQRdata_no_sign')
 class RequestQRDataResource(Resource):
     @ns.expect(request_qr_data_model)
     @jwt_required()
@@ -451,16 +531,16 @@ class RequestQRDataResource(Resource):
 
         # Encrypt ticket_id with cipher key
         try:
-            ciphertext, iv = utils.encrypt(user_ticket.ticket_id, user_ticket.cipher_key)
+            ciphertext, iv = encrypt(user_ticket.ticket_id, user_ticket.cipher_key)
         except:
             return msg_response("Error generating QR data", status_code=400)
 
         return jsonify({"ticket_id": user_ticket.ticket_id, "qr_data": ciphertext + iv})
 
 
-@ns.route('/validateTicket')
+@ns.route('/validateTicket_no_sign')
 class ValidateTicketResource(Resource):
-    @ns.expect(validate_ticket_model)
+    @ns.expect(validate_ticket_model_no_sign)
     @management_required
     def post(self):
         args = request.get_json()
@@ -481,7 +561,7 @@ class ValidateTicketResource(Resource):
             ciphertext = args.get("qr_data")
             cipher = ciphertext[:24]
             iv = ciphertext[24:]
-            decrypt_ticket_id = int(utils.decrypt(cipher, iv, user_ticket.cipher_key))
+            decrypt_ticket_id = int(decrypt(cipher, iv, user_ticket.cipher_key))
 
         except:
             return msg_response("Invalid ticket", status_code=400)
