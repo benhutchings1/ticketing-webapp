@@ -43,7 +43,7 @@ const Ticket = (props) => {
                             ticket_id: id
                         }
 
-                        httpClient.post('https://192.168.0.159:5000/ticket/request_qr_data', data, {
+                        httpClient.post('/ticket/request_qr_data', data, {
                             headers: {
                                 "Content-Type": "application/json",
                                 "X-CSRF-TOKEN": getCookie("csrf_access_token"),
