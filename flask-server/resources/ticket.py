@@ -70,7 +70,11 @@ class TicketList(Resource):
     @jwt_required()
     @ns.marshal_list_with(ticket_model)
     def get(self):
-        return UserTicket.query.filter_by(user=current_user, valid=True).all()
+        return UserTicket.query.join(Event) \
+            .filter(UserTicket.user == current_user,
+                    UserTicket.valid,
+                    Event.datetime > datetime.now() - timedelta(hours=12)
+                    ).all()
 
 
 @ns.route('/add')
