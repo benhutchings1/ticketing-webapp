@@ -182,6 +182,13 @@ class ValidateTicketResource(Resource):
     def post(self):
         data = request.get_json()
 
+        # Check event exists and has not finished
+        event = Event.query.get(data.get('event_id'))
+        if event is None:
+            return msg_response("Event does not exist", status_code=404)
+        elif event.datetime <= datetime.now() - timedelta(hours=12):
+            return msg_response("Event is over", status_code=400)
+
         # QR Code data
         qr_data = data.get('qr_data')
         qr_data_structure = qr_data.split(",")
