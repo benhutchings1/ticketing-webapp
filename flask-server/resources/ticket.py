@@ -157,6 +157,9 @@ class RequestQRDataResource(Resource):
         elif user_ticket.user_id != current_user.user_id:
             # Ticket does not belong to user
             return msg_response("Unauthorised ticket", status_code=401)
+        elif user_ticket.event.datetime <= datetime.now() - timedelta(hours=12):
+            # Event has already happened
+            return msg_response("Event is over", status_code=400)
 
         # Ticket details as plaintext
         details = f"{user_ticket.ticket_id},{user_ticket.event_id},{user_ticket.ticket_type}"
