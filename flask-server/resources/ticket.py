@@ -47,6 +47,30 @@ validate_ticket_model = ns.model(
     }
 )
 
+# Tickets
+ticket_model = ns.model(
+    "Ticket",
+    {
+        "ticket_id": fields.Integer(attribute="ticket_id"),
+        "event_id": fields.Integer(attribute="event.event_id"),
+        "event_name": fields.String(attribute="event.event_name"),
+        "event_datetime": fields.String(attribute="event.datetime"),
+        "venue_id": fields.String(attribute="event.venue.venue_id"),
+        "venue_name": fields.String(attribute="event.venue.name"),
+        "venue_location": fields.String(attribute="event.venue.location"),
+        "venue_postcode": fields.String(attribute="event.venue.postcode"),
+        "venue_capacity": fields.String(attribute="event.venue.capacity")
+    }
+)
+
+
+@ns.route('/list')
+class TicketList(Resource):
+    @jwt_required()
+    @ns.marshal_list_with(ticket_model)
+    def get(self):
+        return UserTicket.query.filter_by(user=current_user, valid=True).all()
+
 
 @ns.route('/add')
 class AddTicketResource(Resource):
