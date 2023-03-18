@@ -22,6 +22,7 @@ body {
     overflow-x: hidden;
 }
 .contentContainer {
+    overflow-y: auto;
     padding-top: 25px;
     padding-left: 35px;
     padding-right: 35px;

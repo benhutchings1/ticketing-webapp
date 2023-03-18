@@ -22,7 +22,7 @@ class Tests(unittest.TestCase):
                 surname='Test',
                 date_of_birth=datetime.strptime('2000-01-01', "%Y-%m-%d").date(),
                 postcode='AB12 3DC',
-                phone_number=f'07345345',
+                phone_number=f'07123456789',
                 role='user'
             )
             db.session.add(self.test_user)
