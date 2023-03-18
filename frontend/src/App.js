@@ -55,7 +55,7 @@ function App() {
                             <Route exact path="/event/:id" element={<EventPage user={user} event={currentEvent} setOpen={setTicketOpen}/>}/>
 
                             {/* Management Routes */}
-                            <Route exact path="/scanner" element={<QRCodeScanner user={user} setUser={setUser}/>}/>
+                            <Route exact path="/scanner" element={<QRCodeScanner user={user} setUser={setUser} event={currentEvent}/>}/>
 
                             {/* If user tries to go to a route that doesn't exist, take them to landing page */}
                             <Route path="*" element={<Navigate to="/" />} />

@@ -54,7 +54,6 @@ const TicketModal = (props) => {
                         }
                     })
                     .then(response => {
-                        console.log(response);
                         setSuccesses(successes += 1);
                     })
             })

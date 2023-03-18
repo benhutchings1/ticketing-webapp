@@ -1,10 +1,8 @@
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import Card from 'react-bootstrap/Card';
 import Button from "react-bootstrap/Button";
 import httpClient from "../../../../httpClient";
-import {getCookie, getUser} from "../../../../helpers";
-//import Button from 'react-bootstrap/Button';
-//import Card from 'react-bootstrap/Card';
+import {getCookie} from "../../../../helpers";
 
 const Ticket = (props) => {
     let setQRData = props.setQRData;
@@ -51,7 +49,6 @@ const Ticket = (props) => {
                         })
                         .then(response => {
                             let qrData = response.qr_data;
-                            console.log(qrData);
                             setQRData(qrData);
                             setQROpen(true);
                         })

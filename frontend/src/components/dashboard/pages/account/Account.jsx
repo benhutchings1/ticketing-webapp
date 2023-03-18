@@ -98,21 +98,22 @@ const Account = (props) => {
                     </div>
                     <br/>
 
-                    <h2>PURCHASED TICKETS:</h2>
-                    <div className={'eventsListContainer'}>
-                        {ticketList}
-                    </div>
-
+                    {user != null && user.role !== "management" ?
+                        <div>
+                            <h2>PURCHASED TICKETS:</h2>
+                            <div className={'eventsListContainer'}>
+                                {ticketList}
+                            </div>
+                        </div>
+                        :
+                        <div></div>
+                    }
                     <button className={'logoutBtn'} onClick={() => logoutUser()}>
                         LOGOUT
                     </button>
                 </div>
             :
-                <div>
-                    <button className={'logoutBtn'} onClick={() => logoutUser()}>
-                        LOGOUT
-                    </button>
-                </div>
+                <div></div>
             }
         </div>
     )

@@ -1,15 +1,16 @@
 import './qrCodeScanner.css';
 import './qrCodeScannerMobile.css';
 
-import {useEffect, useState} from "react";
+import {useEffect} from "react";
 import {useNavigate} from "react-router-dom";
 import {QrScanner} from '@yudiel/react-qr-scanner';
 import httpClient from "../../../../httpClient";
-import {getCookie, getUser} from "../../../../helpers";
+import {getCookie} from "../../../../helpers";
 
 const QRCodeScanner = (props) => {
     const user = props.user;
     const setUser = props.setUser;
+    let event = props.event;
 
     const navigate = useNavigate();
 
@@ -26,6 +27,7 @@ const QRCodeScanner = (props) => {
                 onDecode={(result) => {
                     console.log(result)
                     const data = {
+                        event_id: event.event_id,
                         qr_data: result
                     }
 
