@@ -8,6 +8,7 @@ import {SearchBar, Event} from "../../elements";
 
 const Home = (props) => {
     const user = props.user;
+    const setUser = props.setUser;
     const [events, setEvents] = useState([]);
     const setCurrentEvent = props.setCurrentEvent;
 
@@ -27,9 +28,12 @@ const Home = (props) => {
             setEvents(response)
         })
         .catch(error => {
-            console.log(error)
+            console.log(error);
             if (error.response && error.response.status === 401) {
                 alert(error.response.data.msg);
+                if (error.response.data.msg === "Token has been revoked") {
+                    setUser(null);
+                }
             }
         });
     }, [])

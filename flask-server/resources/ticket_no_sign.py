@@ -1,14 +1,34 @@
+from datetime import datetime, timedelta
+
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required, current_user
 from flask_restx import Resource, fields, Namespace
+from sqlalchemy.exc import IntegrityError
 
 from exts import db
-from models import UserTicket
+from models import Base, IdempotencyTokens, Event
 from utils.access_control import management_required
-from utils.encryption import encrypt, decrypt
+from utils.encryption import encrypt, decrypt, generate_token, gen_key
 from utils.response import msg_response
 
 ns = Namespace('/ticket_no_sign')
+
+# Valid ticket types
+TICKET_TYPES = ["Standard", "Deluxe", "VIP"]
+
+
+# User ticket no sign model
+class UserTicketNoSign(Base):
+    ticket_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    event_id = db.Column(db.Integer(), db.ForeignKey('event.event_id'), nullable=False)
+    user_id = db.Column(db.Integer(), db.ForeignKey('user.user_id'), nullable=False)
+    cipher_key = db.Column(db.String(256), nullable=False)
+    ticket_type = db.Column(db.String(64), nullable=False)
+    valid = db.Column(db.Boolean, nullable=False)
+
+    event = db.relationship("Event")
+    user = db.relationship("User")
+
 
 # Validate Ticket input model without signature
 validate_ticket_model_no_sign = ns.model(
@@ -28,6 +48,75 @@ request_qr_data_model = ns.model(
     }
 )
 
+add_ticket_input_model = ns.model(
+    "AddTicket",
+    {
+        "event_id": fields.Integer(required=True, min=0),
+        "ticket_type": fields.String(required=True),
+        "token": fields.String(required=True, max_length=128)
+    }
+)
+
+
+@ns.route('/add')
+class AddTicketResource(Resource):
+    @jwt_required()
+    def get(self):
+        retry = True
+        while retry:
+            # Generate and store new idepotency token
+            token = generate_token()
+            new_token = IdempotencyTokens(token=token, valid=1)
+            db.session.add(new_token)
+
+            try:
+                # Throw error if idempotency token already exists
+                db.session.commit()
+                retry = False
+            except IntegrityError:
+                # Token exists retry generation
+                retry = True
+            except:
+                return msg_response("Server Error", status_code=400)
+
+        return jsonify({"key": token})
+
+    @ns.expect(add_ticket_input_model)
+    @jwt_required()
+    def post(self):
+        data = request.get_json()
+        # Check if idempotency token exists in table before adding ticket
+        existing_code = IdempotencyTokens.query.filter_by(token=data.get("token")).one_or_none()
+        event = Event.query.filter(Event.event_id == data.get("event_id"),
+                                   Event.datetime > datetime.now() - timedelta(hours=12)).one_or_none()
+
+        # Check code and user id
+        if existing_code is None or existing_code.valid == 0:
+            return msg_response("Invalid request", status_code=400)
+
+        # Check event
+        if event is None:
+            return msg_response("Invalid event", status_code=400)
+
+        # Check ticket type
+        if data.get("ticket_type") not in TICKET_TYPES:
+            return msg_response("Invalid ticket type", status_code=400)
+
+        # Remove token
+        existing_code.delete()
+
+        # Make new ticket
+        new_ticket = UserTicketNoSign(
+            event_id=data.get("event_id"),
+            ticket_type=data.get("ticket_type"),
+            user_id=current_user.user_id,
+            cipher_key=gen_key(),
+            valid=True
+        )
+        new_ticket.save()
+
+        return msg_response("Ticket successfully added")
+
 
 @ns.route('/request_qr_data')
 class RequestQRDataResource(Resource):
@@ -37,7 +126,7 @@ class RequestQRDataResource(Resource):
         args = request.get_json()
 
         # Use ticket_id to lookup ticket data
-        user_ticket = db.session.query(UserTicket).filter_by(ticket_id=args.get("ticket_id")).one_or_none()
+        user_ticket = db.session.query(UserTicketNoSign).filter_by(ticket_id=args.get("ticket_id")).one_or_none()
 
         # Check basic ticket details
         if user_ticket is None:
@@ -67,7 +156,7 @@ class ValidateTicketResource(Resource):
         args = request.get_json()
 
         # Use ticketID to lookup ticket data
-        user_ticket = db.session.query(UserTicket).filter_by(ticket_id=args.get("ticket_id")).first()
+        user_ticket = db.session.query(UserTicketNoSign).filter_by(ticket_id=args.get("ticket_id")).first()
 
         # Check basic ticket details
         if user_ticket is None:
