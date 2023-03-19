@@ -20,6 +20,7 @@ const Home = (props) => {
         }
     }, [user])
 
+    // Get list of events and add to array
     useEffect(() => {
         httpClient.get('/event/list')
         .then(response => {
@@ -35,6 +36,7 @@ const Home = (props) => {
 
     const eventsList = events.map((item, index) =>
         <Event key={`event${index}`}
+               user={user}
                id={item.event_id}
                item={item}
                setCurrenteEvent={setCurrentEvent}
@@ -46,16 +48,9 @@ const Home = (props) => {
 
             <h1 className={'dashboardTitle'}>HOME</h1>
             <h3>EVENTS</h3>
-            {user != null && user.role !== "management" ?
-                // User page
-                <div className={'eventsListContainer'}>
-                    {eventsList}
-                </div>
-            :
-                // Management page
-                <div>
-                    <button className={'qrCodeBtn'} onClick={() => {navigate("/scanner")}}>SCAN QR CODE</button>
-                </div>}
+            <div className={'eventsListContainer'}>
+                {eventsList}
+            </div>
         </div>
     )
 }

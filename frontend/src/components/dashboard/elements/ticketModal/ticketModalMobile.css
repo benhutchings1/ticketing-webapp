@@ -1,15 +1,15 @@
 @media only screen and (max-width: 1024px) {
-    .ticketModalBoxContainer {
+    .modalBoxContainer {
         width: 70%;
         font-size: 1.2em;
     }
 
-    .ticketModalHeader {
+    .modalHeader {
         font-size: 1.2em;
         margin-bottom: 10px;
     }
 
-    .ticketModalBoxContainer select {
+    .modalBoxContainer select {
         font-size: 1em;
     }
 }

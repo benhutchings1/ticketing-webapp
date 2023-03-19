@@ -54,7 +54,6 @@ const TicketModal = (props) => {
                         }
                     })
                     .then(response => {
-                        console.log(response);
                         setSuccesses(successes += 1);
                     })
             })
@@ -75,10 +74,10 @@ const TicketModal = (props) => {
     }
 
     return (
-        <div onClick={() => {setOpen(false)}} style={{display: displayStyle}} className='ticketModalContainer noSelect'>
-            <div onClick={(e) => {e.stopPropagation();}} className='ticketModalBoxContainer'>
+        <div onClick={() => {setOpen(false)}} style={{display: displayStyle}} className='modalContainer ticketModalContainer noSelect'>
+            <div onClick={(e) => {e.stopPropagation();}} className='modalBoxContainer ticketModalBoxContainer'>
                 <h2>Buy Tickets for {event.event_name}</h2>
-                <div className='ticketModalHeader'><b>Amount:</b></div>
+                <div className='modalHeader'><b>Amount:</b></div>
                 <div className={'counterContainer'}>
                     <button onClick={() => {
                         if (count > 1) {
@@ -99,7 +98,7 @@ const TicketModal = (props) => {
                     </button>
                 </div>
                 <br/>
-                <div className='ticketModalHeader'><b>Ticket Type:</b></div>
+                <div className='modalHeader'><b>Ticket Type:</b></div>
                 <select id="ticketTypes">
                     <option value="standard">Standard</option>
                     <option value="deluxe">Deluxe</option>
