@@ -27,7 +27,7 @@ body {
     padding-left: 35px;
     padding-right: 35px;
     background-color: white;
-    /*width: calc(100vw - 132px);*/
+    width: calc(100vw - 132px);
     height: calc(100vh - 25px);
     display: inline-block;
     text-align: start;

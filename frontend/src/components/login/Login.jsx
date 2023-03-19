@@ -22,7 +22,6 @@ const Login = (props) => {
 
     const errorMessage = {
         emailError: "Invalid Email",
-        passwordError: "Password must be at least 8 characters"
     }
 
     const onChange = (e) => {
@@ -85,7 +84,6 @@ const Login = (props) => {
                             placeholder="********"
                             required
                         />
-                        <span className="error">{errorMessage.passwordError}</span>
                     </div>
                     <div>
                         <span className="catch-error">{catchError}</span>
