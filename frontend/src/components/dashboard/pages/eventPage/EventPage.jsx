@@ -5,6 +5,7 @@ import userEvent from "@testing-library/user-event";
 
 const EventPage = (props) => {
     let [event, setEvent] = useState({})
+    let setCurrentEvent = props.setCurrentEvent;
     let name = event.event_name
     let datetime = event.datetime;
     let genre = event.genre;
@@ -22,7 +23,8 @@ const EventPage = (props) => {
             let eventID = window.location.href.split("/").slice(-1);
             httpClient.get(`${process.env.REACT_APP_ROUTE_URL}/event/${eventID}`)
                 .then(response => {
-                    setEvent(response)
+                    setCurrentEvent(response);
+                    setEvent(response);
                 })
                 .catch(error => {
                     console.log(error)

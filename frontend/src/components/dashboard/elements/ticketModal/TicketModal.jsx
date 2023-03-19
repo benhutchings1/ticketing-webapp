@@ -11,7 +11,6 @@ const TicketModal = (props) => {
     let event = props.event;
     let user = props.user;
     let [count, setCount] = useState(1);
-    let [successes, setSuccesses] = useState(0);
 
     const [displayStyle, setDisplayStyle] = useState("none");
 
@@ -23,25 +22,17 @@ const TicketModal = (props) => {
         }
     }, [open]);
 
-    useEffect(() => {
-        if (successes >= count) {
-            loading(false);
-            setOpen(false);
-            navigate("/account"); // tickets will then be shown on account page
-        }
-    }, [successes])
-
     let navigate = useNavigate();
 
     function buyTickets() {
         loading(true);
-        for (let i = 0; i < count; i++) {
-            httpClient.get(`${process.env.REACT_APP_ROUTE_URL}/ticket/add`)
+        httpClient.get(`${process.env.REACT_APP_ROUTE_URL}/ticket/add`)
             .then(response => {
                 let tickets = document.getElementById("ticketTypes");
                 let ticketType = tickets.options[tickets.selectedIndex].text;
 
                 let data = {
+                    ticket_quantity: count,
                     event_id: event.event_id,
                     ticket_type: ticketType,
                     token: response.key
@@ -55,21 +46,22 @@ const TicketModal = (props) => {
                         }
                     })
                     .then(response => {
-                        setSuccesses(successes += 1);
+                        loading(false);
+                        setOpen(false);
+                        navigate("/account"); // tickets will then be shown on account page
                     })
                 }, 500);
             })
             .catch(error => {
                 console.log(error)
             });
-        }
     }
 
+    // Prevent user from spamming the buy button
     function loading(bool) {
         if (bool) {
             document.querySelector(".ticketModalContainer").style.pointerEvents = "none";
         } else {
-            setSuccesses(0);
             setCount(1);
             document.querySelector(".ticketModalContainer").style.pointerEvents = "visiblePainted";
         }
