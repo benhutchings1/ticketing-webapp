@@ -42,12 +42,12 @@ def check_signup(data) -> (bool, str):
     email_address = data.get('email_address')
     db_user = User.query.filter_by(email_address=email_address).first()
     if db_user is not None:
-        return False, f"The user {email_address} already exits."
+        return False, f"{email_address} already has an account"
 
     # Email check
     email_format = r"\"?([-a-zA-Z0-9.`?{}]+@\w+\.\w+)\"?"
     if not re.match(email_format, email_address):
-        return False, f"{email_address}: invalid email address format."
+        return False, f"{email_address}: invalid email address format"
 
     # Password check
     password = data.get('password')
@@ -58,22 +58,22 @@ def check_signup(data) -> (bool, str):
     phone_number = data.get('phone_number')
     db_user = User.query.filter_by(phone_number=phone_number).first()
     if db_user is not None:
-        return False, f"Another user has this {db_user.phone_number} phone number."
+        return False, f"Another user has this {db_user.phone_number} phone number"
     if len(phone_number) > 16:
-        return False, f"Phone number must be 16 digits or less."
+        return False, f"Phone number must be 16 digits or less"
     if not phone_number.isnumeric():
-        return False, f"Phone number must be numeric."
+        return False, f"Phone number must be numeric"
 
     # Format checks for firstname & surname
     firstname = data.get('firstname')
     surname = data.get('surname')
     if len(firstname) > 32 or len(surname) > 32:
-        return False, f"The firstname & surname must be 32 characters or less."
+        return False, f"The firstname & surname must be 32 characters or less"
 
     # Format check for postcode
     postcode = data.get('postcode')
     if len(postcode) > 8:
-        return False, f"Postcode length must be 8 or less."
+        return False, f"Postcode length must be 8 or less"
 
     # All checks passed
     return True, ""
