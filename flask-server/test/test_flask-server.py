@@ -3,7 +3,7 @@ import unittest
 from datetime import datetime
 from werkzeug.security import generate_password_hash
 from app import create_app, db
-from models import User
+from models import User, Venue, Event, UserTicket
 
 app = create_app('config.TestConfig')
 
@@ -35,13 +35,48 @@ class Tests(unittest.TestCase):
                 phone_number=VALID_USER.get('phone_number'),
                 role='user'
             )
+
+            self.venue = Venue(
+                name='Test',
+                location='Test',
+                postcode='Test',
+                capacity='Test',
+            )
+
+            self.test_event = Event(
+                venue=self.venue,
+                event_name='Test event',
+                datetime=datetime.now(),
+                genre='Test',
+                description='Test',
+            )
+
+            self.test_ticket = UserTicket(
+                event=self.test_event,
+                user=self.test_user,
+                ticket_type="Standard",
+                valid=True,
+            )
+
             db.session.add(self.test_user)
+            db.session.add(self.venue)
+            db.session.add(self.test_event)
             db.session.commit()
+
+            self.test_event_id = self.test_event.event_id
 
     def tearDown(self):
         with app.app_context():
             db.session.remove()
             db.drop_all()
+
+    def login_user(self):
+        data = {
+            "email_address": VALID_USER.get('email_address'),
+            "password": VALID_USER.get('password')
+        }
+
+        self.app.post('/user/login', data=json.dumps(data), content_type='application/json')
 
     def test_signup(self):
         data = {
@@ -94,7 +129,7 @@ class Tests(unittest.TestCase):
         data = {
             "email_address": "random2@random.com",
             "password": "test1234",
-            "firstname": "t"*100,
+            "firstname": "t" * 100,
             "surname": "test",
             "date_of_birth": "2023-03-16",
             "postcode": "test1234",
@@ -129,7 +164,7 @@ class Tests(unittest.TestCase):
             "firstname": "test",
             "surname": "test",
             "date_of_birth": "2023-03-16",
-            "postcode": "t"*100,
+            "postcode": "t" * 100,
             "phone_number": "3445"
         }
 
@@ -162,7 +197,7 @@ class Tests(unittest.TestCase):
             "surname": "test",
             "date_of_birth": "2023-03-16",
             "postcode": "test1234",
-            "phone_number": "1"*50
+            "phone_number": "1" * 50
         }
 
         response = self.app.post('/user/signup', data=json.dumps(data), content_type='application/json')
@@ -221,6 +256,115 @@ class Tests(unittest.TestCase):
         response = self.app.post('/user/login', data=json.dumps(data), content_type='application/json')
 
         self.assertEqual(401, response.status_code)
+
+    def test_ticket_add(self):
+        self.login_user()
+
+        response = self.app.get('/ticket/add')
+        self.assertEqual(200, response.status_code)
+        self.assertIsNotNone(response.json.get('key'))
+
+        token = response.json.get('key')
+        data = {
+            "event_id": self.test_event_id,
+            "ticket_type": "Standard",
+            "ticket_quantity": 1,
+            "token": token,
+        }
+
+        response = self.app.post('/ticket/add', data=json.dumps(data), content_type='application/json')
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("1 ticket(s) successfully added", response.json.get('msg'))
+
+    def test_ticket_add_invalid_event(self):
+        self.login_user()
+
+        response = self.app.get('/ticket/add')
+        self.assertEqual(200, response.status_code)
+        self.assertIsNotNone(response.json.get('key'))
+
+        token = response.json.get('key')
+        data = {
+            "event_id": 1000000,
+            "ticket_type": "Standard",
+            "ticket_quantity": 1,
+            "token": token,
+        }
+
+        response = self.app.post('/ticket/add', data=json.dumps(data), content_type='application/json')
+        self.assertEqual(400, response.status_code)
+        self.assertEqual("Invalid event", response.json.get('msg'))
+
+    def test_ticket_add_invalid_ticket_type(self):
+        self.login_user()
+
+        response = self.app.get('/ticket/add')
+        self.assertEqual(200, response.status_code)
+        self.assertIsNotNone(response.json.get('key'))
+
+        token = response.json.get('key')
+        data = {
+            "event_id": self.test_event_id,
+            "ticket_type": "invalid",
+            "ticket_quantity": 1,
+            "token": token,
+        }
+
+        response = self.app.post('/ticket/add', data=json.dumps(data), content_type='application/json')
+        self.assertEqual(400, response.status_code)
+        self.assertEqual("Invalid ticket type", response.json.get('msg'))
+
+    def test_ticket_add_invalid_quantity_small(self):
+        self.login_user()
+
+        response = self.app.get('/ticket/add')
+        self.assertEqual(200, response.status_code)
+        self.assertIsNotNone(response.json.get('key'))
+
+        token = response.json.get('key')
+        data = {
+            "event_id": self.test_event_id,
+            "ticket_type": "Standard",
+            "ticket_quantity": -10,
+            "token": token,
+        }
+
+        response = self.app.post('/ticket/add', data=json.dumps(data), content_type='application/json')
+        self.assertEqual(400, response.status_code)
+        self.assertEqual("Invalid request", response.json.get('msg'))
+
+    def test_ticket_add_invalid_quantity_large(self):
+        self.login_user()
+
+        response = self.app.get('/ticket/add')
+        self.assertEqual(200, response.status_code)
+        self.assertIsNotNone(response.json.get('key'))
+
+        token = response.json.get('key')
+        data = {
+            "event_id": self.test_event_id,
+            "ticket_type": "Standard",
+            "ticket_quantity": 1000,
+            "token": token,
+        }
+
+        response = self.app.post('/ticket/add', data=json.dumps(data), content_type='application/json')
+        self.assertEqual(400, response.status_code)
+        self.assertEqual("Invalid request", response.json.get('msg'))
+
+    def test_ticket_add_invalid_token(self):
+        self.login_user()
+
+        data = {
+            "event_id": self.test_event_id,
+            "ticket_type": "Standard",
+            "ticket_quantity": 1,
+            "token": "invalid",
+        }
+
+        response = self.app.post('/ticket/add', data=json.dumps(data), content_type='application/json')
+        self.assertEqual(400, response.status_code)
+        self.assertEqual("Invalid request", response.json.get('msg'))
 
 
 if __name__ == "__main__":
