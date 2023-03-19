@@ -4,6 +4,7 @@ import {useEffect, useState} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
 import {SearchBar, Event} from "../../elements";
 import httpClient from "../../../../httpClient";
+import {getCookie} from "../../../../helpers";
 
 const SearchPage = (props) => {
     const user = props.user;
@@ -27,7 +28,12 @@ const SearchPage = (props) => {
 
 
     useEffect(() => {
-        httpClient.post('/event/search', searchData)
+        httpClient.post('/event/search', searchData, {
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": getCookie("csrf_access_token"),
+            }
+        })
         .then(response => {
             setEvents(response)
         })
