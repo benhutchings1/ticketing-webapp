@@ -139,7 +139,10 @@ class EventSearch(Resource):
         data = request.get_json()
         query = data.get('event_name')
 
-        events = Event.query.filter(Event.event_name.contains(query)).all()
+        events = Event.query.filter(Event.event_name.contains(query),
+                                    Event.datetime > datetime.now() - timedelta(hours=12)
+                                    ).all()
+
         response = []
         for event in events:
             data = {
