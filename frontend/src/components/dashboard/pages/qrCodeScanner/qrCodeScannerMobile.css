@@ -6,4 +6,8 @@
     .qrScannerDiv div video {
         width: auto;
     }
+
+    .validImg {
+        width: 100%;
+    }
 }

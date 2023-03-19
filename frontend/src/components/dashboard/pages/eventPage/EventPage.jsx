@@ -1,7 +1,10 @@
 import './eventPage.css';
+import {useEffect, useState} from "react";
+import httpClient from "../../../../httpClient";
+import userEvent from "@testing-library/user-event";
 
 const EventPage = (props) => {
-    let event = props.event;
+    let [event, setEvent] = useState({})
     let name = event.event_name
     let datetime = event.datetime;
     let genre = event.genre;
@@ -12,6 +15,25 @@ const EventPage = (props) => {
     let venueCapacity = event.venue_capacity;
 
     let setOpen = props.setOpen;
+
+    useEffect(() => {
+        // Get event if not directed from home page
+        if (event.length === undefined) {
+            let eventID = window.location.href.split("/").slice(-1);
+            httpClient.get(`${process.env.REACT_APP_ROUTE_URL}/event/${eventID}`)
+                .then(response => {
+                    setEvent(response)
+                })
+                .catch(error => {
+                    console.log(error)
+                    if (error.response && error.response.status === 401) {
+                        alert(error.response.data.msg);
+                    }
+                });
+        } else {
+            setEvent(props.event);
+        }
+    }, [])
 
     return (
         <div className={'contentContainer'}>

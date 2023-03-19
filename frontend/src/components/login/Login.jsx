@@ -37,7 +37,7 @@ const Login = (props) => {
             password: values.password
         }
 
-        httpClient.post('/user/login', data)
+        httpClient.post(`${process.env.REACT_APP_ROUTE_URL}/user/login`, data)
         .then(response => {
             getUser(setUser).then(r => {
                 navigate("/home");
@@ -84,7 +84,6 @@ const Login = (props) => {
                             name="password"
                             placeholder="********"
                             required
-                            pattern="^.{8,}$"
                         />
                         <span className="error">{errorMessage.passwordError}</span>
                     </div>
