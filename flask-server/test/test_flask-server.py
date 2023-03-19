@@ -51,16 +51,26 @@ class Tests(unittest.TestCase):
                 description='Test',
             )
 
-            self.test_ticket = UserTicket(
+            self.test_ticket1 = UserTicket(
                 event=self.test_event,
                 user=self.test_user,
                 ticket_type="Standard",
                 valid=True,
             )
 
+            self.test_ticket2 = UserTicket(
+                event=self.test_event,
+                user=self.test_user,
+                ticket_type="Standard",
+                valid=True,
+            )
+
+
             db.session.add(self.test_user)
             db.session.add(self.venue)
             db.session.add(self.test_event)
+            db.session.add(self.test_ticket1)
+            db.session.add(self.test_ticket2)
             db.session.commit()
 
             self.test_event_id = self.test_event.event_id
@@ -365,6 +375,13 @@ class Tests(unittest.TestCase):
         response = self.app.post('/ticket/add', data=json.dumps(data), content_type='application/json')
         self.assertEqual(400, response.status_code)
         self.assertEqual("Invalid request", response.json.get('msg'))
+
+    def test_ticket_list(self):
+        self.login_user()
+
+        response = self.app.get('/ticket/list')
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(2, len(response.json))
 
 
 if __name__ == "__main__":
