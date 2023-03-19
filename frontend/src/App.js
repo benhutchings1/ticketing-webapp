@@ -6,14 +6,19 @@ import {Landing, Login, Register} from "./components";
 import {Account, EventPage, Home, QRCodeScanner, Shop} from "./components/dashboard/pages";
 import {Navbar} from "./components/dashboard";
 import {getUser, isUserLoggedIn} from "./helpers";
-import {TicketModal} from "./components/dashboard/elements";
+import {QRModal, TicketModal} from "./components/dashboard/elements";
 
 function App() {
-    // For ticket modal
-    let [open, setOpen] = useState(false);
-
-    const [user, setUser] = useState({});
+    // Ticket information and modal
+    let [ticketOpen, setTicketOpen] = useState(false);
     const [currentEvent, setCurrentEvent] = useState({});
+
+    // QR code information and modal
+    let [qrOpen, setQROpen] = useState(false);
+    let [qrData, setQRData] = useState("");
+
+    // User array
+    const [user, setUser] = useState({});
 
     // First we get the viewport height, and we multiply it by 1% to get a value for a vh unit
     let vh = window.innerHeight * 0.01;
@@ -27,6 +32,7 @@ function App() {
         document.documentElement.style.setProperty('--vh', `${vh}px`);
     });
 
+    // Set user information in global variable and pass it down to routes
     useEffect(() => {
         getUser(setUser);
     }, [])
@@ -35,7 +41,8 @@ function App() {
         <div className="App">
             <Router>
                 <div className='pageContainer'>
-                    <TicketModal user={user} open={open} setOpen={setOpen} event={currentEvent}/>
+                    <QRModal open={qrOpen} setOpen={setQROpen} data={qrData}/>
+                    <TicketModal user={user} open={ticketOpen} setOpen={setTicketOpen} event={currentEvent}/>
                     {(isUserLoggedIn(user)) ? <Navbar user={user} /> : ""} {/* only show navbar is user exists */}
                     <div className='innerPageContainer'>
                         <Routes>
@@ -44,11 +51,11 @@ function App() {
                             <Route exact path="/register" element={<Register user={user} setUser={setUser}/>}/>
                             <Route exact path="/home" element={<Home user={user} setCurrentEvent={setCurrentEvent}/>}/>
                             <Route exact path="/shop" element={<Shop user={user}/>}/>
-                            <Route exact path="/account" element={<Account user={user} setUser={setUser}/>}/>
-                            <Route exact path="/event/:id" element={<EventPage user={user} event={currentEvent} setOpen={setOpen}/>}/>
+                            <Route exact path="/account" element={<Account user={user} setUser={setUser} setQRData={setQRData} setQROpen={setQROpen}/>}/>
+                            <Route exact path="/event/:id" element={<EventPage user={user} event={currentEvent} setOpen={setTicketOpen}/>}/>
 
                             {/* Management Routes */}
-                            <Route exact path="/scanner" element={<QRCodeScanner user={user} setUser={setUser}/>}/>
+                            <Route exact path="/scanner" element={<QRCodeScanner user={user} setUser={setUser} event={currentEvent}/>}/>
 
                             {/* If user tries to go to a route that doesn't exist, take them to landing page */}
                             <Route path="*" element={<Navigate to="/" />} />

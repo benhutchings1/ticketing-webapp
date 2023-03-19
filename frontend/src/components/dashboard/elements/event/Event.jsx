@@ -5,6 +5,7 @@ import Button from "react-bootstrap/Button";
 import {useNavigate} from "react-router-dom";
 
 const Event = (props) => {
+    let user = props.user;
     let id = props.id;
     let item = props.item;
     let name = item.event_name
@@ -16,16 +17,25 @@ const Event = (props) => {
     return (
         <div className={'eventCard'}>
             <Card style={{ width: '18rem' }}>
-                {/*<Card.Img variant="top" src="holder.js/100px180" />*/}
                 <Card.Body>
                     <h3>{name}</h3>
                     <Card.Text>
                         {description}
                     </Card.Text>
-                    <Button className={'eventButton'} onClick={() => {
-                        setCurrentEvent(item)
-                        navigate(`/event/${id}`)
-                    }} variant="primary">VIEW EVENT</Button>
+                    {user != null && user.role !== "management" ?
+                        // Customer
+                        <Button className={'eventButton'} onClick={() => {
+                            setCurrentEvent(item)
+                            navigate(`/event/${id}`)
+                        }} variant="primary">VIEW EVENT</Button>
+                    :
+                        // Management
+                        <Button className={'eventButton'} onClick={() => {
+                            setCurrentEvent(item)
+                            navigate(`/scanner`)
+                        }} variant="primary">SCAN QR FOR EVENT</Button>
+                    }
+
                 </Card.Body>
             </Card>
         </div>
