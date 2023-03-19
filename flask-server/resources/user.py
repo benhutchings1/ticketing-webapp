@@ -71,6 +71,13 @@ def check_signup(data) -> (bool, str):
         return False, f"The firstname & surname must be 32 characters or less"
 
     # Format check for postcode
+    dob = data.get('date_of_birth')
+    try:
+        datetime.strptime(dob, "%Y-%m-%d").date()
+    except ValueError:
+        return False, f"Date of birth must be valid"
+
+    # Format check for postcode
     postcode = data.get('postcode')
     if len(postcode) > 8:
         return False, f"Postcode length must be 8 or less"
