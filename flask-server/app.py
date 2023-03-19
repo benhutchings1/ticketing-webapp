@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from flask_cors import CORS
 from flask_restx import Api
 from exts import db
@@ -10,6 +10,9 @@ from models import User, Token
 from resources.user import ns as user_ns
 from resources.event import ns as event_ns
 from resources.ticket import ns as ticket_ns
+
+# Routes that do not fresh access token
+NON_REFRESH_ROUTES = ["/user/logout", "/ticket/request_qr_data"]
 
 
 def create_app(config=None):
@@ -46,8 +49,8 @@ def create_app(config=None):
     @app.after_request
     def refresh_expiring_jwts(response):
         try:
-            if response.json.get('logout', False):
-                # Do nothing if logging out
+            if request.path in NON_REFRESH_ROUTES:
+                # Do nothing
                 return response
 
             # Update JWT close to expiring
