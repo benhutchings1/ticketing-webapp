@@ -2,10 +2,11 @@ from flask import Flask
 from flask_cors import CORS
 from flask_restx import Api
 from exts import db
-from flask_jwt_extended import JWTManager, create_access_token, set_access_cookies, get_jwt, get_jwt_identity
-from datetime import datetime, timedelta, timezone
+from flask_jwt_extended import JWTManager, create_access_token, set_access_cookies, get_jwt, get_jwt_identity, \
+    current_user, get_jti
+from datetime import datetime, timedelta
 from config import current_config
-from models import User, TokenBlocklist
+from models import User, Token
 from resources.user import ns as user_ns
 from resources.event import ns as event_ns
 from resources.ticket import ns as ticket_ns
@@ -33,14 +34,14 @@ def create_app(config=None):
     @jwt.user_lookup_loader
     def user_lookup_callback(_jwt_header, jwt_data):
         identity = jwt_data["sub"]
-        return User.query.filter_by(user_id=identity).one_or_none()
+        return User.query.filter_by(user_id=identity).scalar()
 
     @jwt.token_in_blocklist_loader
     def check_if_token_blocked(jwt_header, jwt_payload: dict) -> bool:
-        # Checks if token is in blocked list
+        # Checks if token is current session
         jti = jwt_payload["jti"]
-        token = db.session.query(TokenBlocklist.id).filter_by(jti=jti).scalar()
-        return token is not None
+        token = Token.query.filter_by(jti=jti).scalar()
+        return not token or token.exp_date < datetime.now()
 
     @app.after_request
     def refresh_expiring_jwts(response):
@@ -51,10 +52,23 @@ def create_app(config=None):
 
             # Update JWT close to expiring
             exp_timestamp = get_jwt()["exp"]
-            now = datetime.now(timezone.utc)
+            now = datetime.now()
             target_timestamp = datetime.timestamp(now + timedelta(minutes=30))
             if target_timestamp > exp_timestamp:
+                # Update old token(s)
+                Token.query.filter(Token.user == current_user, Token.exp_date > now + timedelta(seconds=10))\
+                    .update({Token.exp_date: now + timedelta(seconds=10)})
+
+                # New token
                 access_token = create_access_token(identity=get_jwt_identity())
+                user = User.query.filter_by(user_id=current_user.user_id).one_or_none()
+                user.jti = get_jti(access_token)
+                token = Token(jti=user.jti, exp_date=datetime.now() + timedelta(hours=1), user_id=user.user_id)
+                db.session.add(token)
+
+                # Save changes
+                db.session.commit()
+
                 set_access_cookies(response, access_token)
             return response
         except (RuntimeError, KeyError, AttributeError):

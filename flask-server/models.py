@@ -30,6 +30,8 @@ class User(Base):
     email_address = db.Column(db.String(64), nullable=False, unique=True)
     role = db.Column(db.String(16), nullable=False)
     passwd_hash = db.Column(db.String(256), nullable=False)
+    jti = db.Column(db.String(36))
+    last_update = db.Column(db.DateTime)
 
 
 class Event(Base):
@@ -63,10 +65,13 @@ class UserTicket(Base):
     user = db.relationship("User")
 
 
-class TokenBlocklist(Base):
+class Token(Base):
     id = db.Column(db.Integer, primary_key=True)
     jti = db.Column(db.String(36), nullable=False, index=True)
-    created_at = db.Column(db.DateTime, nullable=False)
+    exp_date = db.Column(db.DateTime, nullable=False)
+    user_id = db.Column(db.Integer(), db.ForeignKey('user.user_id'), nullable=False)
+
+    user = db.relationship("User")
 
 
 class IdempotencyTokens(Base):

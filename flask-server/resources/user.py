@@ -7,7 +7,7 @@ from flask_restx import Resource, Namespace, fields
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from exts import db
-from models import User, TokenBlocklist
+from models import User, Token
 from utils.response import login_user_response
 
 ns = Namespace('/user')
@@ -136,14 +136,17 @@ class Login(Resource):
 class Logout(Resource):
     @jwt_required()
     def post(self):
+        # Revoke cookie
+        current_user.jti = None
+        current_user.update()
+
+        # Revoke token
+        Token.query.filter(Token.user_id == current_user.user_id).delete()
+        db.session.commit()
+
         # Unset cookies
         response = jsonify({"success": True, "message": "Successfully logged out", "logout": True})
         unset_jwt_cookies(response)
-
-        # Revoke cookie
-        jti = get_jwt()["jti"]
-        db.session.add(TokenBlocklist(jti=jti, created_at=datetime.now(timezone.utc)))
-        db.session.commit()
 
         return response
 
