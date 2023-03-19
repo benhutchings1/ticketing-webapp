@@ -28,7 +28,8 @@ add_ticket_input_model = ns.model(
     {
         "event_id": fields.Integer(required=True, min=0),
         "ticket_type": fields.String(required=True),
-        "token": fields.String(required=True, max_length=128)
+        "ticket_quantity": fields.Integer(required=True),
+        "token": fields.String(required=True, max_length=128),
     }
 )
 
@@ -114,6 +115,9 @@ class AddTicketResource(Resource):
         if existing_code is None or existing_code.valid == 0:
             return msg_response("Invalid request", status_code=400)
 
+        # Remove token
+        existing_code.delete()
+
         # Check event
         if event is None:
             return msg_response("Invalid event", status_code=400)
@@ -122,19 +126,21 @@ class AddTicketResource(Resource):
         if data.get("ticket_type") not in TICKET_TYPES:
             return msg_response("Invalid ticket type", status_code=400)
 
-        # Remove token
-        existing_code.delete()
+        # Check number of tickets is allowed
+        if not (0 < data.get("ticket_quantity") <= 4):
+            return msg_response("Invalid request", status_code=400)
 
-        # Make new ticket
-        new_ticket = UserTicket(
-            event_id=data.get("event_id"),
-            ticket_type=data.get("ticket_type"),
-            user_id=current_user.user_id,
-            valid=True
-        )
-        new_ticket.save()
+        # Add new tickets
+        for i in range(data.get("ticket_quantity")):
+            new_ticket = UserTicket(
+                event_id=data.get("event_id"),
+                ticket_type=data.get("ticket_type"),
+                user_id=current_user.user_id,
+                valid=True
+            )
+            new_ticket.save()
 
-        return msg_response("Ticket successfully added")
+        return msg_response(f"{data.get('ticket_quantity')} ticket(s) successfully added")
 
 
 @ns.route('/request_qr_data')
