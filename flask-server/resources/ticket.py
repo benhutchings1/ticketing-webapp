@@ -1,4 +1,5 @@
 from base64 import b64decode, b64encode
+from datetime import datetime, timedelta
 
 from flask import jsonify, request
 from flask_jwt_extended import jwt_required, current_user
@@ -69,7 +70,11 @@ class TicketList(Resource):
     @jwt_required()
     @ns.marshal_list_with(ticket_model)
     def get(self):
-        return UserTicket.query.filter_by(user=current_user, valid=True).all()
+        return UserTicket.query.join(Event) \
+            .filter(UserTicket.user == current_user,
+                    UserTicket.valid,
+                    Event.datetime > datetime.now() - timedelta(hours=12)
+                    ).all()
 
 
 @ns.route('/add')
@@ -98,21 +103,22 @@ class AddTicketResource(Resource):
     @ns.expect(add_ticket_input_model)
     @jwt_required()
     def post(self):
-        args = request.get_json()
+        data = request.get_json()
         # Check if idempotency token exists in table before adding ticket
-        existing_code = IdempotencyTokens.query.filter_by(token=args.get("token")).one_or_none()
-        event_data = Event.query.filter_by(event_id=args.get("event_id")).one_or_none()
+        existing_code = IdempotencyTokens.query.filter_by(token=data.get("token")).one_or_none()
+        event = Event.query.filter(Event.event_id == data.get("event_id"),
+                                   Event.datetime > datetime.now() - timedelta(hours=12)).one_or_none()
 
         # Check code and user id
         if existing_code is None or existing_code.valid == 0:
             return msg_response("Invalid request", status_code=400)
 
         # Check event
-        if event_data is None:
+        if event is None:
             return msg_response("Invalid event", status_code=400)
 
         # Check ticket type
-        if args.get("ticket_type") not in TICKET_TYPES:
+        if data.get("ticket_type") not in TICKET_TYPES:
             return msg_response("Invalid ticket type", status_code=400)
 
         # Remove token
@@ -120,8 +126,8 @@ class AddTicketResource(Resource):
 
         # Make new ticket
         new_ticket = UserTicket(
-            event_id=args.get("event_id"),
-            ticket_type=args.get("ticket_type"),
+            event_id=data.get("event_id"),
+            ticket_type=data.get("ticket_type"),
             user_id=current_user.user_id,
             cipher_key=gen_key(),
             valid=True
@@ -151,6 +157,9 @@ class RequestQRDataResource(Resource):
         elif user_ticket.user_id != current_user.user_id:
             # Ticket does not belong to user
             return msg_response("Unauthorised ticket", status_code=401)
+        elif user_ticket.event.datetime <= datetime.now() - timedelta(hours=12):
+            # Event has already happened
+            return msg_response("Event is over", status_code=400)
 
         # Ticket details as plaintext
         details = f"{user_ticket.ticket_id},{user_ticket.event_id},{user_ticket.ticket_type}"
@@ -172,6 +181,13 @@ class ValidateTicketResource(Resource):
     @management_required
     def post(self):
         data = request.get_json()
+
+        # Check event exists and has not finished
+        event = Event.query.get(data.get('event_id'))
+        if event is None:
+            return msg_response("Event does not exist", status_code=404)
+        elif event.datetime <= datetime.now() - timedelta(hours=12):
+            return msg_response("Event is over", status_code=400)
 
         # QR Code data
         qr_data = data.get('qr_data')
