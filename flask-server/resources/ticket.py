@@ -161,6 +161,13 @@ class RequestQRDataResource(Resource):
             # Event has already happened
             return msg_response("Event is over", status_code=400)
 
+        # Get ticket type as int
+        try:
+            ticket_type_int = TICKET_TYPES.index(user_ticket.ticket_type)
+        except ValueError:
+            # Ticket is corrupt
+            return msg_response("Ticket is corrupt", status_code=400)
+
         # Update ticket salt
         user_ticket.salt = gen_key()
         user_ticket.update()
@@ -169,7 +176,7 @@ class RequestQRDataResource(Resource):
         session_hash = xxh32(f"{current_user.jti}{user_ticket.salt}").hexdigest()
 
         # Ticket details as plaintext
-        details = f"{user_ticket.ticket_id},{user_ticket.event_id},{user_ticket.ticket_type},{session_hash}"
+        details = f"{user_ticket.ticket_id},{user_ticket.event_id},{ticket_type_int},{session_hash}"
         details_bytes = details.encode()
 
         # Sign ticket details with private key
@@ -201,13 +208,13 @@ class ValidateTicketResource(Resource):
         qr_data_structure = qr_data.split(",")
 
         # Validation of structure
-        if len(qr_data_structure) != 5 or False in [i.isdecimal() for i in qr_data_structure[0:2]]:
+        if len(qr_data_structure) != 5 or False in [i.isdecimal() for i in qr_data_structure[0:3]]:
             return msg_response("Ticket is invalid", status_code=400)
 
         # Get ticket details
         ticket_id = int(qr_data_structure[0])
         event_id = int(qr_data_structure[1])
-        ticket_type = qr_data_structure[2]
+        ticket_type_int = int(qr_data_structure[2])
         session_hash = qr_data_structure[3]
 
         # Check ticket event matches current event
@@ -215,7 +222,7 @@ class ValidateTicketResource(Resource):
             return msg_response("Ticket doesn't match event", status_code=400)
 
         # Get original msg
-        msg = f"{ticket_id},{event_id},{ticket_type},{session_hash}"
+        msg = f"{ticket_id},{event_id},{ticket_type_int},{session_hash}"
         msg_bytes = msg.encode()
 
         # Get signature
