@@ -129,7 +129,6 @@ class AddTicketResource(Resource):
             event_id=data.get("event_id"),
             ticket_type=data.get("ticket_type"),
             user_id=current_user.user_id,
-            cipher_key=gen_key(),
             valid=True
         )
         new_ticket.save()
