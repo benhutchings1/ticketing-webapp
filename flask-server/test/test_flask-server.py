@@ -202,6 +202,16 @@ class Tests(unittest.TestCase):
 
         self.assertEqual(200, response.status_code)
 
+    def test_login_invalid(self):
+        data = {
+            "email_address": "wrong email",
+            "password": "wrong password"
+        }
+
+        response = self.app.post('/user/login', data=json.dumps(data), content_type='application/json')
+
+        self.assertEqual(401, response.status_code)
+
 
 if __name__ == "__main__":
     unittest.main()
