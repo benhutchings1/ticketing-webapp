@@ -31,6 +31,9 @@ const Account = (props) => {
             console.log(error)
             if (error.response && error.response.status === 401) {
                 alert(error.response.data.msg);
+                if (error.response.data.msg === "Token has been revoked") {
+                    setUser(null);
+                }
             }
         });
     }, []);

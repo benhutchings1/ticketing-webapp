@@ -47,7 +47,8 @@ const TicketModal = (props) => {
                     token: response.key
                 }
 
-                httpClient.post("/ticket/add", data, {
+                window.setTimeout(() => {
+                    httpClient.post("/ticket/add", data, {
                         headers: {
                             "Content-Type": "application/json",
                             "X-CSRF-TOKEN": getCookie("csrf_access_token"),
@@ -56,6 +57,7 @@ const TicketModal = (props) => {
                     .then(response => {
                         setSuccesses(successes += 1);
                     })
+                }, 500);
             })
             .catch(error => {
                 console.log(error)
