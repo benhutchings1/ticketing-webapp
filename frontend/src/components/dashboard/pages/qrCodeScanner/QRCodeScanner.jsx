@@ -1,13 +1,16 @@
 import './qrCodeScanner.css';
 import './qrCodeScannerMobile.css';
 
-import {useEffect, useState} from "react";
+import {useEffect} from "react";
 import {useNavigate} from "react-router-dom";
 import {QrScanner} from '@yudiel/react-qr-scanner';
+import httpClient from "../../../../httpClient";
+import {getCookie} from "../../../../helpers";
 
 const QRCodeScanner = (props) => {
     const user = props.user;
     const setUser = props.setUser;
+    let event = props.event;
 
     const navigate = useNavigate();
 
@@ -23,8 +26,28 @@ const QRCodeScanner = (props) => {
             <QrScanner
                 onDecode={(result) => {
                     console.log(result)
-                    const ticketInfo = JSON.parse(result)
-                    alert(ticketInfo);
+                    const data = {
+                        event_id: event.event_id,
+                        qr_data: result
+                    }
+
+                    httpClient.post('/ticket/validate', data, {
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": getCookie("csrf_access_token"),
+                        }
+                    })
+                    .then(response => {
+                        console.log(response)
+                        alert("valid")
+                    })
+                    .catch(error => {
+                        console.log(error)
+                        if (error.response && error.response.status === 400) {
+                            alert("invalid")
+                            // invalid ticket
+                        }
+                    });
                 }}
                 onError={(error) => console.log(error?.message)}
             />

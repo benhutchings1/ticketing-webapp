@@ -1,6 +1,6 @@
 @media only screen and (max-width: 750px) {
     .qrScannerDiv div {
-        height: 100%;
+        /*height: calc(100vh - 62px);*/
     }
 
     .qrScannerDiv div video {

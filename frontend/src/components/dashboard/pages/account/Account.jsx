@@ -5,19 +5,43 @@ import {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import httpClient from "../../../../httpClient";
 import {getCookie} from "../../../../helpers";
+import {Event, Ticket} from "../../elements";
 
 const Account = (props) => {
     const user = props.user;
     const setUser = props.setUser;
+    const setQRData = props.setQRData;
+    const setQROpen = props.setQROpen;
     const [firstLetter, setFirstLetter] = useState("")
+    const [tickets, setTickets] = useState([])
 
     const navigate = useNavigate();
 
-    // Generate random colour on first visit
     useEffect(() => {
+        // Generate random colour on first visit for account picture
         let randomColour = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
         document.getElementById('accountPicture').style.backgroundColor = randomColour;
-    }, [])
+
+        // Get user's tickets
+        httpClient.get('/ticket/list')
+        .then(response => {
+            setTickets(response)
+        })
+        .catch(error => {
+            console.log(error)
+            if (error.response && error.response.status === 401) {
+                alert(error.response.data.msg);
+            }
+        });
+    }, []);
+
+    const ticketList = tickets.map((item, index) =>
+        <Ticket key={`event${index}`}
+                id={item.ticket_id}
+                item={item}
+                setQRData={setQRData}
+                setQROpen={setQROpen}
+        />)
 
     // Once user is updated, check if valid
     useEffect(() => {
@@ -73,6 +97,17 @@ const Account = (props) => {
                         {user.phone_number}
                     </div>
                     <br/>
+
+                    {user != null && user.role !== "management" ?
+                        <div>
+                            <h2>PURCHASED TICKETS:</h2>
+                            <div className={'eventsListContainer'}>
+                                {ticketList}
+                            </div>
+                        </div>
+                        :
+                        <div></div>
+                    }
                     <button className={'logoutBtn'} onClick={() => logoutUser()}>
                         LOGOUT
                     </button>
