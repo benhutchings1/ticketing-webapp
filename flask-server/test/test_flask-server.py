@@ -7,6 +7,16 @@ from models import User
 
 app = create_app('config.TestConfig')
 
+VALID_USER = {
+    "email_address": "test@test.com",
+    "password": "test1234",
+    "firstname": "test",
+    "surname": "test",
+    "date_of_birth": "2023-03-16",
+    "postcode": "test1234",
+    "phone_number": "07123456789"
+}
+
 
 class Tests(unittest.TestCase):
     def setUp(self):
@@ -16,13 +26,13 @@ class Tests(unittest.TestCase):
         with app.app_context():
             db.create_all()
             self.test_user = User(
-                email_address='test@test.com',
-                passwd_hash=generate_password_hash('test1234', method="sha256", salt_length=32),
-                firstname='Test',
-                surname='Test',
-                date_of_birth=datetime.strptime('2000-01-01', "%Y-%m-%d").date(),
-                postcode='AB12 3DC',
-                phone_number=f'07123456789',
+                email_address=VALID_USER.get('email_address'),
+                passwd_hash=generate_password_hash(VALID_USER.get('password'), method="sha256", salt_length=32),
+                firstname=VALID_USER.get('firstname'),
+                surname=VALID_USER.get('surname'),
+                date_of_birth=datetime.strptime(VALID_USER.get('date_of_birth'), "%Y-%m-%d").date(),
+                postcode=VALID_USER.get('postcode'),
+                phone_number=VALID_USER.get('phone_number'),
                 role='user'
             )
             db.session.add(self.test_user)
@@ -162,7 +172,7 @@ class Tests(unittest.TestCase):
 
     def test_signup_duplicate_email(self):
         data = {
-            "email_address": "test@test.com",
+            "email_address": VALID_USER.get('email_address'),
             "password": "test1234",
             "firstname": "test",
             "surname": "test",
@@ -184,7 +194,7 @@ class Tests(unittest.TestCase):
             "surname": "test",
             "date_of_birth": "2023-03-16",
             "postcode": "test1234",
-            "phone_number": "07123456789"
+            "phone_number": VALID_USER.get('phone_number')
         }
 
         response = self.app.post('/user/signup', data=json.dumps(data), content_type='application/json')
@@ -194,8 +204,8 @@ class Tests(unittest.TestCase):
 
     def test_login(self):
         data = {
-            "email_address": "test@test.com",
-            "password": "test1234"
+            "email_address": VALID_USER.get('email_address'),
+            "password": VALID_USER.get('password')
         }
 
         response = self.app.post('/user/login', data=json.dumps(data), content_type='application/json')
