@@ -52,7 +52,7 @@ def check_signup(data) -> (bool, str):
     # Password check
     password = data.get('password')
     if len(password) < 8:
-        return False, f"Password length must be 8 or less."
+        return False, f"Password length must be 8 or less"
 
     # Phone number uniqueness check + format check
     phone_number = data.get('phone_number')
