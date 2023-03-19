@@ -55,7 +55,7 @@ class UserTicket(Base):
     ticket_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
     event_id = db.Column(db.Integer(), db.ForeignKey('event.event_id'), nullable=False)
     user_id = db.Column(db.Integer(), db.ForeignKey('user.user_id'), nullable=False)
-    cipher_key = db.Column(db.String(256), nullable=False)
+    salt = db.Column(db.String(256))
     ticket_type = db.Column(db.String(64), nullable=False)
     valid = db.Column(db.Boolean, nullable=False)
 
