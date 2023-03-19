@@ -1,6 +1,6 @@
 import json
 import unittest
-from datetime import datetime
+from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash
 from app import create_app, db
 from models import User, Venue, Event, UserTicket
@@ -36,6 +36,17 @@ class Tests(unittest.TestCase):
                 role='user'
             )
 
+            self.test_user2 = User(
+                email_address="test2@test.com",
+                passwd_hash=generate_password_hash("test1234", method="sha256", salt_length=32),
+                firstname="Test",
+                surname="Test",
+                date_of_birth=datetime.strptime("2023-03-16", "%Y-%m-%d").date(),
+                postcode="test1234",
+                phone_number="1234",
+                role='user'
+            )
+
             self.venue = Venue(
                 name='Test',
                 location='Test',
@@ -47,6 +58,14 @@ class Tests(unittest.TestCase):
                 venue=self.venue,
                 event_name='Test event',
                 datetime=datetime.now(),
+                genre='Test',
+                description='Test',
+            )
+
+            self.test_event_old = Event(
+                venue=self.venue,
+                event_name='Test event',
+                datetime=datetime.now() - timedelta(hours=13),
                 genre='Test',
                 description='Test',
             )
@@ -65,15 +84,45 @@ class Tests(unittest.TestCase):
                 valid=True,
             )
 
+            self.test_ticket_used = UserTicket(
+                event=self.test_event,
+                user=self.test_user,
+                ticket_type="Standard",
+                valid=False,
+            )
+
+            self.test_ticket_old = UserTicket(
+                event=self.test_event_old,
+                user=self.test_user,
+                ticket_type="Standard",
+                valid=True,
+            )
+
+            self.test_ticket_user2 = UserTicket(
+                event=self.test_event,
+                user=self.test_user2,
+                ticket_type="Standard",
+                valid=True,
+            )
 
             db.session.add(self.test_user)
+            db.session.add(self.test_user2)
             db.session.add(self.venue)
             db.session.add(self.test_event)
+            db.session.add(self.test_event_old)
             db.session.add(self.test_ticket1)
             db.session.add(self.test_ticket2)
+            db.session.add(self.test_ticket_used)
+            db.session.add(self.test_ticket_user2)
+            db.session.add(self.test_ticket_old)
             db.session.commit()
 
             self.test_event_id = self.test_event.event_id
+            self.test_event_old_id = self.test_event_old.event_id
+            self.test_ticket_id = self.test_ticket1.ticket_id
+            self.test_ticket_used_id = self.test_ticket_used.ticket_id
+            self.test_ticket_user2_id = self.test_ticket_user2.ticket_id
+            self.test_ticket_old_id = self.test_ticket_old.ticket_id
 
     def tearDown(self):
         with app.app_context():
@@ -382,6 +431,56 @@ class Tests(unittest.TestCase):
         response = self.app.get('/ticket/list')
         self.assertEqual(200, response.status_code)
         self.assertEqual(2, len(response.json))
+
+    def test_ticket_qr_data(self):
+        self.login_user()
+
+        data = {
+            "ticket_id": self.test_ticket_id
+        }
+
+        response = self.app.post('/ticket/request_qr_data', data=json.dumps(data), content_type='application/json')
+        self.assertEqual(200, response.status_code)
+
+    def test_ticket_qr_data_non_existent_ticket(self):
+        self.login_user()
+
+        data = {
+            "ticket_id": 1000000
+        }
+
+        response = self.app.post('/ticket/request_qr_data', data=json.dumps(data), content_type='application/json')
+        self.assertEqual(400, response.status_code)
+
+    def test_ticket_qr_data_used_ticket(self):
+        self.login_user()
+
+        data = {
+            "ticket_id": self.test_ticket_used_id
+        }
+
+        response = self.app.post('/ticket/request_qr_data', data=json.dumps(data), content_type='application/json')
+        self.assertEqual(400, response.status_code)
+
+    def test_ticket_qr_data_unauthorised_ticket(self):
+        self.login_user()
+
+        data = {
+            "ticket_id": self.test_ticket_user2_id
+        }
+
+        response = self.app.post('/ticket/request_qr_data', data=json.dumps(data), content_type='application/json')
+        self.assertEqual(401, response.status_code)
+
+    def test_ticket_qr_data_old_ticket(self):
+        self.login_user()
+
+        data = {
+            "ticket_id": self.test_ticket_old_id
+        }
+
+        response = self.app.post('/ticket/request_qr_data', data=json.dumps(data), content_type='application/json')
+        self.assertEqual(400, response.status_code)
 
 
 if __name__ == "__main__":
