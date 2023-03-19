@@ -57,7 +57,8 @@ def create_app(config=None):
             exp_timestamp = get_jwt()["exp"]
             now = datetime.now()
             target_timestamp = datetime.timestamp(now + timedelta(minutes=30))
-            if target_timestamp > exp_timestamp:
+            minimum_timestamp = datetime.timestamp(now + timedelta(seconds=10))
+            if target_timestamp > exp_timestamp > minimum_timestamp:
                 # Update old token(s)
                 Token.query.filter(Token.user == current_user, Token.exp_date > now + timedelta(seconds=10))\
                     .update({Token.exp_date: now + timedelta(seconds=10)})
