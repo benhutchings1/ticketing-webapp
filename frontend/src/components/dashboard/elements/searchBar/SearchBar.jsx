@@ -19,6 +19,7 @@ const SearchBar = (props) => {
                     searchParams: searchValue
                 }).toString()
             });
+            window.location.reload();
         }
     }
 

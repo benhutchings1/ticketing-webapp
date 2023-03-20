@@ -8,6 +8,7 @@ import {getCookie} from "../../../../helpers";
 
 const SearchPage = (props) => {
     const user = props.user;
+    const setUser = props.setUser;
     const [events, setEvents] = useState([]);
     const setCurrentEvent = props.setCurrentEvent;
 
@@ -38,9 +39,12 @@ const SearchPage = (props) => {
             setEvents(response)
         })
         .catch(error => {
-            console.log(error)
+            console.log(error);
             if (error.response && error.response.status === 401) {
                 alert(error.response.data.msg);
+                if (error.response.data.msg === "Token has been revoked") {
+                    setUser(null);
+                }
             }
         });
     }, [])
