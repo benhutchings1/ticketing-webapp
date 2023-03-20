@@ -478,6 +478,26 @@ class Tests(unittest.TestCase):
         self.assertEqual(400, response.status_code)
         self.assertEqual("Invalid request", response.json.get('msg'))
 
+    def test_ticket_add_used_token(self):
+        self.login_user()
+
+        response = self.app.get('/ticket/add')
+        self.assertEqual(200, response.status_code)
+        self.assertIsNotNone(response.json.get('key'))
+
+        for i in range(2):
+            token = response.json.get('key')
+            data = {
+                "event_id": self.test_event_id,
+                "ticket_type": "Standard",
+                "ticket_quantity": 1,
+                "token": token,
+            }
+
+            response = self.app.post('/ticket/add', data=json.dumps(data), content_type='application/json')
+        self.assertEqual(400, response.status_code)
+        self.assertEqual("Invalid request", response.json.get('msg'))
+
     def test_ticket_list(self):
         self.login_user()
 
