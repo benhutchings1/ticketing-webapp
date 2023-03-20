@@ -177,7 +177,7 @@ class Tests(unittest.TestCase):
 
         self.app.post('/user/login', data=json.dumps(data), content_type='application/json')
 
-    def test_signup(self):
+    def test_user_signup(self):
         data = {
             "email_address": "random@random.com",
             "password": "test1234",
@@ -192,7 +192,7 @@ class Tests(unittest.TestCase):
 
         self.assertEqual(200, response.status_code)
 
-    def test_signup_invalid_email(self):
+    def test_user_signup_invalid_email(self):
         data = {
             "email_address": "noemail",
             "password": "test1234",
@@ -208,7 +208,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(400, response.status_code)
         self.assertEqual(f"{data.get('email_address')}: invalid email address format", response.json.get("msg"))
 
-    def test_signup_invalid_password(self):
+    def test_user_signup_invalid_password(self):
         data = {
             "email_address": "random1@random.com",
             "password": "test",
@@ -224,7 +224,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(400, response.status_code)
         self.assertEqual(f"Password length must be 8 or less", response.json.get("msg"))
 
-    def test_signup_invalid_firstname(self):
+    def test_user_signup_invalid_firstname(self):
         data = {
             "email_address": "random2@random.com",
             "password": "test1234",
@@ -240,7 +240,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(400, response.status_code)
         self.assertEqual(f"The firstname & surname must be 32 characters or less", response.json.get("msg"))
 
-    def test_signup_invalid_dob(self):
+    def test_user_signup_invalid_dob(self):
         data = {
             "email_address": "random3@random.com",
             "password": "test1234",
@@ -256,7 +256,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(400, response.status_code)
         self.assertEqual(f"Date of birth must be valid", response.json.get("msg"))
 
-    def test_signup_invalid_postcode(self):
+    def test_user_signup_invalid_postcode(self):
         data = {
             "email_address": "random4@random.com",
             "password": "test1234",
@@ -272,7 +272,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(400, response.status_code)
         self.assertEqual(f"Postcode length must be 8 or more", response.json.get("msg"))
 
-    def test_signup_invalid_phone_number_non_numeric(self):
+    def test_user_signup_invalid_phone_number_non_numeric(self):
         data = {
             "email_address": "random5@random.com",
             "password": "test1234",
@@ -288,7 +288,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(400, response.status_code)
         self.assertEqual(f"Phone number must be numeric", response.json.get("msg"))
 
-    def test_signup_invalid_phone_number_long(self):
+    def test_user_signup_invalid_phone_number_long(self):
         data = {
             "email_address": "random5@random.com",
             "password": "test1234",
@@ -304,7 +304,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(400, response.status_code)
         self.assertEqual(f"Phone number must be 16 digits or less", response.json.get("msg"))
 
-    def test_signup_duplicate_email(self):
+    def test_user_signup_duplicate_email(self):
         data = {
             "email_address": VALID_USER.get('email_address'),
             "password": "test1234",
@@ -320,7 +320,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(400, response.status_code)
         self.assertEqual(f"{data.get('email_address')} already has an account", response.json.get("msg"))
 
-    def test_signup_duplicate_phone_number(self):
+    def test_user_signup_duplicate_phone_number(self):
         data = {
             "email_address": "random6@test.com",
             "password": "test1234",
@@ -336,7 +336,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(400, response.status_code)
         self.assertEqual(f"Another user has this {data.get('phone_number')} phone number", response.json.get("msg"))
 
-    def test_login(self):
+    def test_user_login(self):
         data = {
             "email_address": VALID_USER.get('email_address'),
             "password": VALID_USER.get('password')
@@ -346,7 +346,7 @@ class Tests(unittest.TestCase):
 
         self.assertEqual(200, response.status_code)
 
-    def test_login_invalid(self):
+    def test_user_login_invalid(self):
         data = {
             "email_address": "wrong email",
             "password": "wrong password"
