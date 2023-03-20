@@ -17,6 +17,16 @@ VALID_USER = {
     "phone_number": "07123456789"
 }
 
+VALID_MANAGEMENT = {
+    "email_address": "admin@test.com",
+    "password": "test1234",
+    "firstname": "test",
+    "surname": "test",
+    "date_of_birth": "2023-03-16",
+    "postcode": "test1234",
+    "phone_number": "07123456783"
+}
+
 
 class Tests(unittest.TestCase):
     def setUp(self):
@@ -47,6 +57,17 @@ class Tests(unittest.TestCase):
                 role='user'
             )
 
+            self.test_management = User(
+                email_address=VALID_MANAGEMENT.get('email_address'),
+                passwd_hash=generate_password_hash(VALID_MANAGEMENT.get('password'), method="sha256", salt_length=32),
+                firstname=VALID_MANAGEMENT.get('firstname'),
+                surname=VALID_MANAGEMENT.get('surname'),
+                date_of_birth=datetime.strptime(VALID_MANAGEMENT.get('date_of_birth'), "%Y-%m-%d").date(),
+                postcode=VALID_MANAGEMENT.get('postcode'),
+                phone_number=VALID_MANAGEMENT.get('phone_number'),
+                role='management'
+            )
+
             self.venue = Venue(
                 name='Test',
                 location='Test',
@@ -57,6 +78,14 @@ class Tests(unittest.TestCase):
             self.test_event = Event(
                 venue=self.venue,
                 event_name='Test event',
+                datetime=datetime.now(),
+                genre='Test',
+                description='Test',
+            )
+
+            self.test_event2 = Event(
+                venue=self.venue,
+                event_name='Test event 2',
                 datetime=datetime.now(),
                 genre='Test',
                 description='Test',
@@ -107,8 +136,10 @@ class Tests(unittest.TestCase):
 
             db.session.add(self.test_user)
             db.session.add(self.test_user2)
+            db.session.add(self.test_management)
             db.session.add(self.venue)
             db.session.add(self.test_event)
+            db.session.add(self.test_event2)
             db.session.add(self.test_event_old)
             db.session.add(self.test_ticket1)
             db.session.add(self.test_ticket2)
@@ -118,6 +149,7 @@ class Tests(unittest.TestCase):
             db.session.commit()
 
             self.test_event_id = self.test_event.event_id
+            self.test_event2_id = self.test_event2.event_id
             self.test_event_old_id = self.test_event_old.event_id
             self.test_ticket_id = self.test_ticket1.ticket_id
             self.test_ticket_used_id = self.test_ticket_used.ticket_id
@@ -133,6 +165,14 @@ class Tests(unittest.TestCase):
         data = {
             "email_address": VALID_USER.get('email_address'),
             "password": VALID_USER.get('password')
+        }
+
+        self.app.post('/user/login', data=json.dumps(data), content_type='application/json')
+
+    def login_management(self):
+        data = {
+            "email_address": VALID_MANAGEMENT.get('email_address'),
+            "password": VALID_MANAGEMENT.get('password')
         }
 
         self.app.post('/user/login', data=json.dumps(data), content_type='application/json')
@@ -480,6 +520,262 @@ class Tests(unittest.TestCase):
         }
 
         response = self.app.post('/ticket/request_qr_data', data=json.dumps(data), content_type='application/json')
+        self.assertEqual(400, response.status_code)
+
+    def test_ticket_validate(self):
+        # Get qr code
+        self.login_user()
+
+        data = {
+            "ticket_id": self.test_ticket_id
+        }
+
+        response = self.app.post('/ticket/request_qr_data', data=json.dumps(data), content_type='application/json')
+        qr_data = response.json.get('qr_data')
+        self.assertIsNotNone(qr_data)
+
+        # Verify qr code
+        self.login_management()
+
+        data = {
+            "event_id": self.test_ticket1.event_id,
+            "qr_data": qr_data
+        }
+
+        response = self.app.post('/ticket/validate', data=json.dumps(data), content_type='application/json')
+        self.assertEqual(200, response.status_code)
+
+    def test_ticket_validate_old_session(self):
+        # Get qr code
+        self.login_user()
+
+        data = {
+            "ticket_id": self.test_ticket_id
+        }
+
+        response = self.app.post('/ticket/request_qr_data', data=json.dumps(data), content_type='application/json')
+        qr_data = response.json.get('qr_data')
+        self.assertIsNotNone(qr_data)
+
+        self.login_user()
+
+        # Verify qr code
+        self.login_management()
+
+        data = {
+            "event_id": self.test_ticket1.event_id,
+            "qr_data": qr_data
+        }
+
+        response = self.app.post('/ticket/validate', data=json.dumps(data), content_type='application/json')
+        self.assertEqual(400, response.status_code)
+
+    def test_ticket_validate_invalid_event(self):
+        # Get qr code
+        self.login_user()
+
+        data = {
+            "ticket_id": self.test_ticket_id
+        }
+
+        response = self.app.post('/ticket/request_qr_data', data=json.dumps(data), content_type='application/json')
+        qr_data = response.json.get('qr_data')
+        self.assertIsNotNone(qr_data)
+
+        # Verify qr code
+        self.login_management()
+
+        data = {
+            "event_id": 1000000000,
+            "qr_data": qr_data
+        }
+
+        response = self.app.post('/ticket/validate', data=json.dumps(data), content_type='application/json')
+        self.assertEqual(404, response.status_code)
+
+    def test_ticket_validate_invalid_structure(self):
+        # Verify qr code
+        self.login_management()
+
+        data = {
+            "event_id": self.test_ticket1.event_id,
+            "qr_data": "ticket"
+        }
+
+        response = self.app.post('/ticket/validate', data=json.dumps(data), content_type='application/json')
+        self.assertEqual(400, response.status_code)
+
+    def test_ticket_validate_invalid_structure_ints(self):
+        # Verify qr code
+        self.login_management()
+
+        data = {
+            "event_id": self.test_ticket1.event_id,
+            "qr_data": "t,t,t,hash,sign"
+        }
+
+        response = self.app.post('/ticket/validate', data=json.dumps(data), content_type='application/json')
+        self.assertEqual(400, response.status_code)
+
+    def test_ticket_validate_invalid_signature(self):
+        # Verify qr code
+        self.login_management()
+
+        data = {
+            "event_id": self.test_ticket1.event_id,
+            "qr_data": f"{self.test_ticket_id},{self.test_ticket1.event_id},0,hash,signature"
+        }
+
+        response = self.app.post('/ticket/validate', data=json.dumps(data), content_type='application/json')
+        self.assertEqual(400, response.status_code)
+
+    def test_ticket_validate_modified_ticket_type(self):
+        # Get qr code
+        self.login_user()
+
+        data = {
+            "ticket_id": self.test_ticket_id
+        }
+
+        response = self.app.post('/ticket/request_qr_data', data=json.dumps(data), content_type='application/json')
+        qr_data = response.json.get('qr_data')
+        self.assertIsNotNone(qr_data)
+
+        # Modification
+        qr_data_elements = qr_data.split(",")
+        qr_data_elements[2] = "1"
+        qr_data = ",".join(qr_data_elements)
+
+        # Verify qr code
+        self.login_management()
+
+        data = {
+            "event_id": self.test_ticket1.event_id,
+            "qr_data": qr_data
+        }
+
+        response = self.app.post('/ticket/validate', data=json.dumps(data), content_type='application/json')
+        self.assertEqual(400, response.status_code)
+
+    def test_ticket_validate_modified_event_id(self):
+        # Get qr code
+        self.login_user()
+
+        data = {
+            "ticket_id": self.test_ticket_id
+        }
+
+        response = self.app.post('/ticket/request_qr_data', data=json.dumps(data), content_type='application/json')
+        qr_data = response.json.get('qr_data')
+        self.assertIsNotNone(qr_data)
+
+        # Modification
+        qr_data_elements = qr_data.split(",")
+        qr_data_elements[1] = f"{self.test_event2_id}"
+        qr_data = ",".join(qr_data_elements)
+
+        # Verify qr code
+        self.login_management()
+
+        data = {
+            "event_id": self.test_event2_id,
+            "qr_data": qr_data
+        }
+
+        response = self.app.post('/ticket/validate', data=json.dumps(data), content_type='application/json')
+        self.assertEqual(400, response.status_code)
+
+    def test_ticket_validate_modified_ticket_id(self):
+        # Get qr code
+        self.login_user()
+
+        data = {
+            "ticket_id": self.test_ticket_id
+        }
+
+        response = self.app.post('/ticket/request_qr_data', data=json.dumps(data), content_type='application/json')
+        qr_data = response.json.get('qr_data')
+        self.assertIsNotNone(qr_data)
+
+        # Modification
+        qr_data_elements = qr_data.split(",")
+        qr_data_elements[0] = f"{self.test_ticket_user2_id}"
+        qr_data = ",".join(qr_data_elements)
+
+        # Verify qr code
+        self.login_management()
+
+        data = {
+            "event_id": self.test_event_id,
+            "qr_data": qr_data
+        }
+
+        response = self.app.post('/ticket/validate', data=json.dumps(data), content_type='application/json')
+        self.assertEqual(400, response.status_code)
+
+    def test_ticket_validate_used_ticket(self):
+        # Get qr code
+        self.login_user()
+
+        data = {
+            "ticket_id": self.test_ticket_id
+        }
+
+        response = self.app.post('/ticket/request_qr_data', data=json.dumps(data), content_type='application/json')
+        qr_data = response.json.get('qr_data')
+        self.assertIsNotNone(qr_data)
+
+        # Verify qr code
+        self.login_management()
+
+        data = {
+            "event_id": self.test_ticket1.event_id,
+            "qr_data": qr_data
+        }
+
+        for i in range(2):
+            response = self.app.post('/ticket/validate', data=json.dumps(data), content_type='application/json')
+        self.assertEqual(400, response.status_code)
+
+    def test_ticket_validate_previous_qr_code(self):
+        # Get qr code
+        self.login_user()
+
+        data = {
+            "ticket_id": self.test_ticket_id
+        }
+
+        # Generate 1st time
+        response = self.app.post('/ticket/request_qr_data', data=json.dumps(data), content_type='application/json')
+        qr_data = response.json.get('qr_data')
+        self.assertIsNotNone(qr_data)
+
+        # Generate 2nd time
+        response2 = self.app.post('/ticket/request_qr_data', data=json.dumps(data), content_type='application/json')
+        qr_data2 = response2.json.get('qr_data')
+        self.assertIsNotNone(qr_data2)
+
+        # Verify qr code
+        self.login_management()
+
+        data = {
+            "event_id": self.test_ticket1.event_id,
+            "qr_data": qr_data
+        }
+
+        response = self.app.post('/ticket/validate', data=json.dumps(data), content_type='application/json')
+        self.assertEqual(400, response.status_code)
+
+    def test_ticket_validate_old_event(self):
+        # Verify qr code
+        self.login_management()
+
+        data = {
+            "event_id": self.test_event_old_id,
+            "qr_data": "qr_data"
+        }
+
+        response = self.app.post('/ticket/validate', data=json.dumps(data), content_type='application/json')
         self.assertEqual(400, response.status_code)
 
 
