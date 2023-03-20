@@ -7,7 +7,7 @@ from flask_restx import Resource, Namespace, fields
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from exts import db
-from models import User, TokenBlocklist
+from models import User, Token
 from utils.response import login_user_response
 
 ns = Namespace('/user')
@@ -42,38 +42,45 @@ def check_signup(data) -> (bool, str):
     email_address = data.get('email_address')
     db_user = User.query.filter_by(email_address=email_address).first()
     if db_user is not None:
-        return False, f"The user {email_address} already exits."
+        return False, f"{email_address} already has an account"
 
     # Email check
     email_format = r"\"?([-a-zA-Z0-9.`?{}]+@\w+\.\w+)\"?"
     if not re.match(email_format, email_address):
-        return False, f"{email_address}: invalid email address format."
+        return False, f"{email_address}: invalid email address format"
 
     # Password check
     password = data.get('password')
     if len(password) < 8:
-        return False, f"Password length must be 8 or less."
+        return False, f"Password length must be 8 or less"
 
     # Phone number uniqueness check + format check
     phone_number = data.get('phone_number')
     db_user = User.query.filter_by(phone_number=phone_number).first()
     if db_user is not None:
-        return False, f"Another user has this {db_user.phone_number} phone number."
+        return False, f"Another user has this {db_user.phone_number} phone number"
     if len(phone_number) > 16:
-        return False, f"Phone number must be 16 digits or less."
+        return False, f"Phone number must be 16 digits or less"
     if not phone_number.isnumeric():
-        return False, f"Phone number must be numeric."
+        return False, f"Phone number must be numeric"
 
     # Format checks for firstname & surname
     firstname = data.get('firstname')
     surname = data.get('surname')
     if len(firstname) > 32 or len(surname) > 32:
-        return False, f"The firstname & surname must be 32 characters or less."
+        return False, f"The firstname & surname must be 32 characters or less"
+
+    # Format check for postcode
+    dob = data.get('date_of_birth')
+    try:
+        datetime.strptime(dob, "%Y-%m-%d").date()
+    except ValueError:
+        return False, f"Date of birth must be valid"
 
     # Format check for postcode
     postcode = data.get('postcode')
     if len(postcode) > 8:
-        return False, f"Postcode length must be 8 or less."
+        return False, f"Postcode length must be 8 or more"
 
     # All checks passed
     return True, ""
@@ -136,14 +143,17 @@ class Login(Resource):
 class Logout(Resource):
     @jwt_required()
     def post(self):
+        # Revoke cookie
+        current_user.jti = None
+        current_user.update()
+
+        # Revoke token
+        Token.query.filter(Token.user_id == current_user.user_id).delete()
+        db.session.commit()
+
         # Unset cookies
         response = jsonify({"success": True, "message": "Successfully logged out", "logout": True})
         unset_jwt_cookies(response)
-
-        # Revoke cookie
-        jti = get_jwt()["jti"]
-        db.session.add(TokenBlocklist(jti=jti, created_at=datetime.now(timezone.utc)))
-        db.session.commit()
 
         return response
 
