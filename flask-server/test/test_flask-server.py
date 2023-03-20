@@ -558,6 +558,27 @@ class Tests(unittest.TestCase):
         response = self.app.post('/ticket/validate', data=json.dumps(data), content_type='application/json')
         self.assertEqual(200, response.status_code)
 
+    def test_ticket_validate_non_management(self):
+        # Get qr code
+        self.login_user()
+
+        data = {
+            "ticket_id": self.test_ticket_id
+        }
+
+        response = self.app.post('/ticket/request_qr_data', data=json.dumps(data), content_type='application/json')
+        qr_data = response.json.get('qr_data')
+        self.assertIsNotNone(qr_data)
+
+        data = {
+            "event_id": self.test_ticket1.event_id,
+            "qr_data": qr_data
+        }
+
+        response = self.app.post('/ticket/validate', data=json.dumps(data), content_type='application/json')
+        self.assertEqual(401, response.status_code)
+        self.assertEqual("Role 'management' is required", response.json.get('msg'))
+
     def test_ticket_validate_old_session(self):
         # Get qr code
         self.login_user()
