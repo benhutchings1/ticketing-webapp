@@ -29,7 +29,7 @@ const SearchPage = (props) => {
 
 
     useEffect(() => {
-        httpClient.post('/event/search', searchData, {
+        httpClient.post(`${process.env.REACT_APP_ROUTE_URL}/event/search`, searchData, {
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-TOKEN": getCookie("csrf_access_token"),
@@ -51,6 +51,7 @@ const SearchPage = (props) => {
 
     const eventsList = events.map((item, index) =>
         <Event key={`event${index}`}
+                user={user}
                id={item.event_id}
                item={item}
                setCurrenteEvent={setCurrentEvent}
