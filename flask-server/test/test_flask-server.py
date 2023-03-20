@@ -270,7 +270,7 @@ class Tests(unittest.TestCase):
         response = self.app.post('/user/signup', data=json.dumps(data), content_type='application/json')
 
         self.assertEqual(400, response.status_code)
-        self.assertEqual(f"Postcode length must be 8 or less", response.json.get("msg"))
+        self.assertEqual(f"Postcode length must be 8 or more", response.json.get("msg"))
 
     def test_signup_invalid_phone_number_non_numeric(self):
         data = {

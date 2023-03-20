@@ -80,7 +80,7 @@ def check_signup(data) -> (bool, str):
     # Format check for postcode
     postcode = data.get('postcode')
     if len(postcode) > 8:
-        return False, f"Postcode length must be 8 or less"
+        return False, f"Postcode length must be 8 or more"
 
     # All checks passed
     return True, ""
