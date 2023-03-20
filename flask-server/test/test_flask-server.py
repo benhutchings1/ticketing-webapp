@@ -93,7 +93,7 @@ class Tests(unittest.TestCase):
 
             self.test_event_old = Event(
                 venue=self.venue,
-                event_name='Test event',
+                event_name='Test event old',
                 datetime=datetime.now() - timedelta(hours=13),
                 genre='Test',
                 description='Test',
@@ -790,6 +790,42 @@ class Tests(unittest.TestCase):
 
         response = self.app.post('/ticket/validate', data=json.dumps(data), content_type='application/json')
         self.assertEqual(400, response.status_code)
+
+    def test_event_list(self):
+        self.login_user()
+
+        response = self.app.get('/event/list')
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(2, len(response.json))
+
+    def test_event_details(self):
+        self.login_user()
+
+        response = self.app.get(f'/event/{self.test_event_id}')
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(self.test_event.event_name, response.json.get('event_name'))
+
+    def test_event_search(self):
+        self.login_user()
+
+        data = {
+            "event_name": "event"
+        }
+
+        response = self.app.post(f'/event/search', data=json.dumps(data), content_type='application/json')
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(2, len(response.json))
+
+    def test_event_search_old(self):
+        self.login_user()
+
+        data = {
+            "event_name": "old"
+        }
+
+        response = self.app.post(f'/event/search', data=json.dumps(data), content_type='application/json')
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(0, len(response.json))
 
 
 if __name__ == "__main__":
