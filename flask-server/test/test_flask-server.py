@@ -356,6 +356,19 @@ class Tests(unittest.TestCase):
 
         self.assertEqual(401, response.status_code)
 
+    def test_user_account(self):
+        self.login_user()
+
+        response = self.app.get('/user/account')
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(VALID_USER.get('email_address'), response.json.get('email'))
+
+    def test_user_logout(self):
+        self.login_user()
+
+        response = self.app.post('/user/logout')
+        self.assertEqual(200, response.status_code)
+
     def test_ticket_add(self):
         self.login_user()
 
