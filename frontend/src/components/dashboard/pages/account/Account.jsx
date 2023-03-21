@@ -23,7 +23,7 @@ const Account = (props) => {
         document.getElementById('accountPicture').style.backgroundColor = randomColour;
 
         // Get user's tickets
-        httpClient.get('/ticket/list')
+        httpClient.get(`${process.env.REACT_APP_ROUTE_URL}/ticket/list`)
         .then(response => {
             setTickets(response)
         })
@@ -31,6 +31,9 @@ const Account = (props) => {
             console.log(error)
             if (error.response && error.response.status === 401) {
                 alert(error.response.data.msg);
+                if (error.response.data.msg === "Token has been revoked") {
+                    setUser(null);
+                }
             }
         });
     }, []);
@@ -53,7 +56,7 @@ const Account = (props) => {
     }, [user])
 
     const logoutUser = async () => {
-        httpClient.post('/user/logout', {}, {
+        httpClient.post(`${process.env.REACT_APP_ROUTE_URL}/user/logout`, {}, {
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-TOKEN": getCookie("csrf_access_token"),

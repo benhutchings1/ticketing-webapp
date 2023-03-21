@@ -19,9 +19,10 @@
         /*top: 62px;*/
         position: absolute;
         /*overflow-y: auto;*/
-        width: 100%;
+        /*width: 100%;*/
     }
     .contentContainer {
+        overflow-x: hidden;
         padding-left: 25px;
         padding-right: 25px;
         width: calc(100vw - 50px);

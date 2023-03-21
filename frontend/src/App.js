@@ -49,10 +49,10 @@ function App() {
                             <Route exact path="/" element={<Landing user={user} setUser={setUser}/>}/>
                             <Route exact path="/login" element={<Login user={user} setUser={setUser}/>}/>
                             <Route exact path="/register" element={<Register user={user} setUser={setUser}/>}/>
-                            <Route exact path="/home" element={<Home user={user} setCurrentEvent={setCurrentEvent}/>}/>
+                            <Route exact path="/home" element={<Home user={user} setUser={setUser} setCurrentEvent={setCurrentEvent}/>}/>
                             <Route exact path="/shop" element={<Shop user={user}/>}/>
                             <Route exact path="/account" element={<Account user={user} setUser={setUser} setQRData={setQRData} setQROpen={setQROpen}/>}/>
-                            <Route exact path="/event/:id" element={<EventPage user={user} event={currentEvent} setOpen={setTicketOpen}/>}/>
+                            <Route exact path="/event/:id" element={<EventPage user={user} event={currentEvent} setOpen={setTicketOpen} setCurrentEvent={setCurrentEvent}/>}/>
 
                             {/* Management Routes */}
                             <Route exact path="/scanner" element={<QRCodeScanner user={user} setUser={setUser} event={currentEvent}/>}/>

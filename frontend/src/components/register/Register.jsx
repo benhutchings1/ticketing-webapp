@@ -59,7 +59,7 @@ const Register = (props) => {
             "phone_number": values.phoneNumber
         }
 
-        httpClient.post('/user/signup', data)
+        httpClient.post(`${process.env.REACT_APP_ROUTE_URL}/user/signup`, data)
         .then(response => {
             getUser(setUser).then(r => {
                 navigate("/home");

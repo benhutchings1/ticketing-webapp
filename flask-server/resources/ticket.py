@@ -1,4 +1,6 @@
 from base64 import b64decode, b64encode
+from datetime import datetime, timedelta
+from xxhash import xxh32
 
 from flask import jsonify, request
 from flask_jwt_extended import jwt_required, current_user
@@ -26,7 +28,8 @@ add_ticket_input_model = ns.model(
     {
         "event_id": fields.Integer(required=True, min=0),
         "ticket_type": fields.String(required=True),
-        "token": fields.String(required=True, max_length=128)
+        "ticket_quantity": fields.Integer(required=True),
+        "token": fields.String(required=True, max_length=128),
     }
 )
 
@@ -69,7 +72,11 @@ class TicketList(Resource):
     @jwt_required()
     @ns.marshal_list_with(ticket_model)
     def get(self):
-        return UserTicket.query.filter_by(user=current_user, valid=True).all()
+        return UserTicket.query.join(Event) \
+            .filter(UserTicket.user == current_user,
+                    UserTicket.valid,
+                    Event.datetime > datetime.now() - timedelta(hours=12)
+                    ).all()
 
 
 @ns.route('/add')
@@ -98,37 +105,42 @@ class AddTicketResource(Resource):
     @ns.expect(add_ticket_input_model)
     @jwt_required()
     def post(self):
-        args = request.get_json()
+        data = request.get_json()
         # Check if idempotency token exists in table before adding ticket
-        existing_code = IdempotencyTokens.query.filter_by(token=args.get("token")).one_or_none()
-        event_data = Event.query.filter_by(event_id=args.get("event_id")).one_or_none()
+        existing_code = IdempotencyTokens.query.filter_by(token=data.get("token")).one_or_none()
+        event = Event.query.filter(Event.event_id == data.get("event_id"),
+                                   Event.datetime > datetime.now() - timedelta(hours=12)).one_or_none()
 
         # Check code and user id
         if existing_code is None or existing_code.valid == 0:
             return msg_response("Invalid request", status_code=400)
 
-        # Check event
-        if event_data is None:
-            return msg_response("Invalid event", status_code=400)
-
-        # Check ticket type
-        if args.get("ticket_type") not in TICKET_TYPES:
-            return msg_response("Invalid ticket type", status_code=400)
-
         # Remove token
         existing_code.delete()
 
-        # Make new ticket
-        new_ticket = UserTicket(
-            event_id=args.get("event_id"),
-            ticket_type=args.get("ticket_type"),
-            user_id=current_user.user_id,
-            cipher_key=gen_key(),
-            valid=True
-        )
-        new_ticket.save()
+        # Check event
+        if event is None:
+            return msg_response("Invalid event", status_code=400)
 
-        return msg_response("Ticket successfully added")
+        # Check ticket type
+        if data.get("ticket_type") not in TICKET_TYPES:
+            return msg_response("Invalid ticket type", status_code=400)
+
+        # Check number of tickets is allowed
+        if not (0 < data.get("ticket_quantity") <= 4):
+            return msg_response("Invalid request", status_code=400)
+
+        # Add new tickets
+        for i in range(data.get("ticket_quantity")):
+            new_ticket = UserTicket(
+                event_id=data.get("event_id"),
+                ticket_type=data.get("ticket_type"),
+                user_id=current_user.user_id,
+                valid=True
+            )
+            new_ticket.save()
+
+        return msg_response(f"{data.get('ticket_quantity')} ticket(s) successfully added")
 
 
 @ns.route('/request_qr_data')
@@ -151,9 +163,26 @@ class RequestQRDataResource(Resource):
         elif user_ticket.user_id != current_user.user_id:
             # Ticket does not belong to user
             return msg_response("Unauthorised ticket", status_code=401)
+        elif user_ticket.event.datetime <= datetime.now() - timedelta(hours=12):
+            # Event has already happened
+            return msg_response("Event is over", status_code=400)
+
+        # Get ticket type as int
+        try:
+            ticket_type_int = TICKET_TYPES.index(user_ticket.ticket_type)
+        except ValueError:
+            # Ticket is corrupt
+            return msg_response("Ticket is corrupt", status_code=400)
+
+        # Update ticket salt
+        user_ticket.salt = gen_key()
+        user_ticket.update()
+
+        # Generate hash for session
+        session_hash = xxh32(f"{current_user.jti}{user_ticket.salt}").hexdigest()
 
         # Ticket details as plaintext
-        details = f"{user_ticket.ticket_id},{user_ticket.event_id},{user_ticket.ticket_type}"
+        details = f"{user_ticket.ticket_id},{user_ticket.event_id},{ticket_type_int},{session_hash}"
         details_bytes = details.encode()
 
         # Sign ticket details with private key
@@ -173,29 +202,37 @@ class ValidateTicketResource(Resource):
     def post(self):
         data = request.get_json()
 
+        # Check event exists and has not finished
+        event = Event.query.get(data.get('event_id'))
+        if event is None:
+            return msg_response("Event does not exist", status_code=404)
+        elif event.datetime <= datetime.now() - timedelta(hours=12):
+            return msg_response("Event is over", status_code=400)
+
         # QR Code data
         qr_data = data.get('qr_data')
         qr_data_structure = qr_data.split(",")
 
         # Validation of structure
-        if len(qr_data_structure) != 4 or False in [i.isdecimal() for i in qr_data_structure[0:2]]:
+        if len(qr_data_structure) != 5 or False in [i.isdecimal() for i in qr_data_structure[0:3]]:
             return msg_response("Ticket is invalid", status_code=400)
 
         # Get ticket details
         ticket_id = int(qr_data_structure[0])
         event_id = int(qr_data_structure[1])
-        ticket_type = qr_data_structure[2]
+        ticket_type_int = int(qr_data_structure[2])
+        session_hash = qr_data_structure[3]
 
         # Check ticket event matches current event
         if event_id != data.get('event_id'):
             return msg_response("Ticket doesn't match event", status_code=400)
 
         # Get original msg
-        msg = f"{ticket_id},{event_id},{ticket_type}"
+        msg = f"{ticket_id},{event_id},{ticket_type_int},{session_hash}"
         msg_bytes = msg.encode()
 
         # Get signature
-        signature = qr_data_structure[3]
+        signature = qr_data_structure[4]
         signature_bytes = b64decode(signature)
 
         # Verify signature
@@ -213,6 +250,12 @@ class ValidateTicketResource(Resource):
         elif user_ticket.valid == 0:
             # Ticket is already used
             return msg_response("Ticket already used", status_code=400)
+
+        # Check hash
+        current_hash = xxh32(f"{user_ticket.user.jti}{user_ticket.salt}").hexdigest()
+        if current_hash != session_hash:
+            # Ticket is outdated
+            return msg_response("Ticket is outdated", status_code=400)
 
         # Set ticket as used
         user_ticket.valid = 0
