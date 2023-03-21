@@ -3,6 +3,10 @@ import './Shop.css';
 import {useNavigate} from "react-router-dom";
 import {SearchBar, Ticket} from "../../elements";
 import httpClient from "../../../../httpClient";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { Row, Col } from 'react-bootstrap';
+import Ticket from './Ticket';
+
 
 
 const Shop = (props) => {
@@ -33,21 +37,35 @@ const Shop = (props) => {
         });
     }, [])
 
-    const ticketList = Ticket.map((item, index) =>
-        <Ticket key={`Ticket${index}`}
-               id={item.event_id}
-               item={item}
-               setCurrenteEvent={setCurrentEvent}
-        />)
+    //const ticketList = Ticket.map((item, index) =>
+      //  <Ticket key={`Ticket${index}`}
+     //          id={item.event_id}
+     //          item={item}
+    //           setCurrenteEvent={setCurrentEvent}
+    //    />)
 
     //render () {
-        return (
-            <div className={'contentContainer'}>
-                <SearchBar/>
-                <h1 className={'dashboardTitle'}>SHOP</h1>
-            </div>
-        )
+      //  return (
+       //     <div className={'contentContainer'}>
+       //         <SearchBar/>
+       //         <h1 className={'dashboardTitle'}>SHOP</h1>
+       //     </div>
+       // )
     //}
+}
+return (
+    <div className="contentContainer">
+        <SearchBar/>
+                <h1 className={'dashboardTitle'}>SHOP</h1>
+      <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3">
+        {data.map((item, index) => (
+          <div key={index} className="col mb-4">
+            <Card title={item.title} content={item.content} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export default Shop;

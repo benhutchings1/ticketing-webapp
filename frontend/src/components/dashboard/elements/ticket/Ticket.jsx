@@ -62,4 +62,4 @@ const Ticket = (props) => {
     )
 }
 
-export default Ticket;
+export default Ticket;  
