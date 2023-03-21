@@ -86,7 +86,10 @@ def run_app():
     app = create_app()
     with app.app_context():
         db.create_all()
-    app.run()
+    if app.config.get("SELF_SIGNED"):
+        app.run(host="0.0.0.0", port=5000, ssl_context=("certificate/cert.pem", "certificate/key.pem"))
+    else:
+        app.run()
     # app.run(host="0.0.0.0", port=5000, debug=True, ssl_context=("certificate/cert.pem", "certificate/key.pem"))
 
 
