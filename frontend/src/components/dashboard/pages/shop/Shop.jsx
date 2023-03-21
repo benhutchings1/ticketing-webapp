@@ -5,7 +5,7 @@ import {SearchBar, Ticket} from "../../elements";
 import httpClient from "../../../../httpClient";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Row, Col } from 'react-bootstrap';
-import Ticket from './Ticket';
+//import Ticket from "../../elements";
 
 
 
@@ -66,6 +66,6 @@ return (
       </div>
     </div>
   );
-}
+
 
 export default Shop;
