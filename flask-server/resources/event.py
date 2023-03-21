@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from flask import jsonify, request
 from flask_jwt_extended import jwt_required
@@ -92,7 +92,7 @@ class DeleteEvent(Resource):  # HandleEvent class, retrieve/delete by name?
 class EventList(Resource):
     @jwt_required()
     def get(self):
-        events = Event.query.all()
+        events = Event.query.filter(Event.datetime > datetime.now() - timedelta(hours=12)).all()
         response = []
         for event in events:
             data = {
@@ -139,7 +139,10 @@ class EventSearch(Resource):
         data = request.get_json()
         query = data.get('event_name')
 
-        events = Event.query.filter(Event.event_name.contains(query)).all()
+        events = Event.query.filter(Event.event_name.contains(query),
+                                    Event.datetime > datetime.now() - timedelta(hours=12)
+                                    ).all()
+
         response = []
         for event in events:
             data = {

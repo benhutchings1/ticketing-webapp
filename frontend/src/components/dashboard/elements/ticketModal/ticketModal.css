@@ -1,4 +1,4 @@
-.ticketModalContainer {
+.modalContainer {
     height: 100vh;
     width: 100%;
     position: fixed;
@@ -10,7 +10,7 @@
     cursor: pointer;
 }
 
-.ticketModalBoxContainer {
+.modalBoxContainer {
     display: flex;
     width: 250px;
     height: fit-content;
@@ -19,12 +19,12 @@
     border-radius: 10px;
     color: #000000;
     flex-direction: column;
-    font-size: 1vw;
+    font-size: 1rem;
     z-index: 5;
     cursor: auto;
     align-items: center;
 }
-.ticketModalBoxContainer h2 {
+.modalBoxContainer h2 {
     margin-top: 0;
 }
 .ticketBtnModal {
@@ -49,7 +49,7 @@
     border-radius: 50%;
 }
 
-.ticketModalBoxContainer select {
+.modalBoxContainer select {
     font-size: 1vw;
     font-family: "Gill Sans MT", sans-serif;
     padding: 10px;

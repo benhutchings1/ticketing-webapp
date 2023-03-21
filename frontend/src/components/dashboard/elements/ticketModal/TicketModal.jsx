@@ -11,7 +11,6 @@ const TicketModal = (props) => {
     let event = props.event;
     let user = props.user;
     let [count, setCount] = useState(1);
-    let [successes, setSuccesses] = useState(0);
 
     const [displayStyle, setDisplayStyle] = useState("none");
 
@@ -23,62 +22,56 @@ const TicketModal = (props) => {
         }
     }, [open]);
 
-    useEffect(() => {
-        if (successes >= count) {
-            loading(false);
-            setOpen(false);
-            navigate("/account"); // tickets will then be shown on account page
-        }
-    }, [successes])
-
     let navigate = useNavigate();
 
     function buyTickets() {
         loading(true);
-        for (let i = 0; i < count; i++) {
-            httpClient.get('/ticket/add')
+        httpClient.get(`${process.env.REACT_APP_ROUTE_URL}/ticket/add`)
             .then(response => {
                 let tickets = document.getElementById("ticketTypes");
                 let ticketType = tickets.options[tickets.selectedIndex].text;
 
                 let data = {
+                    ticket_quantity: count,
                     event_id: event.event_id,
                     ticket_type: ticketType,
                     token: response.key
                 }
 
-                httpClient.post("/ticket/add", data, {
+                window.setTimeout(() => {
+                    httpClient.post(`${process.env.REACT_APP_ROUTE_URL}/ticket/add`, data, {
                         headers: {
                             "Content-Type": "application/json",
                             "X-CSRF-TOKEN": getCookie("csrf_access_token"),
                         }
                     })
                     .then(response => {
-                        console.log(response);
-                        setSuccesses(successes += 1);
+                        loading(false);
+                        setOpen(false);
+                        navigate("/account"); // tickets will then be shown on account page
                     })
+                }, 500);
             })
             .catch(error => {
                 console.log(error)
             });
-        }
     }
 
+    // Prevent user from spamming the buy button
     function loading(bool) {
         if (bool) {
             document.querySelector(".ticketModalContainer").style.pointerEvents = "none";
         } else {
-            setSuccesses(0);
             setCount(1);
             document.querySelector(".ticketModalContainer").style.pointerEvents = "visiblePainted";
         }
     }
 
     return (
-        <div onClick={() => {setOpen(false)}} style={{display: displayStyle}} className='ticketModalContainer noSelect'>
-            <div onClick={(e) => {e.stopPropagation();}} className='ticketModalBoxContainer'>
+        <div onClick={() => {setOpen(false)}} style={{display: displayStyle}} className='modalContainer ticketModalContainer noSelect'>
+            <div onClick={(e) => {e.stopPropagation();}} className='modalBoxContainer ticketModalBoxContainer'>
                 <h2>Buy Tickets for {event.event_name}</h2>
-                <div className='ticketModalHeader'><b>Amount:</b></div>
+                <div className='modalHeader'><b>Amount:</b></div>
                 <div className={'counterContainer'}>
                     <button onClick={() => {
                         if (count > 1) {
@@ -99,7 +92,7 @@ const TicketModal = (props) => {
                     </button>
                 </div>
                 <br/>
-                <div className='ticketModalHeader'><b>Ticket Type:</b></div>
+                <div className='modalHeader'><b>Ticket Type:</b></div>
                 <select id="ticketTypes">
                     <option value="standard">Standard</option>
                     <option value="deluxe">Deluxe</option>

@@ -44,7 +44,7 @@ if __name__ == "__main__":
                 surname='Test',
                 date_of_birth=datetime.strptime('2000-01-01', "%Y-%m-%d").date(),
                 postcode='AB12 3DC',
-                phone_number=f'07345345{i}',
+                phone_number=f'0734534578{i}',
                 role=data.get('role')
             )
             test_user.save()

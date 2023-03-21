@@ -26,7 +26,12 @@ class TestConfig:
     SECRET_KEY = config('SECRET_KEY')
     JWT_SECRET_KEY = config('JWT_SECRET_KEY')
     JWT_CSRF_IN_COOKIES = False
+    WTF_CSRF_ENABLED = False
+    JWT_CSRF_METHODS = []
+    JWT_TOKEN_LOCATION = "cookies"
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    TESTING = True
+    DEBUG = True
 
 
 current_config = DevConfig if config('DEV_MODE', cast=bool, default=False) else Config
