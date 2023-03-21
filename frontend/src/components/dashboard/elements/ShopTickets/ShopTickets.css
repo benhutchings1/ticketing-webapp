@@ -1,0 +1,25 @@
+.ShopCard {
+    justify-content: space-between;
+    border-radius: 5px;
+    outline: 1px #dddddd solid;
+    box-shadow: 5px 5px 16px -4px darkgrey;
+    padding: 20px;
+    margin-right: 25px;
+    text-align: start;
+}
+
+shopContainer{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  grid-gap: 2rem;
+  justify-content: center;
+}
+
+.ShopCard h3 {
+    margin: 0;
+}
+
+.ShopButton {
+    font-family: "Gill Sans MT", sans-serif;
+    background-color: #d9d9d9;
+}

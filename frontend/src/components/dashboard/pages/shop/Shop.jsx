@@ -3,9 +3,7 @@ import './Shop.css';
 import {useNavigate} from "react-router-dom";
 import {SearchBar, Ticket} from "../../elements";
 import httpClient from "../../../../httpClient";
-import 'bootstrap/dist/css/bootstrap.min.css';
-import { Row, Col } from 'react-bootstrap';
-//import Ticket from "../../elements";
+
 
 
 
