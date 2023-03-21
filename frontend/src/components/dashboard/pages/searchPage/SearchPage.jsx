@@ -57,7 +57,7 @@ const SearchPage = (props) => {
             <SearchBar />
 
             <h1 className={'dashboardTitle'}>SEARCH RESULTS</h1>
-            <h1>Search value: {searchValue}</h1>
+            <h1 className={'searchHeader'}>Search value: {searchValue}</h1>
             <div className={'eventsListContainer'}>
                 {eventsList}
             </div>
