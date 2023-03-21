@@ -4,6 +4,7 @@ import './qrModalMobile.css';
 import {useEffect, useState} from "react";
 import QRCode from "react-qr-code";
 import {Logo} from "../../../../img";
+import {newFireWorkStar} from "./fireworks";
 
 const QRModal = (props) => {
     let open = props.open;
@@ -23,7 +24,7 @@ const QRModal = (props) => {
     return (
         <div onClick={() => {setOpen(false)}} style={{display: displayStyle}} className='modalContainer noSelect'>
             <div onClick={(e) => {e.stopPropagation();}} className='modalBoxContainer'>
-                <QRCode
+                <QRCode onClick={() => {newFireWorkStar(window.innerWidth / 2, window.innerHeight / 2)}}
                     size={256}
                     style={{ height: "auto", maxWidth: "100%", width: "100%" }}
                     value={data}

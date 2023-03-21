@@ -4,6 +4,7 @@
     height: 80px;
     opacity: 75%;
     animation: anim 10s ease infinite;
+    pointer-events: none;
 }
 
 @keyframes anim {
@@ -16,4 +17,33 @@
   100% {
     filter: hue-rotate(1deg);
   }
+}
+
+/* Firework animations */
+@keyframes    firework-animation {
+    0% {background-color : #ff8426;}
+    25% {background-color : #fffc84;}
+    50% {background-color : #ff83f4;}
+    75% {background-color : #83b6ff;}
+    100% {background-color : #ff8426;}
+}
+
+@-webkit-keyframes firework-animation {
+    0% {background-color : #ff8426;}
+    25% {background-color : #fffc84;}
+    50% {background-color : #ff83f4;}
+    75% {background-color : #83b6ff;}
+    100% {background-color : #ff8426;}
+}
+
+.fireWorkParticle {
+    z-index : 4;
+    position: absolute;
+    height : 5px;
+    width : 5px;
+    border-radius : 5px;
+    animation-name : firework-animation;
+    animation-timing-function : linear;
+    animation-duration : 1s;
+    animation-iteration-count : infinite;
 }
