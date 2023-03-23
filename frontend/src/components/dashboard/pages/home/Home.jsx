@@ -23,7 +23,7 @@ const Home = (props) => {
 
     // Get list of events and add to array
     useEffect(() => {
-        httpClient.get(`${process.env.REACT_APP_ROUTE_URL}/event/list`)
+        httpClient.get(`/event/list`)
         .then(response => {
             setEvents(response)
         })

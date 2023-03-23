@@ -29,7 +29,7 @@ const SearchPage = (props) => {
 
 
     useEffect(() => {
-        httpClient.post(`${process.env.REACT_APP_ROUTE_URL}/event/search`, searchData, {
+        httpClient.post(`/event/search`, searchData, {
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRF-TOKEN": getCookie("csrf_access_token"),

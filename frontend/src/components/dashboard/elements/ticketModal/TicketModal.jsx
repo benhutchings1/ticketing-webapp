@@ -26,7 +26,7 @@ const TicketModal = (props) => {
 
     function buyTickets() {
         loading(true);
-        httpClient.get(`${process.env.REACT_APP_ROUTE_URL}/ticket/add`)
+        httpClient.get(`/ticket/add`)
             .then(response => {
                 let tickets = document.getElementById("ticketTypes");
                 let ticketType = tickets.options[tickets.selectedIndex].text;
@@ -39,7 +39,7 @@ const TicketModal = (props) => {
                 }
 
                 window.setTimeout(() => {
-                    httpClient.post(`${process.env.REACT_APP_ROUTE_URL}/ticket/add`, data, {
+                    httpClient.post(`/ticket/add`, data, {
                         headers: {
                             "Content-Type": "application/json",
                             "X-CSRF-TOKEN": getCookie("csrf_access_token"),
