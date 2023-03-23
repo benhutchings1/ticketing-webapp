@@ -1,5 +1,6 @@
 # How to run React client
 
+Within the /frontend directory:
 `npm install`
 `set HTTPS=false&&npm start`
 
