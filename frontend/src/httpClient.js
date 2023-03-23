@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_ROUTE_URL = process.env.REACT_APP_ROUTE_URL || "https://localhost:5000";
+const API_ROUTE_URL = process.env.REACT_APP_ROUTE_URL || "http://localhost:5000";
 
 const httpClient = axios.create({
     withCredentials: true,

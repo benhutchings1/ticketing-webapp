@@ -22,7 +22,7 @@ def create_app(config=None):
 
     # CORS
     origins = []
-    for host in app.config.get("host", {}):
+    for host in app.config.get("HOST", {"localhost"}):
         origins.append(f"http://{host}")
         origins.append(f"http://{host}:3000")
         origins.append(f"https://{host}")
