@@ -68,5 +68,3 @@ To run this application bare metal, you will need to run Flask and React separat
 For more details, read the individual README files:
 * [Flask](flask-server/README.md)
 * [React](frontend/README.md)
-
-## Screenshots
