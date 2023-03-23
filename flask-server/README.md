@@ -23,6 +23,7 @@ By default, Flask will default to using a SQLite Database.
 
 To use a MySQL server running on the same host, add the following to your `.env` file:
 ```.env
+MYSQL_HOST=localhost
 MYSQL_DATABASE=<DATABASE_NAME>
 MYSQL_USER=<USER_NAME>
 MYSQL_PASSWORD=<PASSWORD>

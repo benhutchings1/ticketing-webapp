@@ -4,9 +4,9 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
-if config('MYSQL_DATABASE', cast=bool, default=False):
-    DATABASE = f"mysql://{config('MYSQL_USER')}:{config('MYSQL_PASSWORD')}@" \
-               f"localhost:3306/{config('MYSQL_DATABASE')}"
+if config('MYSQL_DATABASE', default=None):
+    DATABASE = f"mysql+mysqlconnector://{config('MYSQL_USER')}:{config('MYSQL_PASSWORD')}@" \
+               f"{config('MYSQL_HOST')}:3306/{config('MYSQL_DATABASE')}"
 else:
     DATABASE = "sqlite:///" + os.path.join(BASE_DIR, 'dev.db')
 

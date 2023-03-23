@@ -96,7 +96,7 @@ def run_app():
     if app.config.get("SELF_SIGNED"):
         app.run(host="0.0.0.0", port=5000, ssl_context=("certificate/cert.pem", "certificate/key.pem"))
     else:
-        app.run()
+        app.run(host="0.0.0.0")
 
 
 if __name__ == '__main__':
