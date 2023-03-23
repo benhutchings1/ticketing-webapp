@@ -41,7 +41,7 @@ const Ticket = (props) => {
                             ticket_id: id
                         }
 
-                        httpClient.post(`${process.env.REACT_APP_ROUTE_URL}/ticket/request_qr_data`, data, {
+                        httpClient.post(`/ticket/request_qr_data`, data, {
                             headers: {
                                 "Content-Type": "application/json",
                                 "X-CSRF-TOKEN": getCookie("csrf_access_token"),

@@ -17,10 +17,17 @@ NON_REFRESH_ROUTES = ["/user/logout", "/ticket/request_qr_data"]
 
 def create_app(config=None):
     app = Flask(__name__)
-    cors = CORS(app, supports_credentials=True, origins=["http://localhost:3000", "https://localhost:3000"])
     app.config.from_object(current_config if config is None else config)
     db.init_app(app)
-    # migrate=Migrate(app,db)
+
+    # CORS
+    origins = []
+    for host in app.config.get("host", {}):
+        origins.append(f"http://{host}")
+        origins.append(f"http://{host}:3000")
+        origins.append(f"https://{host}")
+        origins.append(f"https://{host}:3000")
+    cors = CORS(app, supports_credentials=True, origins=origins)
 
     # initializing a JWTManager with this app
     jwt = JWTManager(app)
@@ -90,7 +97,6 @@ def run_app():
         app.run(host="0.0.0.0", port=5000, ssl_context=("certificate/cert.pem", "certificate/key.pem"))
     else:
         app.run()
-    # app.run(host="0.0.0.0", port=5000, debug=True, ssl_context=("certificate/cert.pem", "certificate/key.pem"))
 
 
 if __name__ == '__main__':

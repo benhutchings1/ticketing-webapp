@@ -35,7 +35,7 @@ const QRCodeScanner = (props) => {
                         qr_data: result
                     }
 
-                    httpClient.post(`${process.env.REACT_APP_ROUTE_URL}/ticket/validate`, data, {
+                    httpClient.post(`/ticket/validate`, data, {
                         headers: {
                             "Content-Type": "application/json",
                             "X-CSRF-TOKEN": getCookie("csrf_access_token"),

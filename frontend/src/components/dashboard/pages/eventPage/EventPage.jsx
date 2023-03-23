@@ -21,7 +21,7 @@ const EventPage = (props) => {
         // Get event if not directed from home page
         if (event.length === undefined) {
             let eventID = window.location.href.split("/").slice(-1);
-            httpClient.get(`${process.env.REACT_APP_ROUTE_URL}/event/${eventID}`)
+            httpClient.get(`/event/${eventID}`)
                 .then(response => {
                     setCurrentEvent(response);
                     setEvent(response);

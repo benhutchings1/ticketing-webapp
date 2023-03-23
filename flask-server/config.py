@@ -4,9 +4,9 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
-if config('MYSQL', cast=bool, default=False):
+if config('MYSQL_DATABASE', cast=bool, default=False):
     DATABASE = f"mysql://{config('MYSQL_USER')}:{config('MYSQL_PASSWORD')}@" \
-               f"{config('MYSQL_HOST')}:{config('MYSQL_PORT')}/{config('MYSQL_DATABASE')}"
+               f"localhost:3306/{config('MYSQL_DATABASE')}"
 else:
     DATABASE = "sqlite:///" + os.path.join(BASE_DIR, 'dev.db')
 
@@ -17,6 +17,7 @@ class Config:
     JWT_CSRF_IN_COOKIES = True
     JWT_TOKEN_LOCATION = ["headers", "cookies"]
     SQLALCHEMY_DATABASE_URI = DATABASE
+    HOST = {config('HOST', default="localhost"), "localhost"}
     SELF_SIGNED = config('SELF_SIGNED', cast=bool, default=False)
 
 
