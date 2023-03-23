@@ -9,7 +9,7 @@ const ShopCard = (props) => {
     let item = props.item;
     let name = item.event_name;
     let datetime = item.event_datetime;
-    let description = item.description;
+    let description = item.descripation;
     let setCurrentEvent = props.setCurrenteEvent;
     let venueName = item.venue_name;
     let venueLocation = item.venue_location;

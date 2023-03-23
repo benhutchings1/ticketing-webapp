@@ -1,3 +1,4 @@
+import binascii
 from base64 import b64decode, b64encode
 from datetime import datetime, timedelta
 from xxhash import xxh32
@@ -233,7 +234,10 @@ class ValidateTicketResource(Resource):
 
         # Get signature
         signature = qr_data_structure[4]
-        signature_bytes = b64decode(signature)
+        try:
+            signature_bytes = b64decode(signature)
+        except binascii.Error:
+            return msg_response("Ticket is invalid", status_code=400)
 
         # Verify signature
         valid = verify_msg(msg_bytes, signature_bytes, public_key)
